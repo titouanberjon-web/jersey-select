@@ -1200,87 +1200,120 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
   var fc  = p.flocageColor || '#ffffff';
   var sc  = p.stripeColor  || null;
   var isLight = (mc === '#FAFAFA' || mc === '#F0F4FF' || mc === '#FFFFFF' || mc === '#E2EFE8' || mc === '#F7F7F7');
-  var shadowColor = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.25)';
+  var shadowColor = isLight ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.30)';
 
-  // ViewBox 0 0 200 215 — back-view realistic jersey
-  // Body: shoulders slope out to sleeves, sides slightly flared to hem
-  var bodyD = 'M 68,12 C 50,9 22,20 6,38 L 0,44 L 5,74 L 40,65 L 38,198 L 162,198 L 160,65 L 195,74 L 200,44 L 194,38 C 178,20 150,9 132,12 C 120,32 110,40 100,42 C 90,40 80,32 68,12 Z';
+  // ViewBox 0 0 240 270
+  // Traced from real jersey reference: round collar, natural shoulder curve,
+  // sleeves at ~25° angle, body slightly tapered then straight to hem
+  //
+  //        [  collar  ]
+  //    /--/            \--\
+  //   /  |              |  \
+  //  [sl ]              [ sl]
+  //   |  |              |  |
+  //   |  |              |  |
+  //   |__|______________|  |
+  //      |              |
+  //      |______________|
 
-  // Collar back-neckline arc
-  var collarD = 'M 68,12 C 80,32 90,40 100,42 C 110,40 120,32 132,12';
+  // Main body: neckline left (76,16) → left shoulder → sleeve → body → hem → body → sleeve → right shoulder → neckline right (164,16) → collar arc back
+  var bodyD =
+    'M 76,16 ' +
+    'C 56,12 24,24 6,46 ' +       // left shoulder curve (smooth, natural)
+    'L 0,54 ' +                    // sleeve top-left
+    'C 2,66 4,74 8,82 ' +          // sleeve outer curve (rounded end)
+    'L 52,70 ' +                   // sleeve bottom → body junction
+    'C 50,110 48,160 46,252 ' +    // left body side (slight inward taper)
+    'L 194,252 ' +                 // hem
+    'C 192,160 190,110 188,70 ' +  // right body side
+    'L 232,82 ' +                  // sleeve bottom → body junction
+    'C 236,74 238,66 240,54 ' +    // sleeve outer curve
+    'L 234,46 ' +                  // sleeve top-right
+    'C 216,24 184,12 164,16 ' +    // right shoulder curve
+    'C 152,34 140,44 120,46 ' +    // right collar arc (gentle U from right)
+    'C 100,44 88,34 76,16 Z';      // left collar arc
 
-  // Sleeve-end cuff lines
-  var leftCuffD  = 'M 5,74 L 40,65';
-  var rightCuffD = 'M 160,65 L 195,74';
+  // Collar band — round neckline arc (back view: shallow U)
+  var collarD = 'M 76,16 C 88,34 100,44 120,46 C 140,44 152,34 164,16';
 
-  // Darker shade inside sleeves for depth
-  var leftSleeveShadeD  = 'M 6,46 L 5,74 L 40,65 L 40,38 Z';
-  var rightSleeveShadeD = 'M 194,46 L 195,74 L 160,65 L 160,38 Z';
+  // Sleeve cuff bands (angled lines at sleeve ends)
+  var leftCuffD  = 'M 8,82 L 52,70';
+  var rightCuffD = 'M 188,70 L 232,82';
 
-  // Vertical body stripe pattern (for Inter/AC Milan style)
+  // Sleeve inner shading for depth
+  var leftShadeD  = 'M 6,46 C 7,56 8,70 8,82 L 52,70 L 52,50 Z';
+  var rightShadeD = 'M 234,46 C 233,56 232,70 232,82 L 188,70 L 188,50 Z';
+
+  // Subtle highlight along left body side
+  var highlightD = 'M 52,72 C 50,120 48,175 47,250';
+
+  // Vertical body stripes (Inter / AC Milan style)
   var bodyStripeDefs = '';
   var bodyFill = 'fill="' + mc + '"';
   if (sc) {
-    bodyStripeDefs = '<defs>'
-      + '<pattern id="sp' + uid + '" x="0" y="0" width="20" height="215" patternUnits="userSpaceOnUse">'
-      + '<rect width="10" height="215" fill="' + mc + '"/>'
-      + '<rect x="10" width="10" height="215" fill="' + sc + '"/>'
-      + '</pattern>'
-      + '<clipPath id="cp' + uid + '"><path d="' + bodyD + '"/></clipPath>'
-      + '</defs>';
+    bodyStripeDefs =
+      '<pattern id="sp' + uid + '" x="0" y="0" width="24" height="270" patternUnits="userSpaceOnUse">' +
+      '<rect width="12" height="270" fill="' + mc + '"/>' +
+      '<rect x="12" width="12" height="270" fill="' + sc + '"/>' +
+      '</pattern>' +
+      '<clipPath id="cp' + uid + '"><path d="' + bodyD + '"/></clipPath>';
     bodyFill = 'fill="url(#sp' + uid + ')"';
   }
 
-  // Shoulder stripes — 2 parallel bands along each sleeve (Adidas style)
-  // Only shown when p.shoulderStripes is defined, using accentColor
+  // Shoulder stripes — Adidas-style, 2 lines per side, clipped to body
   var shoulderStripes = '';
   if (p.shoulderStripes) {
     var ss = p.shoulderStripes;
-    // Left side: 2 stripes from near collar toward sleeve end
-    shoulderStripes += '<line x1="82" y1="13" x2="12" y2="54" stroke="' + ss + '" stroke-width="6" stroke-linecap="round" clip-path="url(#cp' + uid + ')"/>';
-    shoulderStripes += '<line x1="74" y1="16" x2="4"  y2="57" stroke="' + ss + '" stroke-width="6" stroke-linecap="round" clip-path="url(#cp' + uid + ')"/>';
-    // Right side
-    shoulderStripes += '<line x1="118" y1="13" x2="188" y2="54" stroke="' + ss + '" stroke-width="6" stroke-linecap="round" clip-path="url(#cp' + uid + ')"/>';
-    shoulderStripes += '<line x1="126" y1="16" x2="196" y2="57" stroke="' + ss + '" stroke-width="6" stroke-linecap="round" clip-path="url(#cp' + uid + ')"/>';
+    var cpId = 'cp' + uid;
+    if (!sc) {
+      // Need clip path if not already defined
+      bodyStripeDefs = '<clipPath id="' + cpId + '"><path d="' + bodyD + '"/></clipPath>';
+    }
+    shoulderStripes =
+      '<line x1="94" y1="17" x2="10" y2="60" stroke="' + ss + '" stroke-width="7" stroke-linecap="round" clip-path="url(#' + cpId + ')"/>' +
+      '<line x1="86" y1="20" x2="2"  y2="63" stroke="' + ss + '" stroke-width="7" stroke-linecap="round" clip-path="url(#' + cpId + ')"/>' +
+      '<line x1="146" y1="17" x2="230" y2="60" stroke="' + ss + '" stroke-width="7" stroke-linecap="round" clip-path="url(#' + cpId + ')"/>' +
+      '<line x1="154" y1="20" x2="238" y2="63" stroke="' + ss + '" stroke-width="7" stroke-linecap="round" clip-path="url(#' + cpId + ')"/>';
   }
 
-  // Flocage text (back of jersey, showBack mode)
+  // Flocage text centred on the jersey back
   var flocage = '';
   if (showBack) {
     var oTop = tTop ? '1' : '0.18'; var oNum = tNum ? '1' : '0.18'; var oBot = tBot ? '1' : '0.18';
     var dTop = tTop || 'NOM'; var dNum = tNum || '00'; var dBot = tBot || 'CLUB';
-    flocage = '<text x="100" y="104" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="14" fill="' + fc + '" opacity="' + oTop + '" letter-spacing="2">' + escHtml(dTop) + '</text>'
-            + '<text x="100" y="155" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="52" fill="' + fc + '" opacity="' + oNum + '" letter-spacing="-1">' + escHtml(dNum) + '</text>'
-            + '<text x="100" y="175" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="14" fill="' + fc + '" opacity="' + oBot + '" letter-spacing="2">' + escHtml(dBot) + '</text>';
+    flocage =
+      '<text x="120" y="118" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="16" fill="' + fc + '" opacity="' + oTop + '" letter-spacing="2">' + escHtml(dTop) + '</text>' +
+      '<text x="120" y="178" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="58" fill="' + fc + '" opacity="' + oNum + '" letter-spacing="-1">' + escHtml(dNum) + '</text>' +
+      '<text x="120" y="200" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="16" fill="' + fc + '" opacity="' + oBot + '" letter-spacing="2">' + escHtml(dBot) + '</text>';
   }
 
-  var w = showBack ? '200' : '160';
-  var h = showBack ? '215' : '172';
+  var w = showBack ? '220' : '176';
+  var h = showBack ? '270' : '216';
 
-  // Clip path needs to exist even without sc for shoulder stripes
-  var clipDef = (!sc && p.shoulderStripes)
-    ? '<defs><clipPath id="cp' + uid + '"><path d="' + bodyD + '"/></clipPath></defs>'
-    : '';
-
-  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 200 215" xmlns="http://www.w3.org/2000/svg">'
-    + '<defs><filter id="sh' + uid + '"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="' + shadowColor + '" flood-opacity="1"/></filter></defs>'
-    + bodyStripeDefs
-    + ((!sc && p.shoulderStripes) ? clipDef : '')
-    // Main body
-    + '<path d="' + bodyD + '" ' + bodyFill + ' filter="url(#sh' + uid + ')"/>'
-    // Sleeve depth shading
-    + '<path d="' + leftSleeveShadeD  + '" fill="rgba(0,0,0,0.08)"/>'
-    + '<path d="' + rightSleeveShadeD + '" fill="rgba(0,0,0,0.08)"/>'
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 240 270" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs>' +
+      '<filter id="sh' + uid + '" x="-10%" y="-5%" width="120%" height="115%">' +
+        '<feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="' + shadowColor + '" flood-opacity="1"/>' +
+      '</filter>' +
+      bodyStripeDefs +
+    '</defs>' +
+    // Body
+    '<path d="' + bodyD + '" ' + bodyFill + ' filter="url(#sh' + uid + ')"/>' +
+    // Sleeve inner shading
+    '<path d="' + leftShadeD  + '" fill="rgba(0,0,0,0.09)"/>' +
+    '<path d="' + rightShadeD + '" fill="rgba(0,0,0,0.09)"/>' +
+    // Subtle left-side highlight
+    '<path d="' + highlightD + '" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="4" stroke-linecap="round"/>' +
     // Shoulder stripes
-    + shoulderStripes
-    // Collar band
-    + '<path d="' + collarD + '" fill="none" stroke="' + ac + '" stroke-width="11" stroke-linecap="round"/>'
+    shoulderStripes +
+    // Collar band (thick rounded arc)
+    '<path d="' + collarD + '" fill="none" stroke="' + ac + '" stroke-width="13" stroke-linecap="round"/>' +
     // Sleeve cuffs
-    + '<path d="' + leftCuffD  + '" fill="none" stroke="' + ac + '" stroke-width="8" stroke-linecap="round"/>'
-    + '<path d="' + rightCuffD + '" fill="none" stroke="' + ac + '" stroke-width="8" stroke-linecap="round"/>'
+    '<path d="' + leftCuffD  + '" fill="none" stroke="' + ac + '" stroke-width="10" stroke-linecap="round"/>' +
+    '<path d="' + rightCuffD + '" fill="none" stroke="' + ac + '" stroke-width="10" stroke-linecap="round"/>' +
     // Flocage
-    + flocage
-    + '</svg>';
+    flocage +
+    '</svg>';
 }
 
 function escHtml(s) {
