@@ -71,11 +71,15 @@
       border-bottom: 1px solid var(--border);
     }
     .nav-logo {
-      text-decoration:none;
-      display:flex; align-items:center;
+      font-family:'Bebas Neue',sans-serif; font-size:1.5rem; letter-spacing:.1em;
+      color:var(--text); text-decoration:none;
+      display:flex; align-items:center; gap:.5rem;
     }
-    .nav-logo img { height:52px; width:auto; display:block; }
-    .logo-dot { display:none; }
+    .logo-dot {
+      width:8px; height:8px; background:var(--green); border-radius:50%;
+      animation: pulse 2s infinite; box-shadow:var(--glow-green);
+      flex-shrink:0;
+    }
     .nav-links { display:flex; gap:2rem; list-style:none; }
     .nav-links a {
       font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.08em;
@@ -377,8 +381,7 @@
     /* ===== FOOTER ===== */
     footer { background:var(--surface); padding:4rem 2rem 2rem; border-top:1px solid var(--border); }
     .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:3rem; max-width:1200px; margin:0 auto 3rem; }
-    .footer-logo { margin-bottom:1rem; display:flex; align-items:center; }
-    .footer-logo img { height:64px; width:auto; display:block; }
+    .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:.1em; margin-bottom:1rem; color:var(--text); display:flex; align-items:center; gap:.5rem; }
     .footer-col h4 { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.1em; color:var(--green); margin-bottom:1rem; }
     .footer-col p { color:var(--text-muted); font-size:.9rem; line-height:1.7; }
     .footer-links { list-style:none; }
@@ -614,7 +617,8 @@
 <!-- ===== NAVBAR ===== -->
 <nav class="navbar">
   <a href="#banner" class="nav-logo">
-    <img src="images/logo.svg" alt="Jersey Select">
+    <span class="logo-dot"></span>
+    Jersey Select
   </a>
   <ul class="nav-links">
     <li><a href="#ligues">Ligues</a></li>
@@ -922,7 +926,8 @@
   <div class="footer-grid">
     <div>
       <div class="footer-logo">
-        <img src="images/logo.svg" alt="Jersey Select">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;flex-shrink:0;"></span>
+        Jersey Select
       </div>
       <p>Passionné de foot, je sélectionne des maillots authentiques depuis Besançon. Né du terrain, fait pour les vrais.</p>
     </div>
