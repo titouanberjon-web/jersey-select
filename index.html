@@ -720,6 +720,13 @@
 
     <!-- Filtres ligue + club -->
     <div class="catalogue-controls">
+      <!-- Club filter (visible only when a league is selected) -->
+      <div id="clubFilterWrap" style="display:none; margin-bottom:1rem;">
+        <select id="clubSelect" class="form-select" style="max-width:320px;" onchange="filterByClub(this.value)">
+          <option value="">— Tous les clubs de cette ligue —</option>
+        </select>
+      </div>
+
       <!-- League filter pills -->
       <div class="filter-pills">
         <button class="pill active" data-league="Tous"           onclick="setPill(this)">Tous</button>
@@ -731,13 +738,6 @@
         <button class="pill"        data-league="Liga Portugal"  onclick="setPill(this)">Liga Portugal</button>
         <button class="pill"        data-league="Vintage"        onclick="setPill(this)">Vintage</button>
         <button class="pill"        data-league="International"  onclick="setPill(this)">International</button>
-      </div>
-
-      <!-- Club filter (visible only when a league is selected) -->
-      <div id="clubFilterWrap" style="display:none; margin-top:1rem;">
-        <select id="clubSelect" class="form-select" style="max-width:320px;" onchange="filterByClub(this.value)">
-          <option value="">— Tous les clubs de cette ligue —</option>
-        </select>
       </div>
     </div>
 
