@@ -1210,25 +1210,33 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
   // Fixes: col plus petit/rond, manches avec jonction courbe naturelle
 
   // Corps principal — col étroit (108→152 = 44px), manches à jonction bezier
-  // Col étroit (40px), épaules qui tombent plus, bouts de manches très arrondis
+  // Corps — col intérieur aligné sur le bord intérieur du col (bande remplie)
   var bodyD =
-    'M 110,20 ' +
-    'C 86,13 50,26 26,52 ' +       // épaule gauche — pente plus prononcée
-    'L 8,64 ' +                    // haut manche gauche (plus bas)
-    'C 10,76 12,88 17,96 ' +       // bout de manche très arrondi
-    'C 30,88 46,82 62,78 ' +       // jonction manche→corps courbe
-    'C 60,120 58,172 56,264 ' +    // côté gauche corps
-    'L 204,264 ' +                 // ourlet
-    'C 202,172 200,120 198,78 ' +  // côté droit corps
-    'C 214,82 230,88 243,96 ' +    // jonction corps→manche courbe
-    'C 248,88 250,76 252,64 ' +    // bout de manche droite très arrondi
-    'L 234,52 ' +                  // haut manche droite
-    'C 210,26 174,13 150,20 ' +    // épaule droite
-    'C 141,33 135,40 130,42 ' +    // arc col droit
-    'C 125,40 119,33 110,20 Z';    // arc col gauche
+    'M 105,20 ' +
+    'C 86,13 50,26 26,52 ' +       // épaule gauche
+    'L 8,64 ' +
+    'C 10,76 12,88 17,96 ' +
+    'C 30,88 46,82 62,78 ' +
+    'C 60,120 58,172 56,264 ' +
+    'L 204,264 ' +
+    'C 202,172 200,120 198,78 ' +
+    'C 214,82 230,88 243,96 ' +
+    'C 248,88 250,76 252,64 ' +
+    'L 234,52 ' +
+    'C 210,26 174,13 155,20 ' +    // épaule droite
+    'C 146,34 138,45 130,48 ' +    // bord intérieur col droit
+    'C 122,45 114,34 105,20 Z';    // bord intérieur col gauche
 
-  // Col — ouverture plus grande (plus large + plus profonde verticalement)
-  var collarD = 'M 100,18 C 112,36 120,48 130,52 C 140,48 148,36 160,18';
+  // Col dessiné comme une vraie bande remplie (arc extérieur + arc intérieur)
+  // Arc extérieur : plus large et plus profond que l'intérieur
+  // Arc intérieur : correspond au bord du corps
+  var collarFillD =
+    'M 88,20 ' +
+    'C 102,42 116,60 130,64 ' +    // arc extérieur gauche → centre
+    'C 144,60 158,42 172,20 ' +    // arc extérieur centre → droite
+    'L 155,20 ' +                   // bord supérieur droit
+    'C 146,36 138,47 130,50 ' +    // arc intérieur droit → centre
+    'C 122,47 114,36 105,20 Z';    // arc intérieur centre → gauche
 
   // Poignets — courbés, suivent la forme arrondie du bas de manche
   var leftCuffD  = 'M 17,96 C 30,88 46,82 62,78';
@@ -1286,7 +1294,7 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
     '<path d="' + leftShadeD  + '" fill="rgba(0,0,0,0.08)"/>' +
     '<path d="' + rightShadeD + '" fill="rgba(0,0,0,0.08)"/>' +
     shoulderStripes +
-    '<path d="' + collarD + '" fill="none" stroke="' + ac + '" stroke-width="12" stroke-linecap="round"/>' +
+    '<path d="' + collarFillD + '" fill="' + ac + '"/>' +
     '<path d="' + leftCuffD  + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
     '<path d="' + rightCuffD + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
     flocage +
