@@ -1006,12 +1006,16 @@
             <div class="radio-label">Standard</div>
             <div class="radio-price">16 €</div>
           </div>
-          <div class="radio-option" id="optLongSleeve" style="display:none;" onclick="selectVersion('longsleeve',this)">
-            <div class="radio-label">Manche longue</div>
-            <div class="radio-price">19 €</div>
-          </div>
           <div class="radio-option" id="optPlayer" onclick="selectVersion('player',this)">
             <div class="radio-label">Player</div>
+            <div class="radio-price">21 €</div>
+          </div>
+          <div class="radio-option" id="optLongStandard" style="display:none;" onclick="selectVersion('longstandard',this)">
+            <div class="radio-label">Manches longues Standard</div>
+            <div class="radio-price">16 €</div>
+          </div>
+          <div class="radio-option" id="optLongPlayer" style="display:none;" onclick="selectVersion('longplayer',this)">
+            <div class="radio-label">Manches longues Player</div>
             <div class="radio-price">21 €</div>
           </div>
         </div>
@@ -1222,8 +1226,7 @@ const clubsByLeague = {
 /* ===== PRICING ===== */
 function getBasePrice(type, version) {
   if (type === 'vintage') return 20;
-  if (version === 'player') return 21;
-  if (version === 'longsleeve') return 19;
+  if (version === 'player' || version === 'longplayer') return 21;
   return 16;
 }
 function calcTotal(type, version, hasNumber, hasText) {
@@ -1599,9 +1602,12 @@ function openCustomModal(productId) {
     currentVersion = 'standard';
     document.getElementById('optStandard').classList.add('selected');
     document.getElementById('optPlayer').classList.remove('selected');
-    document.getElementById('optLongSleeve').classList.remove('selected');
-    // Afficher "Manche longue" uniquement si le produit le propose
-    document.getElementById('optLongSleeve').style.display = currentProduct.hasLongSleeve ? 'block' : 'none';
+    document.getElementById('optLongStandard').classList.remove('selected');
+    document.getElementById('optLongPlayer').classList.remove('selected');
+    // Afficher les options manches longues uniquement si le produit le propose
+    var ls = currentProduct.hasLongSleeve ? 'block' : 'none';
+    document.getElementById('optLongStandard').style.display = ls;
+    document.getElementById('optLongPlayer').style.display = ls;
   }
 
   // Reset all fields
@@ -1741,7 +1747,11 @@ function addToCart() {
   }
   if (parts.length) flocage = parts.join(' · ');
 
-  const versionLabel = currentProduct.type === 'vintage' ? 'Vintage' : (currentVersion === 'player' ? 'Player' : currentVersion === 'longsleeve' ? 'Manche longue' : 'Standard');
+  const versionLabel = currentProduct.type === 'vintage' ? 'Vintage'
+    : currentVersion === 'player' ? 'Player'
+    : currentVersion === 'longstandard' ? 'Manches longues Standard'
+    : currentVersion === 'longplayer' ? 'Manches longues Player'
+    : 'Standard';
 
   cartItems.push({
     uid: Date.now() + Math.random(),
