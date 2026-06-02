@@ -1034,14 +1034,7 @@
       <!-- Aperçu -->
       <div class="jersey-preview">
         <div class="jersey-preview-title">APERÇU — DOS DU MAILLOT</div>
-        <div id="jerseyPreviewContainer">
-          <!-- rempli dynamiquement par updatePreview() -->
-          <div class="jersey-back" id="jerseyBackGeneric">
-            <div class="preview-text-top preview-muted" id="previewTop">TEXTE HAUT</div>
-            <div class="preview-number preview-muted" id="previewNum">—</div>
-            <div class="preview-text-bottom preview-muted" id="previewBot">TEXTE BAS</div>
-          </div>
-        </div>
+        <div id="jerseyPreviewContainer" style="display:flex;justify-content:center;align-items:center;padding:.5rem;min-height:210px;"></div>
       </div>
 
       <!-- Récapitulatif prix -->
@@ -1197,59 +1190,52 @@ function calcTotal(type, version, hasNumber, hasText) {
 
 
 /* ===== JERSEY SVG GENERATOR ===== */
-let _jsc = 0; // counter pour IDs uniques
-function makeJerseySVG(p, showBack=false, tTop='', tNum='', tBot='') {
-  const id  = ++_jsc;
-  const mc  = p.mainColor   || '#1a2236';
-  const ac  = p.accentColor || '#ffffff';
-  const fc  = p.flocageColor|| '#ffffff';
-  const sc  = p.stripeColor || null;
-  const isLight = ['#FAFAFA','#F0F4FF','#FFFFFF','#E2EFE8','#F7F7F7'].includes(mc);
-  const stroke  = isLight ? '#cccccc' : ac;
+let _jsc = 0;
+function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
+  showBack = showBack || false;
+  tTop = tTop || ''; tNum = tNum || ''; tBot = tBot || '';
+  var uid  = ++_jsc;
+  var mc   = p.mainColor    || '#1a2236';
+  var ac   = p.accentColor  || '#cccccc';
+  var fc   = p.flocageColor || '#ffffff';
+  var sc   = p.stripeColor  || null;
+  var isLight = (mc === '#FAFAFA' || mc === '#F0F4FF' || mc === '#FFFFFF' || mc === '#E2EFE8' || mc === '#F7F7F7');
+  var border  = isLight ? '#bbbbbb' : ac;
 
-  const BODY   = "M68,22 L40,5 L5,50 L40,67 L38,215 L162,215 L160,67 L195,50 L160,5 L132,22 Q100,50 68,22Z";
-  const COLLAR = "M68,22 Q100,50 132,22 L118,57 Q100,72 82,57Z";
+  // Jersey polygon (viewBox 0 0 100 115)
+  var BODY    = '34,0 20,2 0,25 20,33 19,110 81,110 80,33 100,25 80,2 66,0';
+  var COLLAR  = '34,0 45,28 50,36 55,28 66,0';
 
-  let defs = '', stripeRect = '';
+  var stripes = '';
   if (sc) {
-    defs = `<defs>
-      <pattern id="sp${id}" x="0" y="0" width="40" height="230" patternUnits="userSpaceOnUse">
-        <rect width="20" height="230" fill="${mc}"/>
-        <rect x="20" width="20" height="230" fill="${sc}"/>
-      </pattern>
-      <clipPath id="cp${id}"><path d="${BODY}"/></clipPath>
-    </defs>`;
-    stripeRect = `<rect width="200" height="230" fill="url(#sp${id})" clip-path="url(#cp${id})"/>`;
+    stripes = '<defs>'
+      + '<pattern id="sp' + uid + '" x="0" y="0" width="20" height="115" patternUnits="userSpaceOnUse">'
+      + '<rect width="10" height="115" fill="' + mc + '"/>'
+      + '<rect x="10" width="10" height="115" fill="' + sc + '"/>'
+      + '</pattern>'
+      + '<clipPath id="cp' + uid + '"><polygon points="' + BODY + '"/></clipPath>'
+      + '</defs>'
+      + '<rect width="100" height="115" fill="url(#sp' + uid + ')" clip-path="url(#cp' + uid + ')"/>';
   }
 
-  let flocage = '';
+  var flocage = '';
   if (showBack) {
-    const oTop = tTop ? '1' : '0.15';
-    const oNum = tNum ? '1' : '0.15';
-    const oBot = tBot ? '1' : '0.15';
-    const dTop = tTop || 'NOM HAUT';
-    const dNum = tNum || '00';
-    const dBot = tBot || 'NOM BAS';
-    flocage = `
-      <text x="100" y="92" text-anchor="middle" font-family="Bebas Neue,sans-serif"
-        font-size="14" fill="${fc}" opacity="${oTop}" letter-spacing="2">${dTop}</text>
-      <text x="100" y="150" text-anchor="middle" font-family="Bebas Neue,sans-serif"
-        font-size="60" fill="${fc}" opacity="${oNum}" letter-spacing="3">${dNum}</text>
-      <text x="100" y="178" text-anchor="middle" font-family="Bebas Neue,sans-serif"
-        font-size="14" fill="${fc}" opacity="${oBot}" letter-spacing="2">${dBot}</text>`;
+    var oTop = tTop ? '1' : '0.15'; var oNum = tNum ? '1' : '0.15'; var oBot = tBot ? '1' : '0.15';
+    var dTop = tTop || 'NOM'; var dNum = tNum || '00'; var dBot = tBot || 'CLUB';
+    flocage = '<text x="50" y="46" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="8" fill="' + fc + '" opacity="' + oTop + '" letter-spacing="1">' + dTop + '</text>'
+            + '<text x="50" y="74" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="30" fill="' + fc + '" opacity="' + oNum + '">' + dNum + '</text>'
+            + '<text x="50" y="88" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="8" fill="' + fc + '" opacity="' + oBot + '" letter-spacing="1">' + dBot + '</text>';
   }
 
-  const size = showBack
-    ? 'style="max-height:220px;max-width:190px;width:100%;height:auto;"'
-    : 'style="max-height:175px;max-width:155px;width:100%;height:auto;"';
+  var w = showBack ? '180' : '140';
+  var h = showBack ? '207' : '161';
 
-  return `<svg viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg" ${size}>
-    ${defs}
-    <path d="${BODY}" fill="${sc ? 'none' : mc}" stroke="${stroke}" stroke-width="1.5"/>
-    ${stripeRect}
-    <path d="${COLLAR}" fill="${ac}" stroke="${stroke}" stroke-width="0.5"/>
-    ${flocage}
-  </svg>`;
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 115" xmlns="http://www.w3.org/2000/svg">'
+    + (sc ? stripes : '<polygon points="' + BODY + '" fill="' + mc + '" stroke="' + border + '" stroke-width="1"/>')
+    + (sc ? '<polygon points="' + BODY + '" fill="none" stroke="' + border + '" stroke-width="1"/>' : '')
+    + '<polygon points="' + COLLAR + '" fill="' + ac + '"/>'
+    + flocage
+    + '</svg>';
 }
 
 /* ===== RENDER POPULAR ===== */
@@ -1468,21 +1454,17 @@ function updatePrice() {
 
 function updatePreview() {
   if (!currentProduct) return;
-  const hasNum     = document.getElementById('chkNumber').checked;
-  const hasTextTop = document.getElementById('chkTextTop').checked;
-  const hasTextBot = document.getElementById('chkTextBot').checked;
-  const numVal  = document.getElementById('inputNumber').value;
-  const topVal  = document.getElementById('inputTextTop').value.toUpperCase();
-  const botVal  = document.getElementById('inputTextBot').value.toUpperCase();
-
-  const tTop = (hasTextTop && topVal) ? topVal : '';
-  const tNum = (hasNum && numVal) ? numVal : '';
-  const tBot = (hasTextBot && botVal) ? botVal : '';
-
-  const container = document.getElementById('jerseyPreviewContainer');
-  container.innerHTML = `<div style="display:flex;justify-content:center;align-items:center;padding:.5rem;">
-    ${makeJerseySVG(currentProduct, true, tTop, tNum, tBot)}
-  </div>`;
+  var hasNum     = document.getElementById('chkNumber').checked;
+  var hasTextTop = document.getElementById('chkTextTop').checked;
+  var hasTextBot = document.getElementById('chkTextBot').checked;
+  var numVal  = document.getElementById('inputNumber').value;
+  var topVal  = document.getElementById('inputTextTop').value.toUpperCase();
+  var botVal  = document.getElementById('inputTextBot').value.toUpperCase();
+  var tTop = (hasTextTop && topVal) ? topVal : '';
+  var tNum = (hasNum && numVal) ? numVal : '';
+  var tBot = (hasTextBot && botVal) ? botVal : '';
+  var container = document.getElementById('jerseyPreviewContainer');
+  container.innerHTML = makeJerseySVG(currentProduct, true, tTop, tNum, tBot);
 }
 
 /* ===== ADD TO CART ===== */
