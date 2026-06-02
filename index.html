@@ -1317,11 +1317,11 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
   var flocage = '';
   if (showBack) {
     var oTop = tTop ? '1' : '0.18'; var oNum = tNum ? '1' : '0.18'; var oBot = tBot ? '1' : '0.18';
-    var dTop = tTop || 'NOM'; var dNum = tNum || '00'; var dBot = tBot || 'CLUB';
+    var dTop = tTop || 'NOM'; var dNum = tNum || '00'; var dBot = tBot || clubShortName(p.club);
     flocage =
-      '<text x="130" y="124" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="17" fill="' + fc + '" opacity="' + oTop + '" letter-spacing="2">' + escHtml(dTop) + '</text>' +
-      '<text x="130" y="186" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="60" fill="' + fc + '" opacity="' + oNum + '" letter-spacing="-1">' + escHtml(dNum) + '</text>' +
-      '<text x="130" y="208" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="17" fill="' + fc + '" opacity="' + oBot + '" letter-spacing="2">' + escHtml(dBot) + '</text>';
+      '<text x="130" y="108" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="18" fill="' + fc + '" opacity="' + oTop + '" letter-spacing="3">' + escHtml(dTop) + '</text>' +
+      '<text x="130" y="175" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="68" fill="' + fc + '" opacity="' + oNum + '" letter-spacing="-1">' + escHtml(dNum) + '</text>' +
+      '<text x="130" y="197" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="17" fill="' + fc + '" opacity="' + oBot + '" letter-spacing="3">' + escHtml(dBot) + '</text>';
   }
 
   var w = showBack ? '224' : '180';
@@ -1402,6 +1402,36 @@ function carouselGoTo(idx) {
   document.querySelectorAll('.carousel-dot').forEach(function(d, i){
     d.classList.toggle('active', i === idx);
   });
+}
+
+function clubShortName(club) {
+  var map = {
+    'Manchester United':      'MAN UTD',
+    'Manchester City':        'MAN CITY',
+    'Paris Saint-Germain':    'PSG',
+    'Paris SG':               'PSG',
+    'Olympique de Marseille': 'OM',
+    'Inter de Milan':         'INTER',
+    'AC Milan':               'MILAN',
+    'Borussia Dortmund':      'BVB',
+    'Bayern Munich':          'BAYERN',
+    'Real Madrid':            'REAL',
+    'FC Barcelone':           'BARÇA',
+    'Benfica':                'BENFICA',
+    'FC Porto':               'PORTO',
+    'Santos FC':              'SANTOS',
+    'Olympique Lyonnais':     'OL',
+    'Atletico Madrid':        'ATLÉTICO',
+    'France':                 'FRANCE',
+    'Brésil':                 'BRASIL',
+    'Argentine':              'ARGENTINA',
+    'Espagne':                'ESPAÑA',
+    'Portugal':               'PORTUGAL',
+    'Angleterre':             'ENGLAND',
+    'Allemagne':              'GERMANY',
+    'Italie':                 'ITALIA'
+  };
+  return map[club] || club.toUpperCase().substring(0, 10);
 }
 
 function escHtml(s) {
