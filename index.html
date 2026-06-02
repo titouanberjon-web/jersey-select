@@ -1194,48 +1194,97 @@ let _jsc = 0;
 function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
   showBack = showBack || false;
   tTop = tTop || ''; tNum = tNum || ''; tBot = tBot || '';
-  var uid  = ++_jsc;
-  var mc   = p.mainColor    || '#1a2236';
-  var ac   = p.accentColor  || '#cccccc';
-  var fc   = p.flocageColor || '#ffffff';
-  var sc   = p.stripeColor  || null;
+  var uid = ++_jsc;
+  var mc  = p.mainColor    || '#1a2236';
+  var ac  = p.accentColor  || '#cccccc';
+  var fc  = p.flocageColor || '#ffffff';
+  var sc  = p.stripeColor  || null;
   var isLight = (mc === '#FAFAFA' || mc === '#F0F4FF' || mc === '#FFFFFF' || mc === '#E2EFE8' || mc === '#F7F7F7');
-  var border  = isLight ? '#bbbbbb' : ac;
+  var shadowColor = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.25)';
 
-  // Jersey polygon (viewBox 0 0 100 115)
-  var BODY    = '34,0 20,2 0,25 20,33 19,110 81,110 80,33 100,25 80,2 66,0';
-  var COLLAR  = '34,0 45,28 50,36 55,28 66,0';
+  // ViewBox 0 0 200 215 — back-view realistic jersey
+  // Body: shoulders slope out to sleeves, sides slightly flared to hem
+  var bodyD = 'M 68,12 C 50,9 22,20 6,38 L 0,44 L 5,74 L 40,65 L 38,198 L 162,198 L 160,65 L 195,74 L 200,44 L 194,38 C 178,20 150,9 132,12 C 120,32 110,40 100,42 C 90,40 80,32 68,12 Z';
 
-  var stripes = '';
+  // Collar back-neckline arc
+  var collarD = 'M 68,12 C 80,32 90,40 100,42 C 110,40 120,32 132,12';
+
+  // Sleeve-end cuff lines
+  var leftCuffD  = 'M 5,74 L 40,65';
+  var rightCuffD = 'M 160,65 L 195,74';
+
+  // Darker shade inside sleeves for depth
+  var leftSleeveShadeD  = 'M 6,46 L 5,74 L 40,65 L 40,38 Z';
+  var rightSleeveShadeD = 'M 194,46 L 195,74 L 160,65 L 160,38 Z';
+
+  // Vertical body stripe pattern (for Inter/AC Milan style)
+  var bodyStripeDefs = '';
+  var bodyFill = 'fill="' + mc + '"';
   if (sc) {
-    stripes = '<defs>'
-      + '<pattern id="sp' + uid + '" x="0" y="0" width="20" height="115" patternUnits="userSpaceOnUse">'
-      + '<rect width="10" height="115" fill="' + mc + '"/>'
-      + '<rect x="10" width="10" height="115" fill="' + sc + '"/>'
+    bodyStripeDefs = '<defs>'
+      + '<pattern id="sp' + uid + '" x="0" y="0" width="20" height="215" patternUnits="userSpaceOnUse">'
+      + '<rect width="10" height="215" fill="' + mc + '"/>'
+      + '<rect x="10" width="10" height="215" fill="' + sc + '"/>'
       + '</pattern>'
-      + '<clipPath id="cp' + uid + '"><polygon points="' + BODY + '"/></clipPath>'
-      + '</defs>'
-      + '<rect width="100" height="115" fill="url(#sp' + uid + ')" clip-path="url(#cp' + uid + ')"/>';
+      + '<clipPath id="cp' + uid + '"><path d="' + bodyD + '"/></clipPath>'
+      + '</defs>';
+    bodyFill = 'fill="url(#sp' + uid + ')"';
   }
 
+  // Shoulder stripes — 2 parallel bands along each sleeve (Adidas style)
+  // Only shown when p.shoulderStripes is defined, using accentColor
+  var shoulderStripes = '';
+  if (p.shoulderStripes) {
+    var ss = p.shoulderStripes;
+    // Left side: 2 stripes from near collar toward sleeve end
+    shoulderStripes += '<line x1="82" y1="13" x2="12" y2="54" stroke="' + ss + '" stroke-width="6" stroke-linecap="round" clip-path="url(#cp' + uid + ')"/>';
+    shoulderStripes += '<line x1="74" y1="16" x2="4"  y2="57" stroke="' + ss + '" stroke-width="6" stroke-linecap="round" clip-path="url(#cp' + uid + ')"/>';
+    // Right side
+    shoulderStripes += '<line x1="118" y1="13" x2="188" y2="54" stroke="' + ss + '" stroke-width="6" stroke-linecap="round" clip-path="url(#cp' + uid + ')"/>';
+    shoulderStripes += '<line x1="126" y1="16" x2="196" y2="57" stroke="' + ss + '" stroke-width="6" stroke-linecap="round" clip-path="url(#cp' + uid + ')"/>';
+  }
+
+  // Flocage text (back of jersey, showBack mode)
   var flocage = '';
   if (showBack) {
-    var oTop = tTop ? '1' : '0.15'; var oNum = tNum ? '1' : '0.15'; var oBot = tBot ? '1' : '0.15';
+    var oTop = tTop ? '1' : '0.18'; var oNum = tNum ? '1' : '0.18'; var oBot = tBot ? '1' : '0.18';
     var dTop = tTop || 'NOM'; var dNum = tNum || '00'; var dBot = tBot || 'CLUB';
-    flocage = '<text x="50" y="46" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="8" fill="' + fc + '" opacity="' + oTop + '" letter-spacing="1">' + dTop + '</text>'
-            + '<text x="50" y="74" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="30" fill="' + fc + '" opacity="' + oNum + '">' + dNum + '</text>'
-            + '<text x="50" y="88" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="8" fill="' + fc + '" opacity="' + oBot + '" letter-spacing="1">' + dBot + '</text>';
+    flocage = '<text x="100" y="104" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="14" fill="' + fc + '" opacity="' + oTop + '" letter-spacing="2">' + escHtml(dTop) + '</text>'
+            + '<text x="100" y="155" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="52" fill="' + fc + '" opacity="' + oNum + '" letter-spacing="-1">' + escHtml(dNum) + '</text>'
+            + '<text x="100" y="175" text-anchor="middle" font-family="Bebas Neue,Arial,sans-serif" font-size="14" fill="' + fc + '" opacity="' + oBot + '" letter-spacing="2">' + escHtml(dBot) + '</text>';
   }
 
-  var w = showBack ? '180' : '140';
-  var h = showBack ? '207' : '161';
+  var w = showBack ? '200' : '160';
+  var h = showBack ? '215' : '172';
 
-  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 100 115" xmlns="http://www.w3.org/2000/svg">'
-    + (sc ? stripes : '<polygon points="' + BODY + '" fill="' + mc + '" stroke="' + border + '" stroke-width="1"/>')
-    + (sc ? '<polygon points="' + BODY + '" fill="none" stroke="' + border + '" stroke-width="1"/>' : '')
-    + '<polygon points="' + COLLAR + '" fill="' + ac + '"/>'
+  // Clip path needs to exist even without sc for shoulder stripes
+  var clipDef = (!sc && p.shoulderStripes)
+    ? '<defs><clipPath id="cp' + uid + '"><path d="' + bodyD + '"/></clipPath></defs>'
+    : '';
+
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 200 215" xmlns="http://www.w3.org/2000/svg">'
+    + '<defs><filter id="sh' + uid + '"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="' + shadowColor + '" flood-opacity="1"/></filter></defs>'
+    + bodyStripeDefs
+    + ((!sc && p.shoulderStripes) ? clipDef : '')
+    // Main body
+    + '<path d="' + bodyD + '" ' + bodyFill + ' filter="url(#sh' + uid + ')"/>'
+    // Sleeve depth shading
+    + '<path d="' + leftSleeveShadeD  + '" fill="rgba(0,0,0,0.08)"/>'
+    + '<path d="' + rightSleeveShadeD + '" fill="rgba(0,0,0,0.08)"/>'
+    // Shoulder stripes
+    + shoulderStripes
+    // Collar band
+    + '<path d="' + collarD + '" fill="none" stroke="' + ac + '" stroke-width="11" stroke-linecap="round"/>'
+    // Sleeve cuffs
+    + '<path d="' + leftCuffD  + '" fill="none" stroke="' + ac + '" stroke-width="8" stroke-linecap="round"/>'
+    + '<path d="' + rightCuffD + '" fill="none" stroke="' + ac + '" stroke-width="8" stroke-linecap="round"/>'
+    // Flocage
     + flocage
     + '</svg>';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 /* ===== RENDER POPULAR ===== */
