@@ -1181,6 +1181,7 @@
 const products = [
   { id:1,  club:'Manchester United',      name:'Maillot Domicile', season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#DA291C', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/mu-home-1.jpg', carouselImages:['images/mu-home-1.jpg','images/mu-home-2.jpg','images/mu-home-3.jpg','images/mu-home-4.jpg','images/mu-home-5.jpg','images/mu-home-6.jpg','images/mu-home-7.jpg','images/mu-home-8.jpg','images/mu-home-9.jpg'] },
   { id:13, club:'Manchester United',      name:'Maillot Third',    season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#1C1C1C', accentColor:'#DA291C', flocageColor:'#FFFFFF', frontImage:'images/mu-third-1.jpg', carouselImages:['images/mu-third-1.jpg','images/mu-third-2.png'] },
+  { id:201, club:'Santos FC',             name:'Maillot Rétro',    season:'2011-2012', league:'Vintage', type:'vintage', emoji:'⚽', mainColor:'#FFFFFF', accentColor:'#000000', flocageColor:'#000000', frontImage:'images/santos-retro-1.jpg', carouselImages:['images/santos-retro-1.jpg','images/santos-retro-2.webp'] },
   { id:2,  club:'Manchester City',        name:'Maillot Domicile', season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#6CABDD', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/mc-home-1.jpg', carouselImages:['images/mc-home-1.jpg','images/mc-home-2.jpg','images/mc-home-3.jpg','images/mc-home-4.jpg','images/mc-home-5.jpg','images/mc-home-6.jpg','images/mc-home-7.jpg','images/mc-home-8.jpg','images/mc-home-9.jpg'] },
   { id:3,  club:'Paris Saint-Germain',    name:'Maillot Domicile', season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', mainColor:'#004170', accentColor:'#DA291C', flocageColor:'#FFFFFF', frontImage:'images/psg-home-1.jpg', carouselImages:['images/psg-home-1.jpg','images/psg-home-2.jpg','images/psg-home-3.jpg','images/psg-home-4.jpg','images/psg-home-5.jpg','images/psg-home-6.jpg','images/psg-home-7.jpg'] },
   { id:4,  club:'Olympique de Marseille', name:'Maillot Domicile', season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', mainColor:'#F0F4FF', accentColor:'#009BC4', flocageColor:'#009BC4', frontImage:'images/om-home-1.jpg', carouselImages:['images/om-home-1.jpg'] },
@@ -1494,7 +1495,8 @@ function toggleFavPop(e, id) {
 function renderProducts() {
   const grid = document.getElementById('productsGrid');
   const filtered = products.filter(p => {
-    const lm = activeLeague === 'Tous' || p.league === activeLeague;
+    const lm = activeLeague === 'Tous'
+      || (activeLeague === 'Vintage' ? p.type === 'vintage' : p.league === activeLeague);
     const cm = !activeClub || p.club === activeClub;
     return lm && cm;
   });
