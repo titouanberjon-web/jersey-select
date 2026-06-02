@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jersey Select — Né du terrain</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --blue: #2B4EE6;
+      --blue-light: #5b7fff;
+      --green: #00E676;
+      --yellow: #FFD600;
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2236;
+      --text: #e0e6f0;
+      --text-muted: #8899bb;
+      --border: rgba(43,78,230,0.2);
+      --glow-green: 0 0 20px rgba(0,230,118,0.4);
+      --glow-blue: 0 0 20px rgba(43,78,230,0.4);
+    }
+
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      background-image:
+        linear-gradient(rgba(43,78,230,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(43,78,230,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 3px; }
+
+    /* ===== TYPOGRAPHY ===== */
+    h1, h2, h3, .bebas { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity:1; transform:scale(1);    box-shadow:0 0 0 0 rgba(0,230,118,0.7); }
+      50%       { opacity:.8; transform:scale(1.15); box-shadow:0 0 0 6px rgba(0,230,118,0); }
+    }
+    @keyframes toastIn {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp .7s ease both; }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      position: fixed; top:0; left:0; right:0; z-index:1000;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 2rem; height:64px;
+      background: rgba(10,14,26,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family:'Bebas Neue',sans-serif; font-size:1.5rem; letter-spacing:.1em;
+      color:var(--text); text-decoration:none;
+      display:flex; align-items:center; gap:.5rem;
+    }
+    .logo-dot {
+      width:8px; height:8px; background:var(--green); border-radius:50%;
+      animation: pulse 2s infinite; box-shadow:var(--glow-green);
+      flex-shrink:0;
+    }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a {
+      font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.08em;
+      color:var(--text-muted); text-decoration:none; transition:color .2s;
+    }
+    .nav-links a:hover { color:var(--green); }
+    .cart-btn {
+      background:none; border:2px solid var(--blue); color:var(--text);
+      cursor:pointer; font-family:'Bebas Neue',sans-serif; font-size:1rem;
+      padding:.4rem 1rem; border-radius:4px;
+      display:flex; align-items:center; gap:.5rem; transition:all .2s; letter-spacing:.05em;
+    }
+    .cart-btn:hover { background:var(--blue); }
+    .cart-count {
+      background:var(--green); color:#000; font-size:.7rem; font-weight:700;
+      width:18px; height:18px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Rajdhani',sans-serif;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-primary {
+      background:var(--green); color:#000;
+      font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.1em;
+      border:none; cursor:pointer; padding:.75rem 2rem;
+      clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+      transition:all .2s; text-decoration:none; display:inline-block;
+    }
+    .btn-primary:hover { background:#00ff88; box-shadow:var(--glow-green); }
+    .btn-outline {
+      background:transparent; color:var(--text);
+      font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.1em;
+      border:2px solid rgba(255,255,255,.3); cursor:pointer; padding:.75rem 2rem;
+      text-decoration:none; display:inline-block;
+      clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+      transition:all .2s;
+    }
+    .btn-outline:hover { border-color:var(--text); }
+
+    /* ===== SECTION HEADER ===== */
+    .section-header { text-align:center; margin-bottom:3rem; }
+    .section-tag {
+      font-family:'Bebas Neue',sans-serif; font-size:.85rem; letter-spacing:.3em;
+      color:var(--green); text-transform:uppercase; display:block; margin-bottom:.5rem;
+    }
+    .section-title { font-size:3rem; line-height:1; }
+
+    /* ===== BANNER ===== */
+    #banner {
+      min-height:100vh; display:flex; align-items:center;
+      padding:100px 2rem 4rem; position:relative; overflow:hidden;
+    }
+    .banner-watermark {
+      position:absolute; right:-2%; top:50%; transform:translateY(-50%);
+      font-family:'Bebas Neue',sans-serif; font-size:30vw;
+      color:rgba(43,78,230,.05); line-height:1; pointer-events:none;
+      user-select:none; white-space:nowrap;
+    }
+    .banner-content { position:relative; z-index:2; max-width:900px; margin:0 auto; }
+    .banner-badge {
+      display:inline-block;
+      background:rgba(0,230,118,.1); border:1px solid var(--green);
+      color:var(--green); font-size:.85rem; letter-spacing:.1em;
+      padding:.4rem 1rem; border-radius:20px; margin-bottom:2rem;
+      font-family:'Bebas Neue',sans-serif;
+    }
+    .banner-h1 { font-size:clamp(5rem,15vw,12rem); line-height:.9; margin-bottom:1rem; }
+    .banner-h1 .word1 { color:var(--blue-light); display:block; }
+    .banner-h1 .word2 {
+      display:block; -webkit-text-stroke:2px var(--green); color:transparent;
+      text-shadow:0 0 40px rgba(0,230,118,.3);
+    }
+    .banner-slogan { font-size:1.4rem; color:var(--text-muted); margin-bottom:2.5rem; font-weight:500; }
+    .banner-ctas { display:flex; gap:1rem; margin-bottom:3rem; flex-wrap:wrap; }
+    .banner-stats { display:flex; gap:3rem; flex-wrap:wrap; }
+    .stat-number { font-family:'Bebas Neue',sans-serif; font-size:2.5rem; color:var(--green); line-height:1; }
+    .stat-label { font-size:.85rem; color:var(--text-muted); letter-spacing:.05em; }
+
+    .float-badge {
+      position:absolute; z-index:3;
+      background:var(--surface2); border:1px solid var(--border);
+      padding:.6rem 1rem; border-radius:8px;
+      font-family:'Bebas Neue',sans-serif; font-size:.9rem; letter-spacing:.08em;
+    }
+    .float-badge-1 { top:20%; right:10%; animation:float 4s ease-in-out infinite; border-left:3px solid var(--green); color:var(--green); }
+    .float-badge-2 { bottom:25%; right:15%; animation:float 4s ease-in-out infinite 2s; border-left:3px solid var(--blue); color:var(--blue-light); }
+
+    /* ===== TRUST BAND ===== */
+    #trust {
+      background:var(--surface);
+      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+      padding:2rem;
+    }
+    .trust-grid {
+      display:grid; grid-template-columns:repeat(4,1fr);
+      max-width:1200px; margin:0 auto;
+    }
+    .trust-item {
+      padding:1.5rem 2rem; text-align:center;
+      border-right:1px solid var(--border);
+    }
+    .trust-item:last-child { border-right:none; }
+    .trust-icon { font-size:2rem; margin-bottom:.5rem; }
+    .trust-title { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.05em; margin-bottom:.3rem; }
+    .trust-desc { font-size:.85rem; color:var(--text-muted); }
+
+    /* ===== GENERIC SECTION ===== */
+    section { padding:5rem 2rem; }
+    .container { max-width:1200px; margin:0 auto; }
+
+    /* ===== LEAGUES ===== */
+    .leagues-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+    .league-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:12px; padding:1.5rem; cursor:pointer;
+      transition:all .2s; text-align:center;
+    }
+    .league-card:hover {
+      border-color:var(--blue); background:var(--surface2);
+      transform:translateY(-4px); box-shadow:var(--glow-blue);
+    }
+    .league-flag { font-size:2.5rem; margin-bottom:.5rem; display:block; }
+    .league-name { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:.05em; }
+    .league-sub { font-size:.8rem; color:var(--text-muted); }
+
+    /* ===== CATALOGUE ===== */
+    #catalogue { background:var(--bg); }
+    .catalogue-controls { margin-bottom:2rem; }
+    .club-picker { display:flex; gap:.5rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap; }
+    .club-picker select {
+      background:var(--surface); border:1px solid var(--border);
+      color:var(--text); padding:.5rem 1rem;
+      font-family:'Rajdhani',sans-serif; font-size:.95rem;
+      border-radius:4px; cursor:pointer; flex:1; min-width:200px;
+    }
+    .club-picker select option { background:var(--surface2); }
+    .btn-add-club {
+      background:var(--blue); color:white; border:none;
+      padding:.5rem 1rem; font-family:'Bebas Neue',sans-serif;
+      font-size:1rem; letter-spacing:.05em; cursor:pointer;
+      border-radius:4px; transition:background .2s;
+    }
+    .btn-add-club:hover { background:var(--blue-light); }
+    .chips-container { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.5rem; }
+    .chip {
+      background:rgba(43,78,230,.2); border:1px solid var(--blue);
+      color:var(--blue-light); padding:.3rem .7rem; border-radius:20px;
+      font-size:.85rem; display:flex; align-items:center; gap:.4rem;
+    }
+    .chip-remove {
+      cursor:pointer; color:var(--text-muted); font-size:1rem;
+      background:none; border:none; padding:0; line-height:1; transition:color .2s;
+    }
+    .chip-remove:hover { color:#ff4444; }
+    .filter-pills { display:flex; gap:.5rem; flex-wrap:wrap; }
+    .pill {
+      background:var(--surface); border:1px solid var(--border);
+      color:var(--text-muted); padding:.4rem 1rem; border-radius:20px;
+      font-family:'Bebas Neue',sans-serif; font-size:.9rem; letter-spacing:.05em;
+      cursor:pointer; transition:all .2s;
+    }
+    .pill:hover, .pill.active { background:var(--blue); border-color:var(--blue); color:white; box-shadow:var(--glow-blue); }
+
+    /* ===== PRODUCTS GRID ===== */
+    .products-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:2rem; }
+    .product-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:12px; overflow:hidden; transition:all .3s;
+    }
+    .product-card:hover {
+      border-color:rgba(43,78,230,.5);
+      transform:translateY(-6px); box-shadow:0 12px 40px rgba(0,0,0,.4);
+    }
+    .product-img {
+      position:relative; height:200px; background:var(--surface2);
+      display:flex; align-items:center; justify-content:center; overflow:hidden;
+    }
+    .product-emoji { font-size:5rem; }
+    .badge-rare {
+      position:absolute; top:.75rem; left:.75rem;
+      border:1px solid var(--yellow); color:var(--yellow);
+      font-family:'Bebas Neue',sans-serif; font-size:.8rem;
+      letter-spacing:.1em; padding:.2rem .6rem; border-radius:4px;
+    }
+    .product-actions {
+      position:absolute; bottom:0; left:0; right:0;
+      display:flex; opacity:0; transition:opacity .2s;
+    }
+    .product-card:hover .product-actions { opacity:1; }
+    .btn-customize {
+      flex:1; background:var(--blue); color:white; border:none;
+      padding:.75rem .5rem; font-family:'Bebas Neue',sans-serif;
+      font-size:.9rem; letter-spacing:.05em; cursor:pointer; transition:background .2s;
+    }
+    .btn-customize:hover { background:var(--blue-light); }
+    .btn-fav {
+      background:rgba(10,14,26,.85); color:var(--text-muted);
+      border:none; padding:.75rem 1rem; font-size:1.2rem;
+      cursor:pointer; transition:all .2s;
+    }
+    .btn-fav:hover, .btn-fav.active { color:#ff4081; }
+    .product-info { padding:1rem 1.2rem; }
+    .product-league-club { font-size:.75rem; color:var(--blue-light); text-transform:uppercase; letter-spacing:.1em; margin-bottom:.3rem; }
+    .product-name { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:.05em; text-transform:uppercase; margin-bottom:.2rem; }
+    .product-season { font-size:.8rem; color:var(--text-muted); margin-bottom:.5rem; }
+    .product-price { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; color:var(--green); }
+    .product-price-note { font-size:.75rem; color:var(--text-muted); }
+    .no-results { text-align:center; padding:3rem; color:var(--text-muted); font-size:1.1rem; grid-column:1/-1; }
+
+    /* ===== INTERNATIONAL ===== */
+    #international { background:var(--surface); }
+    .int-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+    .int-card {
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:12px; padding:1.5rem;
+      cursor:pointer; transition:all .2s; text-align:center;
+    }
+    .int-card:hover { border-color:var(--green); box-shadow:var(--glow-green); transform:translateY(-4px); }
+    .int-flag { font-size:2.5rem; margin-bottom:.5rem; display:block; }
+    .int-name { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:.05em; }
+
+    /* ===== ABOUT ===== */
+    #apropos { background:var(--bg); }
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:center; }
+    .about-visual {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:16px; height:350px;
+      display:flex; align-items:center; justify-content:center; font-size:5rem;
+      animation:float 5s ease-in-out infinite;
+      box-shadow:var(--glow-blue), inset 0 0 60px rgba(43,78,230,.1);
+    }
+    .about-text h2 { font-size:2.5rem; margin-bottom:1rem; }
+    .about-text p { color:var(--text-muted); line-height:1.7; margin-bottom:1.5rem; font-size:1rem; }
+    .about-quote {
+      border-left:3px solid var(--green); padding:1rem 1.5rem;
+      background:rgba(0,230,118,.05); border-radius:0 8px 8px 0;
+      font-style:italic; color:var(--text); margin-bottom:1rem; line-height:1.6;
+    }
+
+    /* ===== REVIEWS ===== */
+    #avis { background:var(--surface); }
+    .reviews-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .review-card { background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:1.5rem; }
+    .review-stars { color:var(--yellow); font-size:1.1rem; margin-bottom:.5rem; }
+    .review-text { color:var(--text-muted); font-style:italic; margin-bottom:1rem; line-height:1.6; }
+    .review-author { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.05em; }
+    .review-city { font-size:.8rem; color:var(--text-muted); }
+
+    /* ===== FAQ ===== */
+    #faq { background:var(--bg); }
+    .faq-list { max-width:800px; margin:0 auto; }
+    .faq-item { border-bottom:1px solid var(--border); }
+    .faq-q {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:1.25rem 0; cursor:pointer; font-size:1.05rem; font-weight:600;
+      transition:color .2s;
+    }
+    .faq-q:hover { color:var(--green); }
+    .faq-arrow { font-size:1.2rem; color:var(--blue-light); transition:transform .3s; }
+    .faq-item.open .faq-arrow { transform:rotate(180deg); }
+    .faq-a {
+      max-height:0; overflow:hidden; transition:max-height .35s ease, padding .35s;
+      color:var(--text-muted); line-height:1.7; font-size:.95rem;
+    }
+    .faq-item.open .faq-a { max-height:300px; padding-bottom:1.25rem; }
+
+    /* ===== NEWSLETTER ===== */
+    #newsletter {
+      background:linear-gradient(135deg,var(--surface2) 0%,rgba(43,78,230,.15) 100%);
+      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    }
+    .newsletter-inner { text-align:center; max-width:600px; margin:0 auto; }
+    .newsletter-inner h2 { font-size:2.5rem; margin-bottom:.5rem; }
+    .newsletter-inner p { color:var(--text-muted); margin-bottom:2rem; }
+    .newsletter-form { display:flex; gap:.75rem; }
+    .newsletter-form input {
+      flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text);
+      padding:.75rem 1rem; border-radius:4px;
+      font-family:'Rajdhani',sans-serif; font-size:1rem; transition:border-color .2s;
+    }
+    .newsletter-form input:focus { outline:none; border-color:var(--green); }
+
+    /* ===== FOOTER ===== */
+    footer { background:var(--surface); padding:4rem 2rem 2rem; border-top:1px solid var(--border); }
+    .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:3rem; max-width:1200px; margin:0 auto 3rem; }
+    .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:.1em; margin-bottom:1rem; color:var(--text); display:flex; align-items:center; gap:.5rem; }
+    .footer-col h4 { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.1em; color:var(--green); margin-bottom:1rem; }
+    .footer-col p { color:var(--text-muted); font-size:.9rem; line-height:1.7; }
+    .footer-links { list-style:none; }
+    .footer-links li { margin-bottom:.5rem; }
+    .footer-links a { color:var(--text-muted); text-decoration:none; font-size:.9rem; transition:color .2s; }
+    .footer-links a:hover { color:var(--green); }
+    .footer-bottom {
+      display:flex; justify-content:space-between; align-items:center;
+      border-top:1px solid var(--border); padding-top:1.5rem;
+      max-width:1200px; margin:0 auto; color:var(--text-muted); font-size:.85rem;
+    }
+    .social-links { display:flex; gap:1rem; }
+    .social-link { color:var(--text-muted); text-decoration:none; font-size:.85rem; transition:color .2s; }
+    .social-link:hover { color:var(--green); }
+
+    /* ===== MODAL OVERLAY ===== */
+    .modal-overlay {
+      position:fixed; inset:0; z-index:2000;
+      background:rgba(0,0,0,.8); backdrop-filter:blur(4px);
+      display:none; align-items:center; justify-content:center; padding:1rem;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:16px; width:100%; max-width:600px;
+      max-height:90vh; overflow-y:auto; position:relative;
+    }
+    .modal-header {
+      padding:1.5rem; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+      position:sticky; top:0; background:var(--surface); z-index:1;
+    }
+    .modal-title { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; letter-spacing:.05em; }
+    .modal-close { background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer; line-height:1; transition:color .2s; }
+    .modal-close:hover { color:var(--text); }
+    .modal-body { padding:1.5rem; }
+
+    /* ===== CUSTOM MODAL ===== */
+    .custom-step { margin-bottom:1.5rem; }
+    .custom-step-title { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.05em; color:var(--green); margin-bottom:.75rem; }
+    .radio-group { display:flex; gap:1rem; }
+    .radio-option {
+      flex:1; background:var(--surface2); border:2px solid var(--border);
+      border-radius:8px; padding:1rem; cursor:pointer; transition:all .2s; text-align:center;
+    }
+    .radio-option:hover { border-color:var(--blue); }
+    .radio-option.selected { border-color:var(--green); background:rgba(0,230,118,.05); }
+    .radio-label { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; }
+    .radio-price { color:var(--green); font-size:.9rem; }
+    select.form-select {
+      width:100%; background:var(--surface2); border:1px solid var(--border);
+      color:var(--text); padding:.75rem 1rem; border-radius:4px;
+      font-family:'Rajdhani',sans-serif; font-size:1rem; cursor:pointer;
+    }
+    select.form-select option { background:var(--surface2); }
+    select.form-select:focus { outline:none; border-color:var(--green); }
+    .checkbox-row {
+      display:flex; align-items:center; gap:.75rem; padding:.75rem;
+      background:var(--surface2); border-radius:8px; margin-bottom:.5rem;
+      cursor:pointer; border:1px solid transparent; transition:border-color .2s;
+    }
+    .checkbox-row:hover { border-color:var(--border); }
+    .checkbox-row input[type="checkbox"] { width:16px; height:16px; accent-color:var(--green); cursor:pointer; }
+    .checkbox-label { font-size:.95rem; flex:1; }
+    .checkbox-price { color:var(--green); font-size:.85rem; font-weight:600; }
+    .sub-field { margin-left:2rem; margin-top:.5rem; display:none; }
+    .sub-field.visible { display:block; }
+    .sub-checkbox-row { display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; }
+    .form-input {
+      width:100%; background:var(--bg); border:1px solid var(--border);
+      color:var(--text); padding:.5rem .75rem; border-radius:4px;
+      font-family:'Rajdhani',sans-serif; font-size:.95rem;
+      transition:border-color .2s; margin-top:.25rem;
+    }
+    .form-input:focus { outline:none; border-color:var(--green); }
+
+    /* Jersey back preview */
+    .jersey-preview { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:1.5rem; text-align:center; margin:1.5rem 0; }
+    .jersey-preview-title { font-family:'Bebas Neue',sans-serif; font-size:.9rem; color:var(--text-muted); letter-spacing:.15em; margin-bottom:1rem; }
+    .jersey-back {
+      background:linear-gradient(135deg,var(--blue) 0%,#1a3099 100%);
+      border-radius:12px; padding:1.5rem 2rem;
+      min-width:160px; min-height:160px;
+      display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:.25rem;
+    }
+    .preview-text-top, .preview-text-bottom { font-family:'Bebas Neue',sans-serif; font-size:.9rem; letter-spacing:.15em; min-height:1.2em; transition:all .2s; }
+    .preview-number { font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:.05em; min-height:3.5rem; transition:all .2s; }
+    .preview-muted { color:rgba(255,255,255,.25); }
+    .preview-active { color:white; }
+
+    /* Price summary */
+    .price-summary { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:1rem 1.2rem; margin-bottom:1.5rem; }
+    .price-line { display:flex; justify-content:space-between; font-size:.95rem; padding:.3rem 0; color:var(--text-muted); }
+    .price-divider { border:none; border-top:1px solid var(--border); margin:.5rem 0; }
+    .price-total { display:flex; justify-content:space-between; font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:.05em; }
+    .price-total .amount { color:var(--green); }
+    .error-msg { color:#ff4444; font-size:.85rem; margin-top:.3rem; display:none; }
+
+    /* ===== CART PANEL ===== */
+    .cart-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1400; display:none; }
+    .cart-overlay.open { display:block; }
+    .cart-panel {
+      position:fixed; right:-440px; top:0; bottom:0; width:440px;
+      background:var(--surface); z-index:1500;
+      border-left:1px solid var(--border); transition:right .35s ease;
+      display:flex; flex-direction:column;
+    }
+    .cart-panel.open { right:0; }
+    .cart-panel-header {
+      padding:1.5rem; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .cart-panel-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:.05em; }
+    .cart-items { flex:1; overflow-y:auto; padding:1rem; }
+    .cart-item {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:8px; padding:1rem; margin-bottom:.75rem;
+      display:flex; gap:.75rem; align-items:flex-start;
+    }
+    .cart-item-emoji { font-size:2rem; flex-shrink:0; }
+    .cart-item-info { flex:1; }
+    .cart-item-name { font-weight:600; margin-bottom:.2rem; font-size:.95rem; }
+    .cart-item-details { font-size:.8rem; color:var(--text-muted); line-height:1.6; }
+    .cart-item-price { color:var(--green); font-family:'Bebas Neue',sans-serif; font-size:1.2rem; margin-top:.3rem; }
+    .cart-item-remove { background:none; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer; padding:0; transition:color .2s; flex-shrink:0; }
+    .cart-item-remove:hover { color:#ff4444; }
+    .cart-empty { text-align:center; padding:3rem 1rem; color:var(--text-muted); font-size:1rem; }
+    .cart-footer { padding:1.5rem; border-top:1px solid var(--border); }
+    .cart-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; }
+    .cart-total-amount { color:var(--green); font-size:1.6rem; }
+    .btn-order { width:100%; background:var(--green); color:#000; font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.1em; border:none; padding:1rem; cursor:pointer; border-radius:4px; transition:background .2s; }
+    .btn-order:hover { background:#00ff88; }
+
+    /* ===== TOAST ===== */
+    .toast-container { position:fixed; bottom:2rem; right:2rem; z-index:3000; display:flex; flex-direction:column; gap:.5rem; }
+    .toast {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:8px; padding:1rem 1.25rem;
+      display:flex; align-items:center; gap:.75rem;
+      animation:toastIn .3s ease; min-width:300px;
+      box-shadow:0 8px 32px rgba(0,0,0,.4);
+    }
+    .toast.success { border-left:3px solid var(--green); }
+    .toast.error   { border-left:3px solid #ff4444; }
+    .toast-text { font-size:.9rem; }
+
+    /* ===== LEGAL MODAL ===== */
+    .legal-modal { max-width:700px; }
+    .legal-content h3 { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:.05em; color:var(--green); margin:1.5rem 0 .5rem; }
+    .legal-content h3:first-child { margin-top:0; }
+    .legal-content p { color:var(--text-muted); line-height:1.7; font-size:.9rem; margin-bottom:.5rem; }
+
+    /* ===== RESPONSIVE ===== */
+    @media(max-width:1000px) {
+      .footer-grid { grid-template-columns:1fr 1fr; }
+    }
+    @media(max-width:900px) {
+      .leagues-grid { grid-template-columns:repeat(2,1fr); }
+      .products-grid { grid-template-columns:repeat(2,1fr); }
+      .trust-grid { grid-template-columns:repeat(2,1fr); }
+      .trust-item:nth-child(2) { border-right:none; }
+      .trust-item:nth-child(3) { border-right:1px solid var(--border); }
+      .about-grid { grid-template-columns:1fr; }
+      .int-grid { grid-template-columns:repeat(2,1fr); }
+      .reviews-grid { grid-template-columns:repeat(2,1fr); }
+    }
+    @media(max-width:600px) {
+      .nav-links { display:none; }
+      .products-grid { grid-template-columns:1fr; }
+      .trust-grid { grid-template-columns:1fr; }
+      .trust-item { border-right:none; border-bottom:1px solid var(--border); }
+      .trust-item:last-child { border-bottom:none; }
+      .reviews-grid { grid-template-columns:1fr; }
+      .footer-grid { grid-template-columns:1fr; }
+      .cart-panel { width:100%; right:-100%; }
+      .banner-h1 { font-size:clamp(4rem,20vw,8rem); }
+      .banner-stats { gap:1.5rem; }
+      .float-badge { display:none; }
+      .radio-group { flex-direction:column; }
+      .newsletter-form { flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <a href="#banner" class="nav-logo">
+    <span class="logo-dot"></span>
+    Jersey Select
+  </a>
+  <ul class="nav-links">
+    <li><a href="#ligues">Ligues</a></li>
+    <li><a href="#catalogue">Catalogue</a></li>
+    <li><a href="#international">International</a></li>
+    <li><a href="#apropos">À propos</a></li>
+    <li><a href="#avis">Avis</a></li>
+  </ul>
+  <button class="cart-btn" onclick="openCart()">
+    🛒 Panier <span class="cart-count" id="cartCount">0</span>
+  </button>
+</nav>
+
+<!-- ===== BANNER ===== -->
+<section id="banner">
+  <div class="banner-watermark">JS</div>
+  <div class="banner-content fade-up">
+    <div class="banner-badge">📦 Stock disponible · Expédition sous 2–3 semaines</div>
+    <h1 class="banner-h1">
+      <span class="word1">Jersey</span>
+      <span class="word2">Select</span>
+    </h1>
+    <p class="banner-slogan">— Né du terrain</p>
+    <div class="banner-ctas">
+      <a href="#catalogue" class="btn-primary">Voir le catalogue</a>
+      <a href="#apropos" class="btn-outline">Notre histoire</a>
+    </div>
+    <div class="banner-stats">
+      <div class="stat-item">
+        <div class="stat-number">200+</div>
+        <div class="stat-label">Maillots</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">4.9★</div>
+        <div class="stat-label">Note Vinted</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Authentiques</div>
+      </div>
+    </div>
+  </div>
+  <div class="float-badge float-badge-1">⏱ 2–3 semaines</div>
+  <div class="float-badge float-badge-2">✓ Certifié</div>
+</section>
+
+<!-- ===== TRUST BAND ===== -->
+<div id="trust">
+  <div class="trust-grid">
+    <div class="trust-item">
+      <div class="trust-icon">🏅</div>
+      <div class="trust-title">100% Authentiques</div>
+      <div class="trust-desc">Chaque maillot vérifié avant envoi</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">🚚</div>
+      <div class="trust-title">Expédition 2–3 semaines</div>
+      <div class="trust-desc">Email de suivi inclus</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">🔄</div>
+      <div class="trust-title">Retours 14 jours</div>
+      <div class="trust-desc">Articles non floqués uniquement</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon">💬</div>
+      <div class="trust-title">SAV réactif</div>
+      <div class="trust-desc">Réponse sous 24h</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LIGUES ===== -->
+<section id="ligues">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Parcourir par ligue</span>
+      <h2 class="section-title">Les <span style="color:var(--green)">Ligues</span></h2>
+    </div>
+    <div class="leagues-grid">
+      <div class="league-card" onclick="filterByLeague('Ligue 1')">
+        <span class="league-flag">🇫🇷</span>
+        <div class="league-name">Ligue 1</div>
+        <div class="league-sub">France</div>
+      </div>
+      <div class="league-card" onclick="filterByLeague('Premier League')">
+        <span class="league-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+        <div class="league-name">Premier League</div>
+        <div class="league-sub">Angleterre</div>
+      </div>
+      <div class="league-card" onclick="filterByLeague('Liga')">
+        <span class="league-flag">🇪🇸</span>
+        <div class="league-name">Liga</div>
+        <div class="league-sub">Espagne</div>
+      </div>
+      <div class="league-card" onclick="filterByLeague('Serie A')">
+        <span class="league-flag">🇮🇹</span>
+        <div class="league-name">Serie A</div>
+        <div class="league-sub">Italie</div>
+      </div>
+      <div class="league-card" onclick="filterByLeague('Bundesliga')">
+        <span class="league-flag">🇩🇪</span>
+        <div class="league-name">Bundesliga</div>
+        <div class="league-sub">Allemagne</div>
+      </div>
+      <div class="league-card" onclick="filterByLeague('Vintage')">
+        <span class="league-flag">🏆</span>
+        <div class="league-name">Vintage</div>
+        <div class="league-sub">Classiques</div>
+      </div>
+      <div class="league-card" onclick="filterByLeague('International')">
+        <span class="league-flag">🌍</span>
+        <div class="league-name">International</div>
+        <div class="league-sub">Sélections</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CATALOGUE ===== -->
+<section id="catalogue">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Notre sélection</span>
+      <h2 class="section-title">Le <span style="color:var(--green)">Catalogue</span></h2>
+    </div>
+
+    <!-- Club Picker -->
+    <div class="catalogue-controls">
+      <div class="club-picker">
+        <select id="clubSelect">
+          <option value="">-- Filtrer par club --</option>
+          <option>FC Barcelone</option>
+          <option>Real Madrid</option>
+          <option>Paris Saint-Germain</option>
+          <option>Manchester City</option>
+          <option>Arsenal</option>
+          <option>Liverpool</option>
+          <option>Juventus</option>
+          <option>AC Milan</option>
+          <option>Bayern Munich</option>
+          <option>Borussia Dortmund</option>
+          <option>Olympique Lyonnais</option>
+          <option>AS Monaco</option>
+          <option>Atlético Madrid</option>
+          <option>AS Roma</option>
+          <option>Ajax Amsterdam</option>
+          <option>Inter Milan</option>
+        </select>
+        <button class="btn-add-club" onclick="addClubChip()">+ Ajouter</button>
+      </div>
+      <div class="chips-container" id="chipsContainer"></div>
+
+      <!-- League filter pills -->
+      <div class="filter-pills" style="margin-top:1rem;">
+        <button class="pill active" data-league="Tous"           onclick="setPill(this)">Tous</button>
+        <button class="pill"        data-league="Ligue 1"        onclick="setPill(this)">Ligue 1</button>
+        <button class="pill"        data-league="Premier League" onclick="setPill(this)">Premier League</button>
+        <button class="pill"        data-league="Liga"           onclick="setPill(this)">Liga</button>
+        <button class="pill"        data-league="Serie A"        onclick="setPill(this)">Serie A</button>
+        <button class="pill"        data-league="Bundesliga"     onclick="setPill(this)">Bundesliga</button>
+        <button class="pill"        data-league="Vintage"        onclick="setPill(this)">Vintage</button>
+        <button class="pill"        data-league="International"  onclick="setPill(this)">International</button>
+      </div>
+    </div>
+
+    <!-- Products grid -->
+    <div class="products-grid" id="productsGrid"></div>
+  </div>
+</section>
+
+<!-- ===== INTERNATIONAL ===== -->
+<section id="international">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Sélections nationales</span>
+      <h2 class="section-title">Section <span style="color:var(--green)">International</span></h2>
+    </div>
+    <div class="int-grid">
+      <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇫🇷</span><div class="int-name">France</div></div>
+      <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇧🇷</span><div class="int-name">Brésil</div></div>
+      <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇦🇷</span><div class="int-name">Argentine</div></div>
+      <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇵🇹</span><div class="int-name">Portugal</div></div>
+      <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇩🇪</span><div class="int-name">Allemagne</div></div>
+      <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇪🇸</span><div class="int-name">Espagne</div></div>
+      <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><div class="int-name">Angleterre</div></div>
+      <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇮🇹</span><div class="int-name">Italie</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== À PROPOS ===== -->
+<section id="apropos">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-visual">⚽</div>
+      <div class="about-text">
+        <h2>Notre <span style="color:var(--green)">histoire</span></h2>
+        <p>Jersey Select, c'est une passion avant tout. Depuis toujours accroché aux matchs et aux équipements, j'ai commencé à revendre sur Vinted avec une conviction simple : chaque maillot raconte une histoire.</p>
+        <div class="about-quote">
+          "Chaque maillot que je vends, je l'ai d'abord voulu pour moi."
+        </div>
+        <p>Aujourd'hui je franchis le cap du e-commerce pour vous offrir une boutique sérieuse, transparente et certifiée. Tous les maillots sont vérifiés, photographiés et expédiés avec soin depuis Besançon.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== AVIS ===== -->
+<section id="avis">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Ce qu'ils en disent</span>
+      <h2 class="section-title">Avis <span style="color:var(--green)">Clients</span></h2>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Maillot reçu rapidement, emballage soigné, authentique à 100%."</p>
+        <div class="review-author">Lucas M.</div>
+        <div class="review-city">Paris</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Troisième commande, toujours au top. Je recommande sans hésiter."</p>
+        <div class="review-author">Théo R.</div>
+        <div class="review-city">Lyon</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★☆</div>
+        <p class="review-text">"Très bon service, livraison dans les délais annoncés."</p>
+        <div class="review-author">Camille D.</div>
+        <div class="review-city">Bordeaux</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Questions fréquentes</span>
+      <h2 class="section-title">FAQ</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Comment garantissez-vous l'authenticité ?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">Chaque maillot est inspecté avant mise en vente : étiquettes, coutures, flocage, hologrammes Nike / Adidas / Puma. Je ne vends que ce que je certifie moi-même authentique.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Quels sont les délais de livraison ?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">Les commandes sont expédiées sous 2 à 3 semaines après confirmation de paiement. Ce délai inclut la préparation et le temps de transit. Il peut être allongé en période de forte demande. Un email de suivi vous est envoyé dès l'expédition.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Puis-je retourner un maillot ?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">Oui, sous 14 jours après réception pour les articles non floqués, non portés, dans leur état d'origine. Les maillots floqués à la demande ne sont pas repris, sauf défaut de fabrication constaté. Réclamation à faire sous 48h par email.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Comment choisir ma taille ?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">Les maillots de foot taillent généralement juste. Entre deux tailles, prenez la plus grande. N'hésitez pas à me contacter avant commande pour un conseil personnalisé. Tailles disponibles : S / M / L / XL / XXL.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Puis-je modifier ou annuler ma commande ?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">Oui, dans les 72 heures suivant le paiement. Passé ce délai, la commande est en cours de traitement et ne peut plus être modifiée.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== NEWSLETTER ===== -->
+<section id="newsletter">
+  <div class="container">
+    <div class="newsletter-inner">
+      <h2>Nouveaux drops <span style="color:var(--green)">en avant-première</span></h2>
+      <p>Inscrivez-vous pour recevoir les nouveautés et offres exclusives en premier.</p>
+      <form class="newsletter-form" onsubmit="submitNewsletter(event)">
+        <input type="email" id="newsletterEmail" placeholder="votre@email.com" autocomplete="email">
+        <button type="submit" class="btn-primary">S'inscrire</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">
+        <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;flex-shrink:0;"></span>
+        Jersey Select
+      </div>
+      <p>Passionné de foot, je sélectionne des maillots authentiques depuis Besançon. Né du terrain, fait pour les vrais.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Boutique</h4>
+      <ul class="footer-links">
+        <li><a href="#catalogue">Nouveautés</a></li>
+        <li><a href="#catalogue">Domicile</a></li>
+        <li><a href="#catalogue">Extérieur</a></li>
+        <li><a href="#catalogue">Vintage</a></li>
+        <li><a href="#international">International</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Infos</h4>
+      <ul class="footer-links">
+        <li><a href="#apropos">À propos</a></li>
+        <li><a href="#faq">Livraison &amp; retours</a></li>
+        <li><a href="javascript:void(0)" onclick="openLegal('mentions')">Mentions légales</a></li>
+        <li><a href="javascript:void(0)" onclick="openLegal('cgv')">CGV</a></li>
+        <li><a href="javascript:void(0)" onclick="openLegal('privacy')">Politique de confidentialité</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul class="footer-links">
+        <li><a href="mailto:jerseyselect@mail.com">jerseyselect@mail.com</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Vinted</a></li>
+        <li><a href="#">WhatsApp</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Jersey Select — Tous droits réservés · Besançon, France</span>
+    <div class="social-links">
+      <a href="#" class="social-link">Instagram</a>
+      <a href="#" class="social-link">Vinted</a>
+      <a href="#" class="social-link">WhatsApp</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== CART OVERLAY + PANEL ===== -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-panel-header">
+    <span class="cart-panel-title">🛒 Mon Panier</span>
+    <button class="modal-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty">Votre panier est vide.</div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-total">
+      <span>Total</span>
+      <span class="cart-total-amount" id="cartTotal">0 €</span>
+    </div>
+    <button class="btn-order" onclick="showToast('✅ Commande en cours de traitement !','success')">Commander maintenant →</button>
+  </div>
+</div>
+
+<!-- ===== CUSTOMIZATION MODAL ===== -->
+<div class="modal-overlay" id="customModal" onclick="handleModalOverlayClick(event,'customModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="customModalTitle">Personnaliser &amp; Commander</span>
+      <button class="modal-close" onclick="closeCustomModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Étape 1 : Version -->
+      <div class="custom-step" id="stepVersion">
+        <div class="custom-step-title">1 — Version</div>
+        <div class="radio-group">
+          <div class="radio-option selected" id="optStandard" onclick="selectVersion('standard',this)">
+            <div class="radio-label">Standard</div>
+            <div class="radio-price">16 €</div>
+          </div>
+          <div class="radio-option" id="optPlayer" onclick="selectVersion('player',this)">
+            <div class="radio-label">Player</div>
+            <div class="radio-price">21 €</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étape 2 : Taille -->
+      <div class="custom-step">
+        <div class="custom-step-title">2 — Taille <span style="color:#ff4444;font-size:.8rem;">*</span></div>
+        <select class="form-select" id="sizeSelect">
+          <option value="">— Choisir une taille —</option>
+          <option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option>
+        </select>
+        <div class="error-msg" id="sizeError">Veuillez choisir une taille.</div>
+      </div>
+
+      <!-- Étape 3 : Flocage -->
+      <div class="custom-step">
+        <div class="custom-step-title">3 — Flocage (optionnel)</div>
+
+        <div class="checkbox-row" onclick="toggleCB('chkNumber')">
+          <input type="checkbox" id="chkNumber" onchange="updatePrice();toggleNumberField()">
+          <span class="checkbox-label">Ajouter un numéro</span>
+          <span class="checkbox-price">+2 €</span>
+        </div>
+        <div class="sub-field" id="numberField">
+          <input type="text" class="form-input" id="inputNumber" placeholder="Ex : 10 (max 2 chiffres)" maxlength="2" oninput="updatePreview()">
+          <div class="error-msg" id="numberError">Numéro invalide (entre 1 et 99, chiffres uniquement).</div>
+        </div>
+
+        <div class="checkbox-row" onclick="toggleCB('chkText')">
+          <input type="checkbox" id="chkText" onchange="updatePrice();toggleTextField()">
+          <span class="checkbox-label">Ajouter du texte</span>
+          <span class="checkbox-price">+2 €</span>
+        </div>
+        <div class="sub-field" id="textField">
+          <div class="sub-checkbox-row">
+            <input type="checkbox" id="chkTextTop" onchange="updatePreview()">
+            <label for="chkTextTop" style="font-size:.85rem;cursor:pointer;">Texte EN HAUT du numéro</label>
+          </div>
+          <input type="text" class="form-input" id="inputTextTop" placeholder="Ex : MBAPPÉ (max 12 car.)" maxlength="12" oninput="updatePreview()" style="margin-bottom:.75rem;">
+          <div class="sub-checkbox-row">
+            <input type="checkbox" id="chkTextBot" onchange="updatePreview()">
+            <label for="chkTextBot" style="font-size:.85rem;cursor:pointer;">Texte EN BAS du numéro</label>
+          </div>
+          <input type="text" class="form-input" id="inputTextBot" placeholder="Ex : PARIS (max 12 car.)" maxlength="12" oninput="updatePreview()">
+          <div class="error-msg" id="textError">Veuillez remplir au moins un champ texte (haut ou bas).</div>
+        </div>
+      </div>
+
+      <!-- Aperçu -->
+      <div class="jersey-preview">
+        <div class="jersey-preview-title">APERÇU — DOS DU MAILLOT</div>
+        <div class="jersey-back">
+          <div class="preview-text-top preview-muted" id="previewTop">TEXTE HAUT</div>
+          <div class="preview-number preview-muted" id="previewNum">—</div>
+          <div class="preview-text-bottom preview-muted" id="previewBot">TEXTE BAS</div>
+        </div>
+      </div>
+
+      <!-- Récapitulatif prix -->
+      <div class="price-summary">
+        <div class="price-line"><span>Prix de base</span><span id="priceBase">16 €</span></div>
+        <div class="price-line" id="lineNumber" style="display:none;"><span>+ Numéro</span><span>+2 €</span></div>
+        <div class="price-line" id="lineText"   style="display:none;"><span>+ Texte flocage</span><span>+2 €</span></div>
+        <hr class="price-divider">
+        <div class="price-total"><span>Total</span><span class="amount" id="priceTotal">16 €</span></div>
+      </div>
+
+      <div class="error-msg" id="globalError" style="display:block;margin-bottom:.75rem;"></div>
+      <button class="btn-primary" style="width:100%;text-align:center;display:block;font-size:1.1rem;" onclick="addToCart()">
+        Ajouter au panier
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LEGAL MODALS ===== -->
+<div class="modal-overlay" id="legalMentions" onclick="handleModalOverlayClick(event,'legalMentions')">
+  <div class="modal legal-modal">
+    <div class="modal-header">
+      <span class="modal-title">Mentions Légales</span>
+      <button class="modal-close" onclick="closeLegal('mentions')">✕</button>
+    </div>
+    <div class="modal-body legal-content">
+      <h3>Éditeur du site</h3>
+      <p><strong>Éditeur :</strong> Titouan Berjon<br>
+         <strong>Statut :</strong> Auto-entrepreneur<br>
+         <strong>Adresse :</strong> Besançon (25000), Bourgogne-Franche-Comté, France<br>
+         <strong>Email :</strong> jerseyselect@mail.com<br>
+         <strong>Hébergement :</strong> [À compléter après déploiement]</p>
+      <h3>Activité</h3>
+      <p>Revente de maillots de football authentiques. Prix affichés en euros TTC.</p>
+      <h3>Propriété intellectuelle</h3>
+      <p>Les noms de clubs, écussons et marques (Nike, Adidas, Puma…) appartiennent à leurs détenteurs respectifs. Jersey Select opère en tant que revendeur indépendant et ne revendique aucun droit sur ces marques.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="legalCgv" onclick="handleModalOverlayClick(event,'legalCgv')">
+  <div class="modal legal-modal">
+    <div class="modal-header">
+      <span class="modal-title">Conditions Générales de Vente</span>
+      <button class="modal-close" onclick="closeLegal('cgv')">✕</button>
+    </div>
+    <div class="modal-body legal-content">
+      <h3>Article 1 — Objet</h3>
+      <p>Vente de maillots de football authentiques, neufs ou d'occasion.</p>
+      <h3>Article 2 — Prix</h3>
+      <p>Affichés en euros TTC, hors frais de livraison. Modifiables à tout moment ; facturés au tarif en vigueur à la validation de la commande.</p>
+      <h3>Article 3 — Commande</h3>
+      <p>Validée à réception du paiement. Modification ou annulation possible dans les 72h. Passé ce délai, la commande est en traitement et ne peut plus être modifiée.</p>
+      <h3>Article 4 — Paiement</h3>
+      <p>Carte bancaire ou tout autre moyen indiqué sur le site. Aucune donnée bancaire n'est conservée par Jersey Select.</p>
+      <h3>Article 5 — Livraison</h3>
+      <p>Expédition sous 2 à 3 semaines après confirmation. Email de suivi envoyé à l'expédition. Jersey Select n'est plus responsable du colis après remise au transporteur. Les frais de douane éventuels sont à la charge du client.</p>
+      <h3>Article 6 — Retours et remboursements</h3>
+      <p>14 jours à compter de la réception pour les articles non floqués, non portés, dans leur état d'origine. Les maillots floqués à la demande ne sont pas repris, sauf défaut de fabrication avéré. Toute réclamation doit être effectuée dans les 48h après réception à jerseyselect@mail.com.</p>
+      <h3>Article 7 — Responsabilité</h3>
+      <p>Jersey Select ne peut être tenu responsable des retards imputables au transporteur ni des saisies ou destructions douanières.</p>
+      <h3>Article 8 — Litiges</h3>
+      <p>Le droit français est applicable. En cas de litige, une résolution amiable sera privilégiée avant toute action judiciaire.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="legalPrivacy" onclick="handleModalOverlayClick(event,'legalPrivacy')">
+  <div class="modal legal-modal">
+    <div class="modal-header">
+      <span class="modal-title">Politique de Confidentialité</span>
+      <button class="modal-close" onclick="closeLegal('privacy')">✕</button>
+    </div>
+    <div class="modal-body legal-content">
+      <h3>Données collectées</h3>
+      <p>Prénom, adresse email, adresse de livraison — uniquement dans le cadre d'une commande.</p>
+      <h3>Finalité</h3>
+      <p>Traitement de la commande exclusivement.</p>
+      <h3>Partage</h3>
+      <p>Aucune revente ni transmission à des tiers.</p>
+      <h3>Conservation</h3>
+      <p>Données supprimées après 3 ans sans activité.</p>
+      <h3>Droits RGPD</h3>
+      <p>Droit d'accès, rectification et suppression sur demande à jerseyselect@mail.com.</p>
+      <h3>Cookies</h3>
+      <p>Aucun cookie tiers ni tracker publicitaire utilisé sur ce site.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ===== PRODUCT DATA ===== */
+const products = [
+  { id:1,  club:'FC Barcelone',       name:'Maillot Domicile',  season:'2024-25', league:'Liga',           type:'standard', emoji:'👕' },
+  { id:2,  club:'Paris SG',           name:'Maillot Extérieur', season:'2024-25', league:'Ligue 1',        type:'standard', emoji:'👕' },
+  { id:3,  club:'Manchester City',    name:'Maillot Domicile',  season:'2023-24', league:'Premier League', type:'standard', emoji:'👕' },
+  { id:4,  club:'Juventus',           name:'Maillot Domicile',  season:'2024-25', league:'Serie A',        type:'standard', emoji:'👕' },
+  { id:5,  club:'Real Madrid',        name:'Maillot Extérieur', season:'2023-24', league:'Liga',           type:'standard', emoji:'👕' },
+  { id:6,  club:'Arsenal',            name:'Maillot Extérieur', season:'2024-25', league:'Premier League', type:'standard', emoji:'👕' },
+  { id:7,  club:'Bayern Munich',      name:'Maillot Domicile',  season:'2024-25', league:'Bundesliga',     type:'standard', emoji:'👕' },
+  { id:8,  club:'AS Roma',            name:'Maillot Vintage',   season:'2001-02', league:'Vintage',        type:'vintage',  emoji:'🏆' },
+  { id:9,  club:'Olympique Lyonnais', name:'Maillot Domicile',  season:'2024-25', league:'Ligue 1',        type:'standard', emoji:'👕' },
+  { id:10, club:'Borussia Dortmund',  name:'Maillot Domicile',  season:'2024-25', league:'Bundesliga',     type:'standard', emoji:'👕' },
+  { id:11, club:'AC Milan',           name:'Maillot Domicile',  season:'2023-24', league:'Serie A',        type:'standard', emoji:'👕' },
+  { id:12, club:'Équipe de France',   name:'Domicile Euro 24',  season:'2024',    league:'International',  type:'standard', emoji:'🇫🇷' },
+  { id:13, club:'Brésil',             name:'Maillot Extérieur', season:'2022',    league:'International',  type:'vintage',  emoji:'🇧🇷' },
+  { id:14, club:'Argentine',          name:'Maillot Domicile',  season:'2022',    league:'International',  type:'vintage',  emoji:'🇦🇷' },
+  { id:15, club:'Liverpool',          name:'Maillot Domicile',  season:'2024-25', league:'Premier League', type:'standard', emoji:'👕' },
+];
+
+/* ===== STATE ===== */
+let activeLeague    = 'Tous';
+let activeClubs     = [];
+let cartItems       = [];
+let currentProduct  = null;
+let currentVersion  = 'standard';
+let favorites       = new Set();
+
+/* ===== PRICING ===== */
+function getBasePrice(type, version) {
+  if (type === 'vintage') return 20;
+  return version === 'player' ? 21 : 16;
+}
+function calcTotal(type, version, hasNumber, hasText) {
+  return getBasePrice(type, version) + (hasNumber ? 2 : 0) + (hasText ? 2 : 0);
+}
+
+/* ===== RENDER PRODUCTS ===== */
+function renderProducts() {
+  const grid = document.getElementById('productsGrid');
+  const filtered = products.filter(p => {
+    const lm = activeLeague === 'Tous' || p.league === activeLeague;
+    const cm = activeClubs.length === 0 || activeClubs.some(c => p.club.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(p.club.toLowerCase()));
+    return lm && cm;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="no-results">Aucun maillot trouvé pour ces filtres.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const isVintage = p.type === 'vintage';
+    const isFav = favorites.has(p.id);
+    const priceLabel = isVintage ? '20 €' : 'Dès 16 €';
+    const priceNote  = isVintage ? '' : '<div class="product-price-note">Standard 16 € · Player 21 €</div>';
+    const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : '';
+    return `
+<div class="product-card">
+  <div class="product-img">
+    <span class="product-emoji">${p.emoji}</span>
+    ${rareBadge}
+    <div class="product-actions">
+      <button class="btn-customize" onclick="openCustomModal(${p.id})">Personnaliser &amp; Commander</button>
+      <button class="btn-fav${isFav ? ' active' : ''}" onclick="toggleFav(event,${p.id})">${isFav ? '❤️' : '♡'}</button>
+    </div>
+  </div>
+  <div class="product-info">
+    <div class="product-league-club">${p.league} · ${p.club}</div>
+    <div class="product-name">${p.name}</div>
+    <div class="product-season">${p.season}</div>
+    <div class="product-price">${priceLabel}</div>
+    ${priceNote}
+  </div>
+</div>`;
+  }).join('');
+}
+
+/* ===== FAVORITES ===== */
+function toggleFav(e, id) {
+  e.stopPropagation();
+  favorites.has(id) ? favorites.delete(id) : favorites.add(id);
+  renderProducts();
+}
+
+/* ===== FILTERS ===== */
+function setPill(btn) {
+  activeLeague = btn.dataset.league;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+
+function filterByLeague(league) {
+  activeLeague = league;
+  document.querySelectorAll('.pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.league === league);
+  });
+  renderProducts();
+  document.getElementById('catalogue').scrollIntoView({ behavior:'smooth' });
+}
+
+/* ===== CLUB PICKER ===== */
+function addClubChip() {
+  const sel = document.getElementById('clubSelect');
+  const val = sel.value.trim();
+  if (!val || activeClubs.includes(val)) { sel.value=''; return; }
+  activeClubs.push(val);
+  sel.value = '';
+  renderChips();
+  renderProducts();
+}
+
+function removeChip(club) {
+  activeClubs = activeClubs.filter(c => c !== club);
+  renderChips();
+  renderProducts();
+}
+
+function renderChips() {
+  document.getElementById('chipsContainer').innerHTML = activeClubs.map(c =>
+    `<span class="chip">${c}<button class="chip-remove" onclick="removeChip('${c.replace(/'/g,"\\'")}')">✕</button></span>`
+  ).join('');
+}
+
+/* ===== FAQ ===== */
+function toggleFaq(qEl) {
+  const item   = qEl.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+/* ===== NEWSLETTER ===== */
+function submitNewsletter(e) {
+  e.preventDefault();
+  const email = document.getElementById('newsletterEmail').value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('⚠️ Veuillez entrer une adresse email valide.', 'error');
+    return;
+  }
+  document.getElementById('newsletterEmail').value = '';
+  showToast('✅ Inscription confirmée ! Bienvenue.', 'success');
+}
+
+/* ===== CUSTOM MODAL ===== */
+function openCustomModal(productId) {
+  currentProduct = products.find(p => p.id === productId);
+  document.getElementById('customModalTitle').textContent = `${currentProduct.name} · ${currentProduct.club}`;
+
+  const stepVersion = document.getElementById('stepVersion');
+  if (currentProduct.type === 'vintage') {
+    stepVersion.style.display = 'none';
+    currentVersion = 'vintage';
+  } else {
+    stepVersion.style.display = 'block';
+    currentVersion = 'standard';
+    document.getElementById('optStandard').classList.add('selected');
+    document.getElementById('optPlayer').classList.remove('selected');
+  }
+
+  // Reset all fields
+  ['sizeSelect','inputNumber','inputTextTop','inputTextBot'].forEach(id => document.getElementById(id).value = '');
+  ['chkNumber','chkText','chkTextTop','chkTextBot'].forEach(id => document.getElementById(id).checked = false);
+  ['numberField','textField'].forEach(id => document.getElementById(id).classList.remove('visible'));
+  ['sizeError','numberError','textError'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('globalError').textContent = '';
+
+  updatePrice();
+  updatePreview();
+  document.getElementById('customModal').classList.add('open');
+}
+
+function closeCustomModal() {
+  document.getElementById('customModal').classList.remove('open');
+}
+
+function handleModalOverlayClick(e, id) {
+  if (e.target === document.getElementById(id)) {
+    document.getElementById(id).classList.remove('open');
+  }
+}
+
+function selectVersion(v, el) {
+  currentVersion = v;
+  document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  updatePrice();
+}
+
+function toggleCB(id) {
+  const cb = document.getElementById(id);
+  cb.checked = !cb.checked;
+  cb.dispatchEvent(new Event('change'));
+}
+
+function toggleNumberField() {
+  const on = document.getElementById('chkNumber').checked;
+  document.getElementById('numberField').classList.toggle('visible', on);
+  if (!on) { document.getElementById('inputNumber').value=''; updatePreview(); }
+}
+
+function toggleTextField() {
+  const on = document.getElementById('chkText').checked;
+  document.getElementById('textField').classList.toggle('visible', on);
+  if (!on) {
+    ['chkTextTop','chkTextBot'].forEach(id => document.getElementById(id).checked = false);
+    ['inputTextTop','inputTextBot'].forEach(id => document.getElementById(id).value = '');
+    updatePreview();
+  }
+}
+
+function updatePrice() {
+  if (!currentProduct) return;
+  const hasNumber = document.getElementById('chkNumber').checked;
+  const hasText   = document.getElementById('chkText').checked;
+  const base  = getBasePrice(currentProduct.type, currentVersion);
+  const total = base + (hasNumber ? 2 : 0) + (hasText ? 2 : 0);
+  document.getElementById('priceBase').textContent   = base  + ' €';
+  document.getElementById('priceTotal').textContent  = total + ' €';
+  document.getElementById('lineNumber').style.display = hasNumber ? 'flex' : 'none';
+  document.getElementById('lineText').style.display   = hasText   ? 'flex' : 'none';
+}
+
+function updatePreview() {
+  const hasNum     = document.getElementById('chkNumber').checked;
+  const hasTextTop = document.getElementById('chkTextTop').checked;
+  const hasTextBot = document.getElementById('chkTextBot').checked;
+  const numVal  = document.getElementById('inputNumber').value;
+  const topVal  = document.getElementById('inputTextTop').value.toUpperCase();
+  const botVal  = document.getElementById('inputTextBot').value.toUpperCase();
+
+  const pNum = document.getElementById('previewNum');
+  const pTop = document.getElementById('previewTop');
+  const pBot = document.getElementById('previewBot');
+
+  pNum.textContent = (hasNum && numVal) ? numVal : '—';
+  pNum.className   = 'preview-number ' + ((hasNum && numVal) ? 'preview-active' : 'preview-muted');
+
+  pTop.textContent = (hasTextTop && topVal) ? topVal : 'TEXTE HAUT';
+  pTop.className   = 'preview-text-top ' + ((hasTextTop && topVal) ? 'preview-active' : 'preview-muted');
+
+  pBot.textContent = (hasTextBot && botVal) ? botVal : 'TEXTE BAS';
+  pBot.className   = 'preview-text-bottom ' + ((hasTextBot && botVal) ? 'preview-active' : 'preview-muted');
+}
+
+/* ===== ADD TO CART ===== */
+function addToCart() {
+  if (!currentProduct) return;
+  const size       = document.getElementById('sizeSelect').value;
+  const hasNumber  = document.getElementById('chkNumber').checked;
+  const hasText    = document.getElementById('chkText').checked;
+  const numVal     = document.getElementById('inputNumber').value.trim();
+  const hasTextTop = document.getElementById('chkTextTop').checked;
+  const hasTextBot = document.getElementById('chkTextBot').checked;
+  const topVal     = document.getElementById('inputTextTop').value.trim();
+  const botVal     = document.getElementById('inputTextBot').value.trim();
+
+  // Reset errors
+  ['sizeError','numberError','textError'].forEach(id => document.getElementById(id).style.display='none');
+  document.getElementById('globalError').textContent = '';
+
+  let valid = true;
+
+  if (!size) {
+    document.getElementById('sizeError').style.display = 'block';
+    valid = false;
+  }
+
+  if (hasNumber) {
+    const n = parseInt(numVal, 10);
+    if (!numVal || !/^\d+$/.test(numVal) || n < 1 || n > 99) {
+      document.getElementById('numberError').style.display = 'block';
+      valid = false;
+    }
+  }
+
+  if (hasText) {
+    const textRe = /^[a-zA-ZÀ-ÿ\s]+$/;
+    const topOk  = hasTextTop && topVal.length > 0;
+    const botOk  = hasTextBot && botVal.length > 0;
+    if (!topOk && !botOk) {
+      document.getElementById('textError').style.display = 'block';
+      valid = false;
+    } else {
+      if (topOk && !textRe.test(topVal)) {
+        document.getElementById('globalError').textContent = 'Le texte haut contient des caractères invalides (lettres et espaces uniquement).';
+        valid = false;
+      } else if (botOk && !textRe.test(botVal)) {
+        document.getElementById('globalError').textContent = 'Le texte bas contient des caractères invalides (lettres et espaces uniquement).';
+        valid = false;
+      }
+    }
+  }
+
+  if (!valid) return;
+
+  const price = calcTotal(currentProduct.type, currentVersion, hasNumber, hasText);
+
+  let flocage = 'Sans flocage';
+  const parts = [];
+  if (hasNumber && numVal) parts.push('N°' + numVal);
+  if (hasText) {
+    if (hasTextTop && topVal) parts.push(topVal.toUpperCase());
+    if (hasTextBot && botVal) parts.push(botVal.toUpperCase());
+  }
+  if (parts.length) flocage = parts.join(' · ');
+
+  const versionLabel = currentProduct.type === 'vintage' ? 'Vintage' : (currentVersion === 'player' ? 'Player' : 'Standard');
+
+  cartItems.push({
+    uid: Date.now() + Math.random(),
+    emoji: currentProduct.emoji,
+    name:  currentProduct.name,
+    club:  currentProduct.club,
+    version: versionLabel,
+    size, flocage, price
+  });
+
+  updateCartUI();
+  closeCustomModal();
+  showToast('✅ Maillot ajouté au panier !', 'success');
+}
+
+/* ===== CART ===== */
+function updateCartUI() {
+  document.getElementById('cartCount').textContent = cartItems.length;
+  const itemsEl  = document.getElementById('cartItems');
+  const footerEl = document.getElementById('cartFooter');
+
+  if (!cartItems.length) {
+    itemsEl.innerHTML  = '<div class="cart-empty">Votre panier est vide.</div>';
+    footerEl.style.display = 'none';
+    return;
+  }
+
+  footerEl.style.display = 'block';
+  itemsEl.innerHTML = cartItems.map(item => `
+<div class="cart-item">
+  <span class="cart-item-emoji">${item.emoji}</span>
+  <div class="cart-item-info">
+    <div class="cart-item-name">${item.name} · ${item.club}</div>
+    <div class="cart-item-details">
+      Version : ${item.version}<br>
+      Taille : ${item.size}<br>
+      Flocage : ${item.flocage}
+    </div>
+    <div class="cart-item-price">${item.price} €</div>
+  </div>
+  <button class="cart-item-remove" onclick="removeCartItem(${item.uid})">✕</button>
+</div>`).join('');
+
+  const total = cartItems.reduce((s, i) => s + i.price, 0);
+  document.getElementById('cartTotal').textContent = total + ' €';
+}
+
+function removeCartItem(uid) {
+  cartItems = cartItems.filter(i => i.uid !== uid);
+  updateCartUI();
+}
+
+function openCart()  {
+  document.getElementById('cartPanel').classList.add('open');
+  document.getElementById('cartOverlay').classList.add('open');
+}
+function closeCart() {
+  document.getElementById('cartPanel').classList.remove('open');
+  document.getElementById('cartOverlay').classList.remove('open');
+}
+
+/* ===== LEGAL MODALS ===== */
+const legalIds = { mentions:'legalMentions', cgv:'legalCgv', privacy:'legalPrivacy' };
+function openLegal(type)  { document.getElementById(legalIds[type]).classList.add('open'); }
+function closeLegal(type) { document.getElementById(legalIds[type]).classList.remove('open'); }
+
+/* ===== TOAST ===== */
+function showToast(msg, type='success') {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-text">${msg}</span>`;
+  container.appendChild(t);
+  setTimeout(() => { t.style.transition='opacity .3s'; t.style.opacity='0'; }, 3500);
+  setTimeout(() => t.remove(), 3800);
+}
+
+/* ===== INIT ===== */
+renderProducts();
+</script>
+</body>
+</html>
