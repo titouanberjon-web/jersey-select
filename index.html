@@ -1228,14 +1228,22 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
     'C 143,34 136,44 130,48 ' +    // arc col intérieur droit
     'C 124,44 117,34 108,20 Z';    // arc col intérieur gauche
 
-  // Col — bande remplie (arc extérieur large + arc intérieur = corps)
+  // Col style Brésil : col polo avec repli visible depuis le dos
+  // Couche 1 : base du col (bande principale, couleur accent)
   var collarFillD =
-    'M 92,20 ' +
-    'C 106,40 118,56 130,60 ' +
-    'C 142,56 154,40 168,20 ' +
+    'M 90,14 ' +
+    'C 104,36 118,54 130,58 ' +
+    'C 142,54 156,36 170,14 ' +
     'L 152,20 ' +
     'C 143,34 136,44 130,48 ' +
     'C 124,44 117,34 108,20 Z';
+  // Couche 2 : liseré intérieur plus sombre (effet repli du col)
+  var collarInnerD =
+    'M 108,20 ' +
+    'C 118,35 125,44 130,47 ' +
+    'C 135,44 142,35 152,20 ' +
+    'C 143,26 136,32 130,34 ' +
+    'C 124,32 117,26 108,20 Z';
 
   // Poignets — bande courbe au bas de la manche
   var leftCuffD  = 'M 20,104 C 34,100 50,96 66,94';
@@ -1295,6 +1303,7 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
     '<path d="' + rightShadeD + '" fill="rgba(0,0,0,0.08)"/>' +
     shoulderStripes +
     '<path d="' + collarFillD + '" fill="' + ac + '"/>' +
+    '<path d="' + collarInnerD + '" fill="rgba(0,0,0,0.18)"/>' +
     '<path d="' + leftCuffD  + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
     '<path d="' + rightCuffD + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
     flocage +
