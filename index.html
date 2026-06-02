@@ -1206,35 +1206,36 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
   var lum = (0.299*r + 0.587*g + 0.114*b) / 255;
   var autoStripe = p.shoulderStripes || (lum > 0.55 ? 'rgba(100,100,100,0.35)' : 'rgba(255,255,255,0.72)');
 
-  // ViewBox 0 0 260 280 — tracé fidèle au maillot de référence
-  // Corps plus étroit, épaules courbes naturelles, manches courtes à ~22°
-  // Bandes d'épaules automatiques sur tous les maillots
+  // ViewBox 0 0 260 280
+  // Fixes: col plus petit/rond, manches avec jonction courbe naturelle
+
+  // Corps principal — col étroit (108→152 = 44px), manches à jonction bezier
   var bodyD =
-    'M 96,18 ' +
-    'C 74,14 40,24 20,46 ' +      // épaule gauche, courbe naturelle
-    'L 4,54 ' +                    // coin haut-gauche manche
-    'C 6,64 8,73 12,82 ' +         // bout de manche arrondi
-    'L 54,70 ' +                   // jonction manche/corps gauche
-    'C 52,112 50,168 48,264 ' +    // côté gauche corps
-    'L 212,264 ' +                 // ourlet bas
-    'C 210,168 208,112 206,70 ' +  // côté droit corps
-    'L 248,82 ' +                  // jonction manche/corps droit
-    'C 252,73 254,64 256,54 ' +    // bout de manche arrondi
-    'L 240,46 ' +                  // coin haut-droit manche
-    'C 220,24 186,14 164,18 ' +    // épaule droite
-    'C 152,34 142,42 130,44 ' +    // arc col droit
-    'C 118,42 108,34 96,18 Z';     // arc col gauche
+    'M 108,20 ' +
+    'C 88,15 55,25 32,46 ' +       // épaule gauche (courbe douce)
+    'L 14,55 ' +                    // haut manche gauche
+    'C 15,66 17,74 20,82 ' +        // bout de manche (courbe arrondie)
+    'C 32,76 46,72 60,70 ' +        // jonction manche→corps (courbe naturelle)
+    'C 58,115 56,170 54,264 ' +     // côté gauche corps
+    'L 206,264 ' +                  // ourlet
+    'C 204,170 202,115 200,70 ' +   // côté droit corps
+    'C 214,72 228,76 240,82 ' +     // jonction corps→manche droite (courbe)
+    'C 243,74 245,66 246,55 ' +     // bout de manche droite
+    'L 228,46 ' +                   // haut manche droite
+    'C 205,25 172,15 152,20 ' +     // épaule droite
+    'C 143,33 136,40 130,42 ' +     // arc col droit (petit)
+    'C 124,40 117,33 108,20 Z';     // arc col gauche (petit)
 
-  // Bande de col — arc en U doux (vue dos = faible profondeur)
-  var collarD = 'M 96,18 C 108,34 118,42 130,44 C 142,42 152,34 164,18';
+  // Col — arc ÉTROIT et profond pour effet anneau rond (vue dos)
+  var collarD = 'M 108,20 C 117,33 124,40 130,42 C 136,40 143,33 152,20';
 
-  // Poignets de manche
-  var leftCuffD  = 'M 12,82 L 54,70';
-  var rightCuffD = 'M 206,70 L 248,82';
+  // Poignets — courbes suivant la forme de la manche
+  var leftCuffD  = 'M 20,82 C 32,76 46,72 60,70';
+  var rightCuffD = 'M 200,70 C 214,72 228,76 240,82';
 
   // Ombrage intérieur des manches
-  var leftShadeD  = 'M 20,46 L 4,54 C 6,64 8,73 12,82 L 54,70 L 54,50 Z';
-  var rightShadeD = 'M 240,46 L 256,54 C 254,64 252,73 248,82 L 206,70 L 206,50 Z';
+  var leftShadeD  = 'M 32,46 L 14,55 C 15,66 17,74 20,82 C 32,76 46,72 60,70 L 60,52 Z';
+  var rightShadeD = 'M 228,46 L 246,55 C 245,66 243,74 240,82 C 228,76 214,72 200,70 L 200,52 Z';
 
   // Clip path (toujours créé — nécessaire pour les bandes d'épaules)
   var bodyStripeDefs = '<clipPath id="cp' + uid + '"><path d="' + bodyD + '"/></clipPath>';
@@ -1251,13 +1252,13 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
     bodyFill = 'fill="url(#sp' + uid + ')"';
   }
 
-  // Bandes d'épaules — toujours affichées, couleur automatique selon luminosité
+  // Bandes d'épaules — toujours affichées, parallèles à la pente de l'épaule
   var cpRef = 'url(#cp' + uid + ')';
   var shoulderStripes =
-    '<line x1="110" y1="19" x2="16" y2="62" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
-    '<line x1="101" y1="23" x2="7"  y2="66" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
-    '<line x1="150" y1="19" x2="244" y2="62" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
-    '<line x1="159" y1="23" x2="253" y2="66" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>';
+    '<line x1="116" y1="20" x2="20" y2="63" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
+    '<line x1="108" y1="25" x2="14" y2="68" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
+    '<line x1="144" y1="20" x2="240" y2="63" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
+    '<line x1="152" y1="25" x2="246" y2="68" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>';
 
   // Flocage centré sur le dos
   var flocage = '';
