@@ -1227,8 +1227,8 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
     'C 141,33 135,40 130,42 ' +    // arc col droit
     'C 125,40 119,33 110,20 Z';    // arc col gauche
 
-  // Col — anneau fin (stroke-width réduit dans le return)
-  var collarD = 'M 110,20 C 119,33 125,40 130,42 C 135,40 141,33 150,20';
+  // Col — anneau moyen, courbe plus profonde pour effet rond
+  var collarD = 'M 108,18 C 118,34 124,43 130,46 C 136,43 142,34 152,18';
 
   // Poignets — courbés, suivent la forme arrondie du bas de manche
   var leftCuffD  = 'M 17,96 C 30,88 46,82 62,78';
@@ -1286,7 +1286,7 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
     '<path d="' + leftShadeD  + '" fill="rgba(0,0,0,0.08)"/>' +
     '<path d="' + rightShadeD + '" fill="rgba(0,0,0,0.08)"/>' +
     shoulderStripes +
-    '<path d="' + collarD + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
+    '<path d="' + collarD + '" fill="none" stroke="' + ac + '" stroke-width="12" stroke-linecap="round"/>' +
     '<path d="' + leftCuffD  + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
     '<path d="' + rightCuffD + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
     flocage +
