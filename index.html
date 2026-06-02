@@ -1210,32 +1210,33 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
   // Fixes: col plus petit/rond, manches avec jonction courbe naturelle
 
   // Corps principal — col étroit (108→152 = 44px), manches à jonction bezier
+  // Col étroit (40px), épaules qui tombent plus, bouts de manches très arrondis
   var bodyD =
-    'M 108,20 ' +
-    'C 88,15 55,25 32,46 ' +       // épaule gauche (courbe douce)
-    'L 14,55 ' +                    // haut manche gauche
-    'C 15,66 17,74 20,82 ' +        // bout de manche (courbe arrondie)
-    'C 32,76 46,72 60,70 ' +        // jonction manche→corps (courbe naturelle)
-    'C 58,115 56,170 54,264 ' +     // côté gauche corps
-    'L 206,264 ' +                  // ourlet
-    'C 204,170 202,115 200,70 ' +   // côté droit corps
-    'C 214,72 228,76 240,82 ' +     // jonction corps→manche droite (courbe)
-    'C 243,74 245,66 246,55 ' +     // bout de manche droite
-    'L 228,46 ' +                   // haut manche droite
-    'C 205,25 172,15 152,20 ' +     // épaule droite
-    'C 143,33 136,40 130,42 ' +     // arc col droit (petit)
-    'C 124,40 117,33 108,20 Z';     // arc col gauche (petit)
+    'M 110,20 ' +
+    'C 86,13 50,26 26,52 ' +       // épaule gauche — pente plus prononcée
+    'L 8,64 ' +                    // haut manche gauche (plus bas)
+    'C 10,76 12,88 17,96 ' +       // bout de manche très arrondi
+    'C 30,88 46,82 62,78 ' +       // jonction manche→corps courbe
+    'C 60,120 58,172 56,264 ' +    // côté gauche corps
+    'L 204,264 ' +                 // ourlet
+    'C 202,172 200,120 198,78 ' +  // côté droit corps
+    'C 214,82 230,88 243,96 ' +    // jonction corps→manche courbe
+    'C 248,88 250,76 252,64 ' +    // bout de manche droite très arrondi
+    'L 234,52 ' +                  // haut manche droite
+    'C 210,26 174,13 150,20 ' +    // épaule droite
+    'C 141,33 135,40 130,42 ' +    // arc col droit
+    'C 125,40 119,33 110,20 Z';    // arc col gauche
 
-  // Col — arc ÉTROIT et profond pour effet anneau rond (vue dos)
-  var collarD = 'M 108,20 C 117,33 124,40 130,42 C 136,40 143,33 152,20';
+  // Col — anneau fin (stroke-width réduit dans le return)
+  var collarD = 'M 110,20 C 119,33 125,40 130,42 C 135,40 141,33 150,20';
 
-  // Poignets — courbes suivant la forme de la manche
-  var leftCuffD  = 'M 20,82 C 32,76 46,72 60,70';
-  var rightCuffD = 'M 200,70 C 214,72 228,76 240,82';
+  // Poignets — courbés, suivent la forme arrondie du bas de manche
+  var leftCuffD  = 'M 17,96 C 30,88 46,82 62,78';
+  var rightCuffD = 'M 198,78 C 214,82 230,88 243,96';
 
   // Ombrage intérieur des manches
-  var leftShadeD  = 'M 32,46 L 14,55 C 15,66 17,74 20,82 C 32,76 46,72 60,70 L 60,52 Z';
-  var rightShadeD = 'M 228,46 L 246,55 C 245,66 243,74 240,82 C 228,76 214,72 200,70 L 200,52 Z';
+  var leftShadeD  = 'M 26,52 L 8,64 C 10,76 12,88 17,96 C 30,88 46,82 62,78 L 62,56 Z';
+  var rightShadeD = 'M 234,52 L 252,64 C 250,76 248,88 243,96 C 230,88 214,82 198,78 L 198,56 Z';
 
   // Clip path (toujours créé — nécessaire pour les bandes d'épaules)
   var bodyStripeDefs = '<clipPath id="cp' + uid + '"><path d="' + bodyD + '"/></clipPath>';
@@ -1285,9 +1286,9 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
     '<path d="' + leftShadeD  + '" fill="rgba(0,0,0,0.08)"/>' +
     '<path d="' + rightShadeD + '" fill="rgba(0,0,0,0.08)"/>' +
     shoulderStripes +
-    '<path d="' + collarD + '" fill="none" stroke="' + ac + '" stroke-width="14" stroke-linecap="round"/>' +
-    '<path d="' + leftCuffD  + '" fill="none" stroke="' + ac + '" stroke-width="11" stroke-linecap="round"/>' +
-    '<path d="' + rightCuffD + '" fill="none" stroke="' + ac + '" stroke-width="11" stroke-linecap="round"/>' +
+    '<path d="' + collarD + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
+    '<path d="' + leftCuffD  + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
+    '<path d="' + rightCuffD + '" fill="none" stroke="' + ac + '" stroke-width="9" stroke-linecap="round"/>' +
     flocage +
     '</svg>';
 }
