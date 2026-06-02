@@ -457,6 +457,8 @@
     .radio-option.selected { border-color:var(--green); background:rgba(0,230,118,.05); }
     .radio-label { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; }
     .radio-price { color:var(--green); font-size:.9rem; }
+    .radio-group-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .radio-group-grid .radio-option { flex:unset; }
     select.form-select {
       width:100%; background:var(--surface2); border:1px solid var(--border);
       color:var(--text); padding:.75rem 1rem; border-radius:4px;
@@ -1001,7 +1003,7 @@
       <!-- Étape 1 : Version -->
       <div class="custom-step" id="stepVersion">
         <div class="custom-step-title">1 — Version</div>
-        <div class="radio-group">
+        <div class="radio-group-grid" id="versionGrid">
           <div class="radio-option selected" id="optStandard" onclick="selectVersion('standard',this)">
             <div class="radio-label">Standard</div>
             <div class="radio-price">16 €</div>
