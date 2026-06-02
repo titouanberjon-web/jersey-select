@@ -1210,41 +1210,40 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
   // Fixes: col plus petit/rond, manches avec jonction courbe naturelle
 
   // Corps principal — col étroit (108→152 = 44px), manches à jonction bezier
-  // Corps — manches plates et horizontales comme la photo de référence
-  // Épaule : légère descente, manche qui s'étend à l'horizontale
-  // Bas de manche : remonte légèrement vers l'emmanchure (trapèze inversé)
+  // Corps — style maillot de foot (image de référence jaune/Brésil)
+  // Épaule courbe naturelle, manche courte tombante, emmanchure bien marquée
   var bodyD =
-    'M 105,20 ' +
-    'C 82,13 50,26 22,50 ' +       // épaule gauche jusqu'à la tête de manche
-    'C 12,54 5,56 2,60 ' +         // haut de manche vers le bout (presque horizontal)
-    'C 1,68 2,76 6,82 ' +          // bout de manche arrondi
-    'C 20,80 38,82 58,86 ' +       // bas de manche → emmanchure (légèrement remontant)
-    'C 56,132 54,180 54,264 ' +    // côté gauche corps
-    'L 206,264 ' +                  // ourlet
-    'C 206,180 204,132 202,86 ' +  // côté droit corps
-    'C 222,82 240,80 254,82 ' +    // bas de manche gauche → emmanchure
-    'C 258,76 259,68 258,60 ' +    // bout de manche droit arrondi
-    'C 255,56 248,54 238,50 ' +    // haut de manche droit
-    'C 210,26 178,13 155,20 ' +    // épaule droite
-    'C 146,34 138,46 130,50 ' +    // bord intérieur col droit
-    'C 122,46 114,34 105,20 Z';    // bord intérieur col gauche
+    'M 108,20 ' +
+    'C 88,14 58,24 36,48 ' +       // épaule gauche, courbe naturelle
+    'C 26,58 18,66 14,76 ' +       // descente vers le bas de manche
+    'C 12,86 14,96 20,104 ' +      // bout de manche arrondi
+    'C 34,100 50,96 66,94 ' +      // emmanchure : bas de manche rejoint le corps
+    'C 64,140 62,185 60,264 ' +    // côté gauche corps
+    'L 200,264 ' +                  // ourlet
+    'C 198,185 196,140 194,94 ' +  // côté droit corps
+    'C 210,96 226,100 240,104 ' +  // emmanchure droite
+    'C 246,96 248,86 246,76 ' +    // bout de manche droit arrondi
+    'C 242,66 234,58 224,48 ' +    // remontée épaule droite
+    'C 202,24 172,14 152,20 ' +    // épaule droite
+    'C 143,34 136,44 130,48 ' +    // arc col intérieur droit
+    'C 124,44 117,34 108,20 Z';    // arc col intérieur gauche
 
-  // Col — bande remplie, arc intérieur identique au bord du corps
+  // Col — bande remplie (arc extérieur large + arc intérieur = corps)
   var collarFillD =
-    'M 88,20 ' +
-    'C 102,42 116,60 130,64 ' +    // arc extérieur gauche→centre
-    'C 144,60 158,42 172,20 ' +    // arc extérieur centre→droite
-    'L 155,20 ' +                   // haut droit
-    'C 146,34 138,46 130,50 ' +    // arc intérieur droit→centre
-    'C 122,46 114,34 105,20 Z';    // arc intérieur centre→gauche
+    'M 92,20 ' +
+    'C 106,40 118,56 130,60 ' +
+    'C 142,56 154,40 168,20 ' +
+    'L 152,20 ' +
+    'C 143,34 136,44 130,48 ' +
+    'C 124,44 117,34 108,20 Z';
 
-  // Poignets courbés (suivent le bas de manche)
-  var leftCuffD  = 'M 6,82 C 20,80 38,82 58,86';
-  var rightCuffD = 'M 202,86 C 222,82 240,80 254,82';
+  // Poignets — bande courbe au bas de la manche
+  var leftCuffD  = 'M 20,104 C 34,100 50,96 66,94';
+  var rightCuffD = 'M 194,94 C 210,96 226,100 240,104';
 
   // Ombrage intérieur des manches
-  var leftShadeD  = 'M 22,50 C 12,54 5,56 2,60 C 1,68 2,76 6,82 C 20,80 38,82 58,86 L 58,54 Z';
-  var rightShadeD = 'M 238,50 C 248,54 255,56 258,60 C 259,68 258,76 254,82 C 240,80 222,82 202,86 L 202,54 Z';
+  var leftShadeD  = 'M 36,48 C 26,58 18,66 14,76 C 12,86 14,96 20,104 C 34,100 50,96 66,94 L 66,52 Z';
+  var rightShadeD = 'M 224,48 C 234,58 242,66 246,76 C 248,86 246,96 240,104 C 226,100 210,96 194,94 L 194,52 Z';
 
   // Clip path (toujours créé — nécessaire pour les bandes d'épaules)
   var bodyStripeDefs = '<clipPath id="cp' + uid + '"><path d="' + bodyD + '"/></clipPath>';
@@ -1263,12 +1262,12 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
 
   // Bandes d'épaules — toujours affichées, parallèles à la pente de l'épaule
   var cpRef = 'url(#cp' + uid + ')';
-  // Bandes d'épaules parallèles à la pente de l'épaule (col→bout de manche)
+  // Bandes d'épaules le long de la manche (parallèles à la pente)
   var shoulderStripes =
-    '<line x1="112" y1="21" x2="8"  y2="68" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
-    '<line x1="103" y1="26" x2="2"  y2="74" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
-    '<line x1="148" y1="21" x2="252" y2="68" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
-    '<line x1="157" y1="26" x2="258" y2="74" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>';
+    '<line x1="116" y1="22" x2="24" y2="84" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
+    '<line x1="107" y1="27" x2="16" y2="90" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
+    '<line x1="144" y1="22" x2="236" y2="84" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>' +
+    '<line x1="153" y1="27" x2="244" y2="90" stroke="' + autoStripe + '" stroke-width="8" stroke-linecap="round" clip-path="' + cpRef + '"/>';
 
   // Flocage centré sur le dos
   var flocage = '';
