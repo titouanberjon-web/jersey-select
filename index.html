@@ -205,6 +205,20 @@
     .league-name { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:.05em; }
     .league-sub { font-size:.8rem; color:var(--text-muted); }
 
+    /* ===== POPULAIRES ===== */
+    #populaires { background:var(--surface); }
+    .pop-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:1.2rem;
+    }
+    .pop-badge {
+      position:absolute; top:.75rem; right:.75rem;
+      background:var(--green); color:#000;
+      font-family:'Bebas Neue',sans-serif; font-size:.75rem;
+      letter-spacing:.1em; padding:.2rem .6rem; border-radius:4px;
+    }
+    @media(max-width:1000px) { .pop-grid { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:600px)  { .pop-grid { grid-template-columns:1fr 1fr; gap:.75rem; } }
+
     /* ===== CATALOGUE ===== */
     #catalogue { background:var(--bg); }
     .catalogue-controls { margin-bottom:2rem; }
@@ -559,6 +573,7 @@
   </a>
   <ul class="nav-links">
     <li><a href="#ligues">Ligues</a></li>
+    <li><a href="#populaires">Populaires</a></li>
     <li><a href="#catalogue">Catalogue</a></li>
     <li><a href="#international">International</a></li>
     <li><a href="#apropos">À propos</a></li>
@@ -675,11 +690,22 @@
   </div>
 </section>
 
+<!-- ===== MAILLOTS POPULAIRES ===== -->
+<section id="populaires">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">En ce moment</span>
+      <h2 class="section-title">Maillots <span style="color:var(--green)">Populaires</span></h2>
+    </div>
+    <div class="pop-grid" id="popGrid"></div>
+  </div>
+</section>
+
 <!-- ===== CATALOGUE ===== -->
 <section id="catalogue">
   <div class="container">
     <div class="section-header">
-      <span class="section-tag">Notre sélection</span>
+      <span class="section-tag">Toute la collection</span>
       <h2 class="section-title">Le <span style="color:var(--green)">Catalogue</span></h2>
     </div>
 
@@ -1116,6 +1142,18 @@ const products = [
   { id:15, club:'Liverpool',          name:'Maillot Domicile',  season:'2024-25', league:'Premier League', type:'standard', emoji:'👕' },
 ];
 
+/* ===== POPULAR PRODUCTS ===== */
+const popularProducts = [
+  { id:101, club:'Santos FC',          name:'Maillot Rétro',     season:'2011-12', league:'International',  type:'vintage',  emoji:'⚽', popular:true },
+  { id:102, club:'Paris SG',           name:'Maillot Fourth',    season:'2024-25', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true },
+  { id:103, club:'Équipe de France',   name:'Maillot Extérieur', season:'2026-27', league:'International',  type:'standard', emoji:'🇫🇷', popular:true },
+  { id:104, club:'Manchester United',  name:'Maillot Extérieur', season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', popular:true },
+  { id:105, club:'Real Madrid',        name:'Maillot Domicile',  season:'2026-27', league:'Liga',           type:'standard', emoji:'👕', popular:true },
+  { id:106, club:'Paris SG',           name:'Maillot Domicile',  season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true },
+  { id:107, club:'Olympique de Marseille', name:'Maillot Domicile', season:'2026-27', league:'Ligue 1',     type:'standard', emoji:'👕', popular:true },
+  { id:108, club:'Olympique Lyonnais', name:'Maillot Extérieur', season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true },
+];
+
 /* ===== STATE ===== */
 let activeLeague    = 'Tous';
 let activeClubs     = [];
@@ -1131,6 +1169,44 @@ function getBasePrice(type, version) {
 }
 function calcTotal(type, version, hasNumber, hasText) {
   return getBasePrice(type, version) + (hasNumber ? 2 : 0) + (hasText ? 2 : 0);
+}
+
+/* ===== RENDER POPULAR ===== */
+function renderPopular() {
+  const allPop = [...popularProducts, ...products.filter(p => p.type === 'vintage')];
+  const grid = document.getElementById('popGrid');
+  grid.innerHTML = popularProducts.map(p => {
+    const isVintage = p.type === 'vintage';
+    const isFav = favorites.has(p.id);
+    const priceLabel = isVintage ? '20 €' : 'Dès 16 €';
+    const priceNote  = isVintage ? '' : '<div class="product-price-note">Standard 16 € · Player 21 €</div>';
+    const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : '';
+    return `
+<div class="product-card">
+  <div class="product-img">
+    <span class="product-emoji">${p.emoji}</span>
+    ${rareBadge}
+    <span class="pop-badge">🔥 Tendance</span>
+    <div class="product-actions">
+      <button class="btn-customize" onclick="openCustomModal(${p.id})">Personnaliser &amp; Commander</button>
+      <button class="btn-fav${isFav ? ' active' : ''}" onclick="toggleFavPop(event,${p.id})">${isFav ? '❤️' : '♡'}</button>
+    </div>
+  </div>
+  <div class="product-info">
+    <div class="product-league-club">${p.league} · ${p.club}</div>
+    <div class="product-name">${p.name}</div>
+    <div class="product-season">${p.season}</div>
+    <div class="product-price">${priceLabel}</div>
+    ${priceNote}
+  </div>
+</div>`;
+  }).join('');
+}
+
+function toggleFavPop(e, id) {
+  e.stopPropagation();
+  favorites.has(id) ? favorites.delete(id) : favorites.add(id);
+  renderPopular();
 }
 
 /* ===== RENDER PRODUCTS ===== */
@@ -1243,7 +1319,7 @@ function submitNewsletter(e) {
 
 /* ===== CUSTOM MODAL ===== */
 function openCustomModal(productId) {
-  currentProduct = products.find(p => p.id === productId);
+  currentProduct = products.find(p => p.id === productId) || popularProducts.find(p => p.id === productId);
   document.getElementById('customModalTitle').textContent = `${currentProduct.name} · ${currentProduct.club}`;
 
   const stepVersion = document.getElementById('stepVersion');
@@ -1483,6 +1559,7 @@ function showToast(msg, type='success') {
 }
 
 /* ===== INIT ===== */
+renderPopular();
 renderProducts();
 </script>
 </body>
