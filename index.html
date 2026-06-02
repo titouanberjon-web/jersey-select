@@ -202,6 +202,8 @@
       transform:translateY(-4px); box-shadow:var(--glow-blue);
     }
     .league-flag { font-size:2.5rem; margin-bottom:.5rem; display:block; }
+    .league-logo { width:72px; height:72px; object-fit:contain; margin:0 auto .75rem; display:block; filter:drop-shadow(0 2px 6px rgba(0,0,0,.4)); transition:transform .2s; }
+    .league-card:hover .league-logo { transform:scale(1.08); }
     .league-name { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:.05em; }
     .league-sub { font-size:.8rem; color:var(--text-muted); }
 
@@ -652,32 +654,34 @@
     </div>
     <div class="leagues-grid">
       <div class="league-card" onclick="filterByLeague('Ligue 1')">
-        <span class="league-flag">🇫🇷</span>
+        <img class="league-logo" src="logos/ligue1.svg" alt="Ligue 1">
         <div class="league-name">Ligue 1</div>
         <div class="league-sub">France</div>
       </div>
       <div class="league-card" onclick="filterByLeague('Premier League')">
-        <span class="league-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+        <img class="league-logo" src="logos/premier-league.png" alt="Premier League" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="league-flag" style="display:none;">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
         <div class="league-name">Premier League</div>
         <div class="league-sub">Angleterre</div>
       </div>
       <div class="league-card" onclick="filterByLeague('Liga')">
-        <span class="league-flag">🇪🇸</span>
-        <div class="league-name">Liga</div>
+        <img class="league-logo" src="logos/laliga.png" alt="LaLiga">
+        <div class="league-name">LaLiga</div>
         <div class="league-sub">Espagne</div>
       </div>
       <div class="league-card" onclick="filterByLeague('Serie A')">
-        <span class="league-flag">🇮🇹</span>
+        <img class="league-logo" src="logos/serie-a.png" alt="Serie A" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="league-flag" style="display:none;">🇮🇹</span>
         <div class="league-name">Serie A</div>
         <div class="league-sub">Italie</div>
       </div>
       <div class="league-card" onclick="filterByLeague('Bundesliga')">
-        <span class="league-flag">🇩🇪</span>
+        <img class="league-logo" src="logos/bundesliga.png" alt="Bundesliga">
         <div class="league-name">Bundesliga</div>
         <div class="league-sub">Allemagne</div>
       </div>
       <div class="league-card" onclick="filterByLeague('Liga Portugal')">
-        <span class="league-flag">🇵🇹</span>
+        <img class="league-logo" src="logos/liga-portugal.png" alt="Liga Portugal">
         <div class="league-name">Liga Portugal</div>
         <div class="league-sub">Portugal</div>
       </div>
