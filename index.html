@@ -718,34 +718,10 @@
       <h2 class="section-title">Le <span style="color:var(--green)">Catalogue</span></h2>
     </div>
 
-    <!-- Club Picker -->
+    <!-- Filtres ligue + club -->
     <div class="catalogue-controls">
-      <div class="club-picker">
-        <select id="clubSelect">
-          <option value="">-- Filtrer par club --</option>
-          <option>FC Barcelone</option>
-          <option>Real Madrid</option>
-          <option>Paris Saint-Germain</option>
-          <option>Manchester City</option>
-          <option>Arsenal</option>
-          <option>Liverpool</option>
-          <option>Juventus</option>
-          <option>AC Milan</option>
-          <option>Bayern Munich</option>
-          <option>Borussia Dortmund</option>
-          <option>Olympique Lyonnais</option>
-          <option>AS Monaco</option>
-          <option>Atlético Madrid</option>
-          <option>AS Roma</option>
-          <option>Ajax Amsterdam</option>
-          <option>Inter Milan</option>
-        </select>
-        <button class="btn-add-club" onclick="addClubChip()">+ Ajouter</button>
-      </div>
-      <div class="chips-container" id="chipsContainer"></div>
-
       <!-- League filter pills -->
-      <div class="filter-pills" style="margin-top:1rem;">
+      <div class="filter-pills">
         <button class="pill active" data-league="Tous"           onclick="setPill(this)">Tous</button>
         <button class="pill"        data-league="Ligue 1"        onclick="setPill(this)">Ligue 1</button>
         <button class="pill"        data-league="Premier League" onclick="setPill(this)">Premier League</button>
@@ -755,6 +731,13 @@
         <button class="pill"        data-league="Liga Portugal"  onclick="setPill(this)">Liga Portugal</button>
         <button class="pill"        data-league="Vintage"        onclick="setPill(this)">Vintage</button>
         <button class="pill"        data-league="International"  onclick="setPill(this)">International</button>
+      </div>
+
+      <!-- Club filter (visible only when a league is selected) -->
+      <div id="clubFilterWrap" style="display:none; margin-top:1rem;">
+        <select id="clubSelect" class="form-select" style="max-width:320px;" onchange="filterByClub(this.value)">
+          <option value="">— Tous les clubs de cette ligue —</option>
+        </select>
       </div>
     </div>
 
@@ -1163,11 +1146,23 @@ const popularProducts = [
 
 /* ===== STATE ===== */
 let activeLeague    = 'Tous';
-let activeClubs     = [];
+let activeClub      = '';
 let cartItems       = [];
 let currentProduct  = null;
 let currentVersion  = 'standard';
 let favorites       = new Set();
+
+/* Clubs par ligue */
+const clubsByLeague = {
+  'Ligue 1':        ['Paris Saint-Germain', 'Olympique de Marseille'],
+  'Premier League': ['Manchester United', 'Manchester City'],
+  'Liga':           ['Real Madrid', 'FC Barcelone'],
+  'Serie A':        ['Inter de Milan', 'AC Milan'],
+  'Bundesliga':     ['Borussia Dortmund', 'Bayern Munich'],
+  'Liga Portugal':  ['Benfica', 'FC Porto'],
+  'Vintage':        [],
+  'International':  [],
+};
 
 /* ===== PRICING ===== */
 function getBasePrice(type, version) {
@@ -1221,7 +1216,7 @@ function renderProducts() {
   const grid = document.getElementById('productsGrid');
   const filtered = products.filter(p => {
     const lm = activeLeague === 'Tous' || p.league === activeLeague;
-    const cm = activeClubs.length === 0 || activeClubs.some(c => p.club.toLowerCase().includes(c.toLowerCase()) || c.toLowerCase().includes(p.club.toLowerCase()));
+    const cm = !activeClub || p.club === activeClub;
     return lm && cm;
   });
 
@@ -1267,100 +1262,51 @@ function toggleFav(e, id) {
 /* ===== FILTERS ===== */
 function setPill(btn) {
   activeLeague = btn.dataset.league;
+  activeClub = '';
   document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
+  updateClubDropdown();
+  renderProducts();
+}
+
+function updateClubDropdown() {
+  const wrap = document.getElementById('clubFilterWrap');
+  const sel  = document.getElementById('clubSelect');
+  const clubs = clubsByLeague[activeLeague] || [];
+
+  if (activeLeague === 'Tous' || clubs.length === 0) {
+    wrap.style.display = 'none';
+    sel.value = '';
+    return;
+  }
+
+  // Rebuild options
+  sel.innerHTML = '<option value="">— Tous les clubs de cette ligue —</option>';
+  clubs.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  wrap.style.display = 'block';
+}
+
+function filterByClub(club) {
+  activeClub = club;
   renderProducts();
 }
 
 function filterByLeague(league) {
   activeLeague = league;
+  activeClub = '';
   document.querySelectorAll('.pill').forEach(p => {
     p.classList.toggle('active', p.dataset.league === league);
   });
+  updateClubDropdown();
   renderProducts();
   document.getElementById('catalogue').scrollIntoView({ behavior:'smooth' });
 }
 
-/* ===== CLUB PICKER ===== */
-function addClubChip() {
-  const sel = document.getElementById('clubSelect');
-  const val = sel.value.trim();
-  if (!val || activeClubs.includes(val)) { sel.value=''; return; }
-  activeClubs.push(val);
-  sel.value = '';
-  renderChips();
-  renderProducts();
-}
 
-function removeChip(club) {
-  activeClubs = activeClubs.filter(c => c !== club);
-  renderChips();
-  renderProducts();
-}
-
-function renderChips() {
-  document.getElementById('chipsContainer').innerHTML = activeClubs.map(c =>
-    `<span class="chip">${c}<button class="chip-remove" onclick="removeChip('${c.replace(/'/g,"\\'")}')">✕</button></span>`
-  ).join('');
-}
-
-/* ===== FAQ ===== */
-function toggleFaq(qEl) {
-  const item   = qEl.parentElement;
-  const isOpen = item.classList.contains('open');
-  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-  if (!isOpen) item.classList.add('open');
-}
-
-/* ===== NEWSLETTER ===== */
-function submitNewsletter(e) {
-  e.preventDefault();
-  const email = document.getElementById('newsletterEmail').value.trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    showToast('⚠️ Veuillez entrer une adresse email valide.', 'error');
-    return;
-  }
-  document.getElementById('newsletterEmail').value = '';
-  showToast('✅ Inscription confirmée ! Bienvenue.', 'success');
-}
-
-/* ===== CUSTOM MODAL ===== */
-function openCustomModal(productId) {
-  currentProduct = products.find(p => p.id === productId) || popularProducts.find(p => p.id === productId);
-  document.getElementById('customModalTitle').textContent = `${currentProduct.name} · ${currentProduct.club}`;
-
-  const stepVersion = document.getElementById('stepVersion');
-  if (currentProduct.type === 'vintage') {
-    stepVersion.style.display = 'none';
-    currentVersion = 'vintage';
-  } else {
-    stepVersion.style.display = 'block';
-    currentVersion = 'standard';
-    document.getElementById('optStandard').classList.add('selected');
-    document.getElementById('optPlayer').classList.remove('selected');
-  }
-
-  // Reset all fields
-  ['sizeSelect','inputNumber','inputTextTop','inputTextBot'].forEach(id => document.getElementById(id).value = '');
-  ['chkNumber','chkText','chkTextTop','chkTextBot'].forEach(id => document.getElementById(id).checked = false);
-  ['numberField','textField'].forEach(id => document.getElementById(id).classList.remove('visible'));
-  ['sizeError','numberError','textError'].forEach(id => document.getElementById(id).style.display = 'none');
-  document.getElementById('globalError').textContent = '';
-
-  updatePrice();
-  updatePreview();
-  document.getElementById('customModal').classList.add('open');
-}
-
-function closeCustomModal() {
-  document.getElementById('customModal').classList.remove('open');
-}
-
-function handleModalOverlayClick(e, id) {
-  if (e.target === document.getElementById(id)) {
-    document.getElementById(id).classList.remove('open');
-  }
-}
 
 function selectVersion(v, el) {
   currentVersion = v;
