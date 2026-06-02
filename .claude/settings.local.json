@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(gh repo *)",
+      "Bash(git --version)",
+      "Read(//usr/local/bin/**)",
+      "Bash(/opt/homebrew/bin/gh repo *)",
+      "Bash(which gh *)",
+      "Bash(\"/Users/titouanberjongmail.com/Downloads/gh_2.93.0_macOS_amd64/bin/gh\" repo *)",
+      "mcp__e48386d2-12be-432a-9155-563d19b00a54__deploy_to_vercel",
+      "Bash(npx vercel *)",
+      "Bash(npm install *)",
+      "Bash(which node *)",
+      "mcp__e48386d2-12be-432a-9155-563d19b00a54__list_teams",
+      "mcp__e48386d2-12be-432a-9155-563d19b00a54__list_projects",
+      "mcp__e48386d2-12be-432a-9155-563d19b00a54__web_fetch_vercel_url",
+      "Bash(mv jersey-select.html index.html)",
+      "Bash(git push *)"
+    ]
+  }
+}
