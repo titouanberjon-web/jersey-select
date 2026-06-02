@@ -1013,16 +1013,10 @@
         </div>
       </div>
 
-      <!-- Carousel photos produit -->
-      <div class="jersey-carousel" id="jerseyCarousel">
+      <!-- Carousel photos produit (généré dynamiquement par produit) -->
+      <div class="jersey-carousel" id="jerseyCarousel" style="display:none;">
         <div class="carousel-track-wrap">
-          <div class="carousel-track" id="carouselTrack">
-            <div class="carousel-slide"><img src="images/jersey-1.jpg" alt="Vue face" loading="lazy"></div>
-            <div class="carousel-slide"><img src="images/jersey-2.jpg" alt="Col détail" loading="lazy"></div>
-            <div class="carousel-slide"><img src="images/jersey-3.jpg" alt="Badge" loading="lazy"></div>
-            <div class="carousel-slide"><img src="images/jersey-4.jpg" alt="Logo fabricant" loading="lazy"></div>
-            <div class="carousel-slide"><img src="images/jersey-5.jpg" alt="Sponsor" loading="lazy"></div>
-          </div>
+          <div class="carousel-track" id="carouselTrack"></div>
         </div>
         <button class="carousel-btn prev" onclick="carouselMove(-1)" aria-label="Précédent">&#8592;</button>
         <button class="carousel-btn next" onclick="carouselMove(1)" aria-label="Suivant">&#8594;</button>
@@ -1175,7 +1169,7 @@
 <script>
 /* ===== PRODUCT DATA ===== */
 const products = [
-  { id:1,  club:'Manchester United',      name:'Maillot Domicile', season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#DA291C', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/mu-domicile-2627.jpg' },
+  { id:1,  club:'Manchester United',      name:'Maillot Domicile', season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#DA291C', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/mu-domicile-2627.jpg', carouselImages:['images/mu-domicile-2627.jpg','images/mu-detail-1.jpg','images/mu-detail-2.jpg','images/mu-detail-3.jpg','images/mu-detail-4.jpg','images/mu-detail-5.jpg','images/mu-detail-6.jpg','images/mu-detail-7.jpg','images/mu-detail-8.jpg','images/mu-detail-9.jpg'] },
   { id:2,  club:'Manchester City',        name:'Maillot Domicile', season:'2024-25', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#6CABDD', accentColor:'#FFFFFF', flocageColor:'#FFFFFF' },
   { id:3,  club:'Paris Saint-Germain',    name:'Maillot Domicile', season:'2024-25', league:'Ligue 1',        type:'standard', emoji:'👕', mainColor:'#004170', accentColor:'#DA291C', flocageColor:'#FFFFFF' },
   { id:4,  club:'Olympique de Marseille', name:'Maillot Domicile', season:'2024-25', league:'Ligue 1',        type:'standard', emoji:'👕', mainColor:'#F0F4FF', accentColor:'#009BC4', flocageColor:'#009BC4' },
@@ -1354,32 +1348,50 @@ function makeJerseySVG(p, showBack, tTop, tNum, tBot) {
 
 /* ===== CAROUSEL ===== */
 var _carIdx = 0;
-var _carTotal = 5;
+var _carTotal = 0;
 var _carStartX = 0;
 
-function carouselInit() {
-  var dots = document.getElementById('carouselDots');
-  if (!dots) return;
+function carouselInit(images) {
+  var carousel = document.getElementById('jerseyCarousel');
+  var track    = document.getElementById('carouselTrack');
+  var dots     = document.getElementById('carouselDots');
+  if (!carousel || !track || !dots) return;
+
+  // Pas d'images pour ce produit → masquer le carousel
+  if (!images || images.length === 0) {
+    carousel.style.display = 'none';
+    return;
+  }
+
+  // Construire les slides
+  _carTotal = images.length;
+  track.innerHTML = images.map(function(src, i) {
+    return '<div class="carousel-slide"><img src="' + src + '" alt="Photo ' + (i+1) + '" loading="lazy"></div>';
+  }).join('');
+
+  // Construire les dots
   dots.innerHTML = '';
-  for (var i = 0; i < _carTotal; i++) {
+  images.forEach(function(_, i) {
     var d = document.createElement('span');
     d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
-    d.setAttribute('data-i', i);
     d.onclick = (function(idx){ return function(){ carouselGoTo(idx); }; })(i);
     dots.appendChild(d);
-  }
-  // Touch / swipe
-  var wrap = document.querySelector('.carousel-track-wrap');
-  if (wrap) {
-    wrap.addEventListener('touchstart', function(e){ _carStartX = e.touches[0].clientX; }, {passive:true});
-    wrap.addEventListener('touchend', function(e){
-      var dx = e.changedTouches[0].clientX - _carStartX;
-      if (Math.abs(dx) > 40) carouselMove(dx < 0 ? 1 : -1);
-    }, {passive:true});
-  }
+  });
+
+  // Afficher le carousel
+  carousel.style.display = 'block';
+
+  // Touch / swipe (une seule fois)
+  var wrap = carousel.querySelector('.carousel-track-wrap');
+  wrap.ontouchstart = function(e){ _carStartX = e.touches[0].clientX; };
+  wrap.ontouchend   = function(e){
+    var dx = e.changedTouches[0].clientX - _carStartX;
+    if (Math.abs(dx) > 40) carouselMove(dx < 0 ? 1 : -1);
+  };
 }
 
 function carouselMove(dir) {
+  if (_carTotal === 0) return;
   carouselGoTo((_carIdx + dir + _carTotal) % _carTotal);
 }
 
@@ -1387,8 +1399,9 @@ function carouselGoTo(idx) {
   _carIdx = idx;
   var track = document.getElementById('carouselTrack');
   if (track) track.style.transform = 'translateX(-' + (idx * 100) + '%)';
-  var dots = document.querySelectorAll('.carousel-dot');
-  dots.forEach(function(d, i){ d.classList.toggle('active', i === idx); });
+  document.querySelectorAll('.carousel-dot').forEach(function(d, i){
+    d.classList.toggle('active', i === idx);
+  });
 }
 
 function escHtml(s) {
@@ -1562,7 +1575,7 @@ function openCustomModal(productId) {
   updatePrice();
   updatePreview();
   _carIdx = 0;
-  carouselInit();
+  carouselInit(currentProduct.carouselImages || []);
   carouselGoTo(0);
   document.getElementById('customModal').classList.add('open');
 }
