@@ -1308,6 +1308,40 @@ function filterByLeague(league) {
 
 
 
+/* ===== CUSTOM MODAL ===== */
+function openCustomModal(productId) {
+  currentProduct = products.find(p => p.id === productId) || popularProducts.find(p => p.id === productId);
+  if (!currentProduct) return;
+
+  document.getElementById('customModalTitle').textContent = `${currentProduct.name} · ${currentProduct.club}`;
+
+  const stepVersion = document.getElementById('stepVersion');
+  if (currentProduct.type === 'vintage') {
+    stepVersion.style.display = 'none';
+    currentVersion = 'vintage';
+  } else {
+    stepVersion.style.display = 'block';
+    currentVersion = 'standard';
+    document.getElementById('optStandard').classList.add('selected');
+    document.getElementById('optPlayer').classList.remove('selected');
+  }
+
+  // Reset all fields
+  ['sizeSelect','inputNumber','inputTextTop','inputTextBot'].forEach(id => document.getElementById(id).value = '');
+  ['chkNumber','chkText','chkTextTop','chkTextBot'].forEach(id => document.getElementById(id).checked = false);
+  ['numberField','textField'].forEach(id => document.getElementById(id).classList.remove('visible'));
+  ['sizeError','numberError','textError'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('globalError').textContent = '';
+
+  updatePrice();
+  updatePreview();
+  document.getElementById('customModal').classList.add('open');
+}
+
+function closeCustomModal() {
+  document.getElementById('customModal').classList.remove('open');
+}
+
 function selectVersion(v, el) {
   currentVersion = v;
   document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
