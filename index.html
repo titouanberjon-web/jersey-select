@@ -1499,9 +1499,9 @@ function toggleFavPop(e, id) {
 /* ===== RENDER PRODUCTS ===== */
 function renderProducts() {
   const grid = document.getElementById('productsGrid');
-  // Combine products + popularProducts (sans doublons)
+  // Combine products + popularProducts (sans doublons par club+name+season)
   const allProducts = [...products];
-  popularProducts.forEach(p => { if (!allProducts.find(x => x.id === p.id)) allProducts.push(p); });
+  popularProducts.forEach(p => { if (!allProducts.find(x => x.club === p.club && x.name === p.name && x.season === p.season)) allProducts.push(p); });
   const filtered = allProducts.filter(p => {
     const lm = activeLeague === 'Tous'
       || (activeLeague === 'Vintage' ? p.type === 'vintage' : p.league === activeLeague)
