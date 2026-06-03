@@ -785,6 +785,7 @@
         <button class="pill"        data-league="Liga Portugal"  onclick="setPill(this)">Liga Portugal</button>
         <button class="pill"        data-league="Vintage"        onclick="setPill(this)">Vintage</button>
         <button class="pill"        data-league="International"  onclick="setPill(this)">International</button>
+        <button class="pill"        data-league="Concept"        onclick="setPill(this)">Concept</button>
       </div>
     </div>
 
@@ -1181,6 +1182,7 @@
 const products = [
   { id:1,  club:'Manchester United',      name:'Maillot Domicile', season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#DA291C', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/mu-home-1.jpg', carouselImages:['images/mu-home-1.jpg','images/mu-home-2.jpg','images/mu-home-3.jpg','images/mu-home-4.jpg','images/mu-home-5.jpg','images/mu-home-6.jpg','images/mu-home-7.jpg','images/mu-home-8.jpg','images/mu-home-9.jpg'] },
   { id:13, club:'Manchester United',      name:'Maillot Third',    season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#1C1C1C', accentColor:'#DA291C', flocageColor:'#FFFFFF', frontImage:'images/mu-third-1.jpg', carouselImages:['images/mu-third-1.jpg','images/mu-third-2.png'] },
+  { id:15, club:'FC Barcelone',            name:'Maillot Concept',   season:'2025-26', league:'Concept',       type:'standard', emoji:'👕', mainColor:'#004D98', accentColor:'#A50044', flocageColor:'#EDBB00', frontImage:'images/barca-concept-1.jpg', carouselImages:['images/barca-concept-1.jpg','images/barca-concept-2.jpg'] },
   { id:14, club:'Olympique Lyonnais',      name:'Maillot Extérieur', season:'2026-27', league:'Ligue 1', type:'standard', emoji:'👕', mainColor:'#111111', accentColor:'#CC0000', flocageColor:'#CC0000' },
   { id:201, club:'Santos FC',             name:'Maillot Rétro',    season:'2011-2012', league:'Vintage', type:'vintage', emoji:'⚽', mainColor:'#FFFFFF', accentColor:'#000000', flocageColor:'#000000', frontImage:'images/santos-retro-1.jpg', carouselImages:['images/santos-retro-1.jpg','images/santos-retro-2.webp'] },
   { id:2,  club:'Manchester City',        name:'Maillot Domicile', season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#6CABDD', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/mc-home-1.jpg', carouselImages:['images/mc-home-1.jpg','images/mc-home-2.jpg','images/mc-home-3.jpg','images/mc-home-4.jpg','images/mc-home-5.jpg','images/mc-home-6.jpg','images/mc-home-7.jpg','images/mc-home-8.jpg','images/mc-home-9.jpg'] },
@@ -1205,7 +1207,8 @@ const popularProducts = [
   { id:105, club:'Real Madrid',            name:'Maillot Domicile',  season:'2026-27', league:'Liga',           type:'standard', emoji:'👕', popular:true, mainColor:'#FAFAFA', accentColor:'#FEBE10', flocageColor:'#FEBE10', frontImage:'images/real-home-26-1.png', carouselImages:['images/real-home-26-1.png','images/real-home-26-2.jpg','images/real-home-26-3.jpg','images/real-home-26-4.jpg','images/real-home-26-5.png'] },
   { id:106, club:'Paris SG',               name:'Maillot Domicile',  season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true, mainColor:'#004170', accentColor:'#DA291C', flocageColor:'#FFFFFF', frontImage:'images/psg-home-1.jpg', carouselImages:['images/psg-home-1.jpg','images/psg-home-2.jpg','images/psg-home-3.jpg','images/psg-home-4.jpg','images/psg-home-5.jpg','images/psg-home-6.jpg','images/psg-home-7.jpg'] },
   { id:107, club:'Olympique de Marseille', name:'Maillot Domicile',  season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true, mainColor:'#F0F4FF', accentColor:'#009BC4', flocageColor:'#009BC4', frontImage:'images/om-home-1.jpg', carouselImages:['images/om-home-1.jpg'] },
-  { id:108, club:'Olympique Lyonnais',     name:'Maillot Extérieur', season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true, mainColor:'#111111', accentColor:'#CC0000', flocageColor:'#CC0000' },
+  { id:108, club:'Olympique Lyonnais',     name:'Maillot Extérieur', season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', mainColor:'#111111', accentColor:'#CC0000', flocageColor:'#CC0000' },
+  { id:109, club:'FC Barcelone',           name:'Maillot Concept',   season:'2025-26', league:'Concept',         type:'standard', emoji:'👕', popular:true, mainColor:'#004D98', accentColor:'#A50044', flocageColor:'#EDBB00', frontImage:'images/barca-concept-1.jpg', carouselImages:['images/barca-concept-1.jpg','images/barca-concept-2.jpg'] },
 ];
 
 /* ===== STATE ===== */
@@ -1226,6 +1229,7 @@ const clubsByLeague = {
   'Liga Portugal':  ['Benfica', 'FC Porto'],
   'Vintage':        [],
   'International':  [],
+  'Concept':        [],
 };
 
 /* ===== PRICING ===== */
