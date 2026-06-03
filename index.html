@@ -1598,6 +1598,90 @@ function filterByLeague(league) {
 
 
 
+/* ===== COLOR EXTRACTION FROM IMAGE ===== */
+let _previewColors = null;
+
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(v => Math.min(255, v).toString(16).padStart(2, '0')).join('');
+}
+
+function extractJerseyColors(src, callback) {
+  var img = new Image();
+  img.onload = function() {
+    var W = 100, H = 100;
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, W, H);
+    var data;
+    try { data = ctx.getImageData(0, 0, W, H).data; }
+    catch(e) { callback(null); return; }
+
+    var counts = {};
+    var whiteCount = 0;
+
+    for (var y = 15; y < 82; y += 3) {
+      for (var x = 12; x < 88; x += 3) {
+        var i = (y * W + x) * 4;
+        var r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+        if (a < 100) continue;
+        if (r > 218 && g > 218 && b > 218) { whiteCount++; continue; }
+        if (r < 18 && g < 18 && b < 18) continue;
+        // Quantize
+        var qr = Math.round(r / 36) * 36;
+        var qg = Math.round(g / 36) * 36;
+        var qb = Math.round(b / 36) * 36;
+        var hex = rgbToHex(qr, qg, qb);
+        counts[hex] = (counts[hex] || 0) + 1;
+      }
+    }
+
+    var sorted = Object.entries(counts).sort(function(a, b) { return b[1] - a[1]; });
+    if (!sorted.length && !whiteCount) { callback(null); return; }
+
+    var topNonWhite = sorted[0] ? sorted[0][1] : 0;
+    var mainColor, accentColor = null;
+
+    // Check if the dominant non-white color is dark/saturated (real jersey color)
+    // or just light grey (suggesting a truly white jersey)
+    var topHex = sorted[0] ? sorted[0][0] : null;
+    var topIsDark = false;
+    if (topHex) {
+      var tr = parseInt(topHex.slice(1,3),16);
+      var tg = parseInt(topHex.slice(3,5),16);
+      var tb = parseInt(topHex.slice(5,7),16);
+      var topLum = (0.299*tr + 0.587*tg + 0.114*tb) / 255;
+      topIsDark = topLum < 0.75; // not a light/grey color
+    }
+
+    if (whiteCount > topNonWhite * 1.4 && !topIsDark) {
+      // Truly white jersey (non-white colors are all light/grey details)
+      mainColor = '#FFFFFF';
+      if (sorted.length) accentColor = sorted[0][0];
+    } else {
+      // Dark or colored jersey — use top non-white color as main
+      mainColor = topHex || '#1a2236';
+      var mr = parseInt(mainColor.slice(1,3),16);
+      var mg = parseInt(mainColor.slice(3,5),16);
+      var mb = parseInt(mainColor.slice(5,7),16);
+      var maxDiff = 0;
+      for (var k = 0; k < Math.min(sorted.length, 20); k++) {
+        var hex2 = sorted[k][0];
+        if (hex2 === mainColor) continue;
+        var ar = parseInt(hex2.slice(1,3),16);
+        var ag = parseInt(hex2.slice(3,5),16);
+        var ab = parseInt(hex2.slice(5,7),16);
+        var diff = Math.abs(ar-mr) + Math.abs(ag-mg) + Math.abs(ab-mb);
+        if (diff > maxDiff && diff > 55) { maxDiff = diff; accentColor = hex2; }
+      }
+    }
+
+    callback({ mainColor: mainColor, accentColor: accentColor });
+  };
+  img.onerror = function() { callback(null); };
+  img.src = src;
+}
+
 /* ===== CUSTOM MODAL ===== */
 function openCustomModal(productId) {
   currentProduct = products.find(p => p.id === productId) || popularProducts.find(p => p.id === productId);
@@ -1630,7 +1714,14 @@ function openCustomModal(productId) {
   document.getElementById('globalError').textContent = '';
 
   updatePrice();
+  _previewColors = null;
   updatePreview();
+  if (currentProduct.frontImage) {
+    extractJerseyColors(currentProduct.frontImage, function(colors) {
+      _previewColors = colors;
+      updatePreview();
+    });
+  }
   _carIdx = 0;
   carouselInit(currentProduct.carouselImages || []);
   carouselGoTo(0);
@@ -1694,7 +1785,14 @@ function updatePreview() {
   var tNum = (hasNum && numVal) ? numVal : '';
   var tBot = (hasTextBot && botVal) ? botVal : '';
   var container = document.getElementById('jerseyPreviewContainer');
-  container.innerHTML = makeJerseySVG(currentProduct, true, tTop, tNum, tBot);
+  var p = currentProduct;
+  if (_previewColors) {
+    p = Object.assign({}, currentProduct,
+      { mainColor: _previewColors.mainColor },
+      _previewColors.accentColor ? { accentColor: _previewColors.accentColor } : {}
+    );
+  }
+  container.innerHTML = makeJerseySVG(p, true, tTop, tNum, tBot);
 }
 
 /* ===== ADD TO CART ===== */
