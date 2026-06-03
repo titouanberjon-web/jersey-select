@@ -206,6 +206,19 @@
     .league-card:hover .league-logo { transform:scale(1.08); }
     .league-name { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:.05em; }
     .league-sub { font-size:.8rem; color:var(--text-muted); }
+    .league-card-wrap { position:relative; }
+    .league-dropdown {
+      position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%);
+      background:var(--surface); border:1px solid var(--border); border-radius:10px;
+      min-width:175px; z-index:200; display:none; padding:.4rem 0;
+      box-shadow:0 8px 28px rgba(0,0,0,.35);
+    }
+    .league-card-wrap:hover .league-dropdown { display:block; }
+    .league-dropdown-item {
+      padding:.45rem 1rem; cursor:pointer; display:flex; align-items:center; gap:.6rem;
+      font-size:.88rem; transition:background .15s; white-space:nowrap;
+    }
+    .league-dropdown-item:hover { background:var(--surface2); color:var(--blue); }
 
     /* ===== POPULAIRES ===== */
     #populaires { background:var(--surface); }
@@ -732,15 +745,27 @@
         <div class="league-name">Liga Portugal</div>
         <div class="league-sub">Portugal</div>
       </div>
+      <div class="league-card-wrap">
+        <div class="league-card" onclick="filterByLeague('International')">
+          <span class="league-flag">🌍</span>
+          <div class="league-name">International</div>
+          <div class="league-sub">Sélections</div>
+        </div>
+        <div class="league-dropdown">
+          <div class="league-dropdown-item" onclick="filterByLeagueAndClub('International','Équipe de France')">🇫🇷 France</div>
+          <div class="league-dropdown-item" onclick="filterByLeagueAndClub('International','Brésil')">🇧🇷 Brésil</div>
+          <div class="league-dropdown-item" onclick="filterByLeagueAndClub('International','Argentine')">🇦🇷 Argentine</div>
+          <div class="league-dropdown-item" onclick="filterByLeagueAndClub('International','Portugal')">🇵🇹 Portugal</div>
+          <div class="league-dropdown-item" onclick="filterByLeagueAndClub('International','Allemagne')">🇩🇪 Allemagne</div>
+          <div class="league-dropdown-item" onclick="filterByLeagueAndClub('International','Espagne')">🇪🇸 Espagne</div>
+          <div class="league-dropdown-item" onclick="filterByLeagueAndClub('International','Angleterre')">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Angleterre</div>
+          <div class="league-dropdown-item" onclick="filterByLeagueAndClub('International','Italie')">🇮🇹 Italie</div>
+        </div>
+      </div>
       <div class="league-card" onclick="filterByLeague('Vintage')">
         <span class="league-flag">🏆</span>
         <div class="league-name">Vintage</div>
         <div class="league-sub">Classiques</div>
-      </div>
-      <div class="league-card" onclick="filterByLeague('International')">
-        <span class="league-flag">🌍</span>
-        <div class="league-name">International</div>
-        <div class="league-sub">Sélections</div>
       </div>
     </div>
   </div>
@@ -1586,6 +1611,17 @@ function updateClubDropdown() {
 function filterByClub(club) {
   activeClub = club;
   renderProducts();
+}
+
+function filterByLeagueAndClub(league, club) {
+  activeLeague = league;
+  activeClub = club;
+  document.querySelectorAll('.pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.league === league);
+  });
+  updateClubDropdown();
+  renderProducts();
+  document.getElementById('catalogue').scrollIntoView({ behavior:'smooth' });
 }
 
 function filterByLeague(league) {
