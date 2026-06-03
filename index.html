@@ -206,7 +206,8 @@
     .league-card:hover .league-logo { transform:scale(1.08); }
     .league-name { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:.05em; }
     .league-sub { font-size:.8rem; color:var(--text-muted); }
-    .league-card-wrap { position:relative; }
+    .league-card-wrap { position:relative; display:flex; flex-direction:column; }
+    .league-card-wrap > .league-card { flex:1; }
     .league-dropdown {
       position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%);
       background:var(--surface); border:1px solid var(--border); border-radius:10px;
