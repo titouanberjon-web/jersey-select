@@ -814,6 +814,16 @@
       </div>
     </div>
 
+    <!-- World Map (International only) -->
+    <div id="worldMapSection" style="display:none; margin-bottom:2rem;">
+      <div id="world-map-container" style="width:100%;background:#1a6896;border-radius:12px;overflow:hidden;position:relative;"></div>
+      <div id="worldMapTooltip" style="display:none;position:fixed;background:rgba(20,30,50,.92);color:#fff;padding:.4rem .8rem;border-radius:6px;font-size:.82rem;font-family:'Bebas Neue',sans-serif;letter-spacing:.05em;pointer-events:none;z-index:9999;"></div>
+      <div style="text-align:center;margin-top:.6rem;font-size:.82rem;color:var(--text-muted);">
+        Clique sur un pays mis en valeur pour filtrer ·
+        <button id="mapResetBtn" onclick="filterByLeague('International')" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:.82rem;text-decoration:underline;">Voir tout</button>
+      </div>
+    </div>
+
     <!-- Products grid -->
     <div class="products-grid" id="productsGrid"></div>
   </div>
@@ -1585,6 +1595,8 @@ function setPill(btn) {
   btn.classList.add('active');
   updateClubDropdown();
   renderProducts();
+  if (activeLeague === 'International') { showWorldMap(null); }
+  else { hideWorldMap(); }
 }
 
 function updateClubDropdown() {
@@ -1621,12 +1633,16 @@ function filterByLeagueAndClub(league, club) {
   });
   updateClubDropdown();
   renderProducts();
+  if (league === 'International') { showWorldMap(club); }
+  else { hideWorldMap(); }
   document.getElementById('catalogue').scrollIntoView({ behavior:'smooth' });
 }
 
 function filterByLeague(league) {
   activeLeague = league;
   activeClub = '';
+  if (league === 'International') { showWorldMap(null); }
+  else { hideWorldMap(); }
   document.querySelectorAll('.pill').forEach(p => {
     p.classList.toggle('active', p.dataset.league === league);
   });
@@ -1990,6 +2006,172 @@ function showToast(msg, type='success') {
 /* ===== INIT ===== */
 renderPopular();
 renderProducts();
+</script>
+<!-- D3 + TopoJSON for world map -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+/* ===== WORLD MAP ===== */
+
+// ISO numeric codes → club name in products
+const mapCountries = {
+  '250': { club: 'Équipe de France', flag: '🇫🇷', label: 'France' },
+  '76':  { club: 'Brésil',          flag: '🇧🇷', label: 'Brésil' },
+  '32':  { club: 'Argentine',       flag: '🇦🇷', label: 'Argentine' },
+  '620': { club: 'Portugal',        flag: '🇵🇹', label: 'Portugal' },
+  '276': { club: 'Allemagne',       flag: '🇩🇪', label: 'Allemagne' },
+  '724': { club: 'Espagne',         flag: '🇪🇸', label: 'Espagne' },
+  '826': { club: 'Angleterre',      flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', label: 'Angleterre' },
+  '380': { club: 'Italie',          flag: '🇮🇹', label: 'Italie' },
+};
+
+let _mapInitialized = false;
+let _mapSvg = null;
+let _mapPaths = null;
+
+function showWorldMap(selectedClub) {
+  const section = document.getElementById('worldMapSection');
+  section.style.display = 'block';
+  if (!_mapInitialized) { initWorldMap(selectedClub); }
+  else { updateMapHighlight(selectedClub); }
+}
+
+function hideWorldMap() {
+  document.getElementById('worldMapSection').style.display = 'none';
+}
+
+function initWorldMap(selectedClub) {
+  _mapInitialized = true;
+  const container = document.getElementById('world-map-container');
+  const W = container.offsetWidth || 720;
+  const H = Math.round(W * 0.52);
+  container.style.height = H + 'px';
+
+  const svg = d3.select('#world-map-container')
+    .append('svg')
+    .attr('width', '100%')
+    .attr('height', H)
+    .attr('viewBox', `0 0 ${W} ${H}`);
+
+  svg.append('rect').attr('width', W).attr('height', H).attr('fill', '#1a2e4a').attr('rx', 12);
+
+  const proj = d3.geoNaturalEarth1().scale(W / 6.4).translate([W / 2, H / 2]);
+  const path = d3.geoPath().projection(proj);
+  const g = svg.append('g');
+  const tooltip = document.getElementById('worldMapTooltip');
+
+  _mapSvg = svg;
+
+  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+    .then(r => r.json())
+    .then(world => {
+      const countries = topojson.feature(world, world.objects.countries);
+
+      _mapPaths = g.selectAll('path')
+        .data(countries.features)
+        .enter().append('path')
+        .attr('d', path)
+        .attr('fill', d => mapCountries[d.id] ? '#4ade80' : '#2d5a3d')
+        .attr('stroke', d => mapCountries[d.id] ? '#16a34a' : '#1e3d2a')
+        .attr('stroke-width', 0.6)
+        .style('cursor', d => mapCountries[d.id] ? 'pointer' : 'default')
+        .on('mouseover', function(event, d) {
+          const info = mapCountries[d.id];
+          if (!info) return;
+          d3.select(this).attr('fill', '#86efac').attr('stroke', '#22c55e').attr('stroke-width', 1.5);
+          tooltip.style.display = 'block';
+          tooltip.textContent = info.flag + ' ' + info.label;
+        })
+        .on('mousemove', function(event) {
+          tooltip.style.left = (event.clientX + 14) + 'px';
+          tooltip.style.top  = (event.clientY - 28) + 'px';
+        })
+        .on('mouseout', function(event, d) {
+          tooltip.style.display = 'none';
+          const info = mapCountries[d.id];
+          if (!info) return;
+          const isSel = activeClub === info.club;
+          d3.select(this)
+            .attr('fill', isSel ? '#facc15' : '#4ade80')
+            .attr('stroke', isSel ? '#ca8a04' : '#16a34a')
+            .attr('stroke-width', isSel ? 1.5 : 0.6);
+        })
+        .on('click', function(event, d) {
+          const info = mapCountries[d.id];
+          if (!info) return;
+          filterByLeagueAndClub('International', info.club);
+        });
+
+      // Labels continents
+      const labels = [
+        { name: 'AM. DU NORD', lon: -100, lat: 50 },
+        { name: 'AM. DU SUD',  lon: -60,  lat: -20 },
+        { name: 'EUROPE',      lon: 15,   lat: 54 },
+        { name: 'AFRIQUE',     lon: 20,   lat: 5 },
+        { name: 'ASIE',        lon: 90,   lat: 45 },
+        { name: 'AUSTRALIE',   lon: 135,  lat: -25 },
+      ];
+      labels.forEach(l => {
+        const pt = proj([l.lon, l.lat]);
+        if (!pt) return;
+        svg.append('text').attr('x', pt[0]).attr('y', pt[1])
+          .attr('text-anchor', 'middle')
+          .attr('font-family', 'Bebas Neue,sans-serif')
+          .attr('font-size', W < 500 ? 7 : 10)
+          .attr('font-weight', '700')
+          .attr('fill', '#c8e6d4').attr('opacity', 0.6)
+          .text(l.name);
+      });
+
+      // Labels océans
+      const oceans = [
+        { name: 'Pacifique', lon: -150, lat: 5 },
+        { name: 'Atlantique', lon: -30, lat: 5 },
+        { name: 'Indien', lon: 75, lat: -20 },
+      ];
+      oceans.forEach(o => {
+        const pt = proj([o.lon, o.lat]);
+        if (!pt) return;
+        svg.append('text').attr('x', pt[0]).attr('y', pt[1])
+          .attr('text-anchor', 'middle')
+          .attr('font-family', 'sans-serif')
+          .attr('font-size', W < 500 ? 6 : 9)
+          .attr('fill', '#7db9d4').attr('opacity', 0.7)
+          .attr('font-style', 'italic').text(o.name);
+      });
+
+      // Légende
+      const lx = 12, ly = H - 46;
+      svg.append('rect').attr('x', lx).attr('y', ly).attr('width', 12).attr('height', 12).attr('fill', '#4ade80').attr('rx', 2);
+      svg.append('text').attr('x', lx + 16).attr('y', ly + 10).attr('font-family', 'sans-serif').attr('font-size', 9).attr('fill', '#c8e6d4').text('Maillot disponible');
+      svg.append('rect').attr('x', lx).attr('y', ly + 18).attr('width', 12).attr('height', 12).attr('fill', '#facc15').attr('rx', 2);
+      svg.append('text').attr('x', lx + 16).attr('y', ly + 28).attr('font-family', 'sans-serif').attr('font-size', 9).attr('fill', '#c8e6d4').text('Sélection active');
+
+      updateMapHighlight(selectedClub);
+    });
+}
+
+function updateMapHighlight(selectedClub) {
+  if (!_mapPaths) return;
+  _mapPaths
+    .attr('fill', d => {
+      const info = mapCountries[d.id];
+      if (!info) return '#2d5a3d';
+      if (selectedClub && info.club === selectedClub) return '#facc15';
+      return '#4ade80';
+    })
+    .attr('stroke', d => {
+      const info = mapCountries[d.id];
+      if (!info) return '#1e3d2a';
+      if (selectedClub && info.club === selectedClub) return '#ca8a04';
+      return '#16a34a';
+    })
+    .attr('stroke-width', d => {
+      const info = mapCountries[d.id];
+      if (info && selectedClub && info.club === selectedClub) return 1.5;
+      return 0.6;
+    });
+}
 </script>
 </body>
 </html>
