@@ -2013,17 +2013,79 @@ renderProducts();
 <script>
 /* ===== WORLD MAP ===== */
 
-// ISO numeric codes → club name in products
+// ISO numeric codes → club name in products (liste complète — s'active automatiquement si un maillot existe)
 const mapCountries = {
   '250': { club: 'Équipe de France', flag: '🇫🇷', label: 'France' },
-  '76':  { club: 'Brésil',          flag: '🇧🇷', label: 'Brésil' },
-  '32':  { club: 'Argentine',       flag: '🇦🇷', label: 'Argentine' },
-  '620': { club: 'Portugal',        flag: '🇵🇹', label: 'Portugal' },
-  '276': { club: 'Allemagne',       flag: '🇩🇪', label: 'Allemagne' },
-  '724': { club: 'Espagne',         flag: '🇪🇸', label: 'Espagne' },
-  '826': { club: 'Angleterre',      flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', label: 'Angleterre' },
-  '380': { club: 'Italie',          flag: '🇮🇹', label: 'Italie' },
+  '76':  { club: 'Brésil',           flag: '🇧🇷', label: 'Brésil' },
+  '32':  { club: 'Argentine',        flag: '🇦🇷', label: 'Argentine' },
+  '620': { club: 'Portugal',         flag: '🇵🇹', label: 'Portugal' },
+  '276': { club: 'Allemagne',        flag: '🇩🇪', label: 'Allemagne' },
+  '724': { club: 'Espagne',          flag: '🇪🇸', label: 'Espagne' },
+  '826': { club: 'Angleterre',       flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', label: 'Angleterre' },
+  '380': { club: 'Italie',           flag: '🇮🇹', label: 'Italie' },
+  '528': { club: 'Pays-Bas',         flag: '🇳🇱', label: 'Pays-Bas' },
+  '56':  { club: 'Belgique',         flag: '🇧🇪', label: 'Belgique' },
+  '191': { club: 'Croatie',          flag: '🇭🇷', label: 'Croatie' },
+  '70':  { club: 'Bosnie',           flag: '🇧🇦', label: 'Bosnie' },
+  '688': { club: 'Serbie',           flag: '🇷🇸', label: 'Serbie' },
+  '300': { club: 'Grèce',            flag: '🇬🇷', label: 'Grèce' },
+  '792': { club: 'Turquie',          flag: '🇹🇷', label: 'Turquie' },
+  '616': { club: 'Pologne',          flag: '🇵🇱', label: 'Pologne' },
+  '203': { club: 'République Tchèque', flag: '🇨🇿', label: 'Rép. Tchèque' },
+  '756': { club: 'Suisse',           flag: '🇨🇭', label: 'Suisse' },
+  '40':  { club: 'Autriche',         flag: '🇦🇹', label: 'Autriche' },
+  '208': { club: 'Danemark',         flag: '🇩🇰', label: 'Danemark' },
+  '752': { club: 'Suède',            flag: '🇸🇪', label: 'Suède' },
+  '578': { club: 'Norvège',          flag: '🇳🇴', label: 'Norvège' },
+  '246': { club: 'Finlande',         flag: '🇫🇮', label: 'Finlande' },
+  '372': { club: 'Irlande',          flag: '🇮🇪', label: 'Irlande' },
+  '348': { club: 'Hongrie',          flag: '🇭🇺', label: 'Hongrie' },
+  '642': { club: 'Roumanie',         flag: '🇷🇴', label: 'Roumanie' },
+  '100': { club: 'Bulgarie',         flag: '🇧🇬', label: 'Bulgarie' },
+  '703': { club: 'Slovaquie',        flag: '🇸🇰', label: 'Slovaquie' },
+  '705': { club: 'Slovénie',         flag: '🇸🇮', label: 'Slovénie' },
+  '191': { club: 'Croatie',          flag: '🇭🇷', label: 'Croatie' },
+  '804': { club: 'Ukraine',          flag: '🇺🇦', label: 'Ukraine' },
+  '643': { club: 'Russie',           flag: '🇷🇺', label: 'Russie' },
+  '840': { club: 'États-Unis',       flag: '🇺🇸', label: 'États-Unis' },
+  '124': { club: 'Canada',           flag: '🇨🇦', label: 'Canada' },
+  '484': { club: 'Mexique',          flag: '🇲🇽', label: 'Mexique' },
+  '170': { club: 'Colombie',         flag: '🇨🇴', label: 'Colombie' },
+  '152': { club: 'Chili',            flag: '🇨🇱', label: 'Chili' },
+  '858': { club: 'Uruguay',          flag: '🇺🇾', label: 'Uruguay' },
+  '604': { club: 'Pérou',            flag: '🇵🇪', label: 'Pérou' },
+  '218': { club: 'Équateur',         flag: '🇪🇨', label: 'Équateur' },
+  '591': { club: 'Panama',           flag: '🇵🇦', label: 'Panama' },
+  '566': { club: 'Nigéria',          flag: '🇳🇬', label: 'Nigéria' },
+  '288': { club: 'Ghana',            flag: '🇬🇭', label: 'Ghana' },
+  '384': { club: "Côte d'Ivoire",    flag: '🇨🇮', label: "Côte d'Ivoire" },
+  '504': { club: 'Maroc',            flag: '🇲🇦', label: 'Maroc' },
+  '818': { club: 'Égypte',           flag: '🇪🇬', label: 'Égypte' },
+  '710': { club: 'Afrique du Sud',   flag: '🇿🇦', label: 'Afrique du Sud' },
+  '404': { club: 'Kenya',            flag: '🇰🇪', label: 'Kenya' },
+  '12':  { club: 'Algérie',          flag: '🇩🇿', label: 'Algérie' },
+  '788': { club: 'Tunisie',          flag: '🇹🇳', label: 'Tunisie' },
+  '120': { club: 'Cameroun',         flag: '🇨🇲', label: 'Cameroun' },
+  '686': { club: 'Sénégal',          flag: '🇸🇳', label: 'Sénégal' },
+  '392': { club: 'Japon',            flag: '🇯🇵', label: 'Japon' },
+  '410': { club: 'Corée du Sud',     flag: '🇰🇷', label: 'Corée du Sud' },
+  '156': { club: 'Chine',            flag: '🇨🇳', label: 'Chine' },
+  '356': { club: 'Inde',             flag: '🇮🇳', label: 'Inde' },
+  '682': { club: 'Arabie Saoudite',  flag: '🇸🇦', label: 'Arabie Saoudite' },
+  '364': { club: 'Iran',             flag: '🇮🇷', label: 'Iran' },
+  '400': { club: 'Jordanie',         flag: '🇯🇴', label: 'Jordanie' },
+  '36':  { club: 'Australie',        flag: '🇦🇺', label: 'Australie' },
+  '554': { club: 'Nouvelle-Zélande', flag: '🇳🇿', label: 'Nouvelle-Zélande' },
 };
+
+// Calcule dynamiquement quels clubs ont des maillots dans le catalogue
+function getAvailableIntClubs() {
+  const allProds = [...products];
+  popularProducts.forEach(p => {
+    if (!allProds.find(x => x.club === p.club && x.name === p.name && x.season === p.season)) allProds.push(p);
+  });
+  return new Set(allProds.filter(p => p.league === 'International').map(p => p.club));
+}
 
 let _mapInitialized = false;
 let _mapSvg = null;
@@ -2067,17 +2129,30 @@ function initWorldMap(selectedClub) {
     .then(world => {
       const countries = topojson.feature(world, world.objects.countries);
 
+      const available = getAvailableIntClubs();
+
       _mapPaths = g.selectAll('path')
         .data(countries.features)
         .enter().append('path')
         .attr('d', path)
-        .attr('fill', d => mapCountries[d.id] ? '#4ade80' : '#2d5a3d')
-        .attr('stroke', d => mapCountries[d.id] ? '#16a34a' : '#1e3d2a')
+        .attr('fill', d => {
+          const info = mapCountries[d.id];
+          if (!info || !available.has(info.club)) return '#2d5a3d';
+          return '#4ade80';
+        })
+        .attr('stroke', d => {
+          const info = mapCountries[d.id];
+          if (!info || !available.has(info.club)) return '#1e3d2a';
+          return '#16a34a';
+        })
         .attr('stroke-width', 0.6)
-        .style('cursor', d => mapCountries[d.id] ? 'pointer' : 'default')
+        .style('cursor', d => {
+          const info = mapCountries[d.id];
+          return (info && available.has(info.club)) ? 'pointer' : 'default';
+        })
         .on('mouseover', function(event, d) {
           const info = mapCountries[d.id];
-          if (!info) return;
+          if (!info || !available.has(info.club)) return;
           d3.select(this).attr('fill', '#86efac').attr('stroke', '#22c55e').attr('stroke-width', 1.5);
           tooltip.style.display = 'block';
           tooltip.textContent = info.flag + ' ' + info.label;
@@ -2089,7 +2164,7 @@ function initWorldMap(selectedClub) {
         .on('mouseout', function(event, d) {
           tooltip.style.display = 'none';
           const info = mapCountries[d.id];
-          if (!info) return;
+          if (!info || !available.has(info.club)) return;
           const isSel = activeClub === info.club;
           d3.select(this)
             .attr('fill', isSel ? '#facc15' : '#4ade80')
@@ -2098,7 +2173,7 @@ function initWorldMap(selectedClub) {
         })
         .on('click', function(event, d) {
           const info = mapCountries[d.id];
-          if (!info) return;
+          if (!info || !available.has(info.club)) return;
           filterByLeagueAndClub('International', info.club);
         });
 
@@ -2153,23 +2228,28 @@ function initWorldMap(selectedClub) {
 
 function updateMapHighlight(selectedClub) {
   if (!_mapPaths) return;
+  const available = getAvailableIntClubs();
   _mapPaths
     .attr('fill', d => {
       const info = mapCountries[d.id];
-      if (!info) return '#2d5a3d';
+      if (!info || !available.has(info.club)) return '#2d5a3d';
       if (selectedClub && info.club === selectedClub) return '#facc15';
       return '#4ade80';
     })
     .attr('stroke', d => {
       const info = mapCountries[d.id];
-      if (!info) return '#1e3d2a';
+      if (!info || !available.has(info.club)) return '#1e3d2a';
       if (selectedClub && info.club === selectedClub) return '#ca8a04';
       return '#16a34a';
     })
     .attr('stroke-width', d => {
       const info = mapCountries[d.id];
-      if (info && selectedClub && info.club === selectedClub) return 1.5;
+      if (info && available.has(info.club) && selectedClub && info.club === selectedClub) return 1.5;
       return 0.6;
+    })
+    .style('cursor', d => {
+      const info = mapCountries[d.id];
+      return (info && available.has(info.club)) ? 'pointer' : 'default';
     });
 }
 </script>
