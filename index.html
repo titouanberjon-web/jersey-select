@@ -971,9 +971,6 @@
       <ul class="footer-links">
         <li><a href="#apropos">À propos</a></li>
         <li><a href="#faq">Livraison &amp; retours</a></li>
-        <li><a href="javascript:void(0)" onclick="openLegal('mentions')">Mentions légales</a></li>
-        <li><a href="javascript:void(0)" onclick="openLegal('cgv')">CGV</a></li>
-        <li><a href="javascript:void(0)" onclick="openLegal('privacy')">Politique de confidentialité</a></li>
         <li><a href="#faq">FAQ</a></li>
       </ul>
     </div>
@@ -1125,77 +1122,6 @@
   </div>
 </div>
 
-<!-- ===== LEGAL MODALS ===== -->
-<div class="modal-overlay" id="legalMentions" onclick="handleModalOverlayClick(event,'legalMentions')">
-  <div class="modal legal-modal">
-    <div class="modal-header">
-      <span class="modal-title">Mentions Légales</span>
-      <button class="modal-close" onclick="closeLegal('mentions')">✕</button>
-    </div>
-    <div class="modal-body legal-content">
-      <h3>Éditeur du site</h3>
-      <p><strong>Éditeur :</strong> Titouan Berjon<br>
-         <strong>Statut :</strong> Auto-entrepreneur<br>
-         <strong>Adresse :</strong> Besançon (25000), Bourgogne-Franche-Comté, France<br>
-         <strong>Email :</strong> jerseyselect@mail.com<br>
-         <strong>Hébergement :</strong> [À compléter après déploiement]</p>
-      <h3>Activité</h3>
-      <p>Revente de maillots de football authentiques. Prix affichés en euros TTC.</p>
-      <h3>Propriété intellectuelle</h3>
-      <p>Les noms de clubs, écussons et marques (Nike, Adidas, Puma…) appartiennent à leurs détenteurs respectifs. Jersey Select opère en tant que revendeur indépendant et ne revendique aucun droit sur ces marques.</p>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="legalCgv" onclick="handleModalOverlayClick(event,'legalCgv')">
-  <div class="modal legal-modal">
-    <div class="modal-header">
-      <span class="modal-title">Conditions Générales de Vente</span>
-      <button class="modal-close" onclick="closeLegal('cgv')">✕</button>
-    </div>
-    <div class="modal-body legal-content">
-      <h3>Article 1 — Objet</h3>
-      <p>Vente de maillots de football authentiques, neufs ou d'occasion.</p>
-      <h3>Article 2 — Prix</h3>
-      <p>Affichés en euros TTC, hors frais de livraison. Modifiables à tout moment ; facturés au tarif en vigueur à la validation de la commande.</p>
-      <h3>Article 3 — Commande</h3>
-      <p>Validée à réception du paiement. Modification ou annulation possible dans les 72h. Passé ce délai, la commande est en traitement et ne peut plus être modifiée.</p>
-      <h3>Article 4 — Paiement</h3>
-      <p>Carte bancaire ou tout autre moyen indiqué sur le site. Aucune donnée bancaire n'est conservée par Jersey Select.</p>
-      <h3>Article 5 — Livraison</h3>
-      <p>Expédition sous 2 à 3 semaines après confirmation. Email de suivi envoyé à l'expédition. Jersey Select n'est plus responsable du colis après remise au transporteur. Les frais de douane éventuels sont à la charge du client.</p>
-      <h3>Article 6 — Retours et remboursements</h3>
-      <p>14 jours à compter de la réception pour les articles non floqués, non portés, dans leur état d'origine. Les maillots floqués à la demande ne sont pas repris, sauf défaut de fabrication avéré. Toute réclamation doit être effectuée dans les 48h après réception à jerseyselect@mail.com.</p>
-      <h3>Article 7 — Responsabilité</h3>
-      <p>Jersey Select ne peut être tenu responsable des retards imputables au transporteur ni des saisies ou destructions douanières.</p>
-      <h3>Article 8 — Litiges</h3>
-      <p>Le droit français est applicable. En cas de litige, une résolution amiable sera privilégiée avant toute action judiciaire.</p>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="legalPrivacy" onclick="handleModalOverlayClick(event,'legalPrivacy')">
-  <div class="modal legal-modal">
-    <div class="modal-header">
-      <span class="modal-title">Politique de Confidentialité</span>
-      <button class="modal-close" onclick="closeLegal('privacy')">✕</button>
-    </div>
-    <div class="modal-body legal-content">
-      <h3>Données collectées</h3>
-      <p>Prénom, adresse email, adresse de livraison — uniquement dans le cadre d'une commande.</p>
-      <h3>Finalité</h3>
-      <p>Traitement de la commande exclusivement.</p>
-      <h3>Partage</h3>
-      <p>Aucune revente ni transmission à des tiers.</p>
-      <h3>Conservation</h3>
-      <p>Données supprimées après 3 ans sans activité.</p>
-      <h3>Droits RGPD</h3>
-      <p>Droit d'accès, rectification et suppression sur demande à jerseyselect@mail.com.</p>
-      <h3>Cookies</h3>
-      <p>Aucun cookie tiers ni tracker publicitaire utilisé sur ce site.</p>
-    </div>
-  </div>
-</div>
 
 <!-- ===== TOAST CONTAINER ===== -->
 <div class="toast-container" id="toastContainer"></div>
@@ -2007,9 +1933,6 @@ function closeCart() {
 }
 
 /* ===== LEGAL MODALS ===== */
-const legalIds = { mentions:'legalMentions', cgv:'legalCgv', privacy:'legalPrivacy' };
-function openLegal(type)  { document.getElementById(legalIds[type]).classList.add('open'); }
-function closeLegal(type) { document.getElementById(legalIds[type]).classList.remove('open'); }
 
 /* ===== TOAST ===== */
 function showToast(msg, type='success') {
