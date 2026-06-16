@@ -1,0 +1,81 @@
+<svg width="100%" viewBox="0 0 690 530" role="img" xmlns="http://www.w3.org/2000/svg" style="">
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Jersey Select — Logo bouclier élargi</title>
+  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Logo écusson néon vert avec bouclier agrandi pour respiration des textes</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e1220"/>
+      <stop offset="100%" stop-color="#080c18"/>
+    </linearGradient>
+    <radialGradient id="shieldInner" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#0d2a1a"/>
+      <stop offset="60%" stop-color="#071510"/>
+      <stop offset="100%" stop-color="#030a08"/>
+    </radialGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5dffb0"/>
+      <stop offset="40%" stop-color="#22e87a"/>
+      <stop offset="100%" stop-color="#0d8c45"/>
+    </linearGradient>
+    <radialGradient id="glowGreen" cx="50%" cy="50%" r="52%">
+      <stop offset="0%" stop-color="#00ff88" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="jerseyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7b8fff"/>
+      <stop offset="50%" stop-color="#9575ff"/>
+      <stop offset="100%" stop-color="#6ec6ff"/>
+    </linearGradient>
+    <filter id="blueGlowSoft" x="-12%" y="-12%" width="124%" height="124%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="borderGlow" x="-8%" y="-8%" width="116%" height="116%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="tagGlow" x="-15%" y="-30%" width="130%" height="160%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  <mask id="imagine-text-gaps-nhfqg7" maskUnits="userSpaceOnUse"><rect x="0" y="0" width="690" height="530" fill="white"/><rect x="201.7578125" y="105" width="276.484375" height="111.5" fill="black" rx="2"/><rect x="201.7578125" y="105" width="276.484375" height="111.5" fill="black" rx="2"/><rect x="200.625" y="213.5" width="278.75" height="106" fill="black" rx="2"/><rect x="200.625" y="213.5" width="278.75" height="106" fill="black" rx="2"/><rect x="249.44140625" y="359.5" width="181.1171875" height="21.5" fill="black" rx="2"/></mask></defs>
+
+  <rect width="680" height="520" fill="url(#bg)" style="stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Grille terrain -->
+  <g opacity="0.04" stroke="#4466ff" stroke-width="0.5" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.04;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">
+    <line x1="0" y1="60" x2="680" y2="60" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/><line x1="0" y1="120" x2="680" y2="120" mask="url(#imagine-text-gaps-nhfqg7)" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <line x1="0" y1="180" x2="680" y2="180" mask="url(#imagine-text-gaps-nhfqg7)" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/><line x1="0" y1="240" x2="680" y2="240" mask="url(#imagine-text-gaps-nhfqg7)" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <line x1="0" y1="300" x2="680" y2="300" mask="url(#imagine-text-gaps-nhfqg7)" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/><line x1="0" y1="360" x2="680" y2="360" mask="url(#imagine-text-gaps-nhfqg7)" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <line x1="0" y1="420" x2="680" y2="420" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/><line x1="0" y1="480" x2="680" y2="480" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <line x1="60" y1="0" x2="60" y2="520" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/><line x1="120" y1="0" x2="120" y2="520" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <line x1="180" y1="0" x2="180" y2="520" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/><line x1="240" y1="0" x2="240" y2="520" mask="url(#imagine-text-gaps-nhfqg7)" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <line x1="340" y1="0" x2="340" y2="520" mask="url(#imagine-text-gaps-nhfqg7)" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/><line x1="440" y1="0" x2="440" y2="520" mask="url(#imagine-text-gaps-nhfqg7)" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <line x1="500" y1="0" x2="500" y2="520" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/><line x1="560" y1="0" x2="560" y2="520" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+    <line x1="620" y1="0" x2="620" y2="520" style="fill:rgb(0, 0, 0);stroke:rgb(68, 102, 255);color:rgb(255, 255, 255);stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  </g>
+  <path d="M620 420 L632 432 L620 444 L608 432Z" fill="#8899ff" opacity="0.5" style="fill:rgb(136, 153, 255);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.5;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Bouclier plus grand : de x=170 à x=510, de y=30 à y=460 -->
+
+  <!-- Bordure extérieure néon -->
+  <path d="M340 34 Q428 34 510 60 L510 300 Q510 410 340 454 Q170 410 170 300 L170 60 Q252 34 340 34Z" fill="none" stroke="url(#borderGrad)" stroke-width="7" filter="url(#borderGlow)" style="fill:none;color:rgb(255, 255, 255);stroke-width:7px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Bordure intérieure fine -->
+  <path d="M340 44 Q424 44 498 68 L498 298 Q498 402 340 444 Q182 402 182 298 L182 68 Q256 44 340 44Z" fill="none" stroke="#22e87a" stroke-width="1.5" opacity="0.7" style="fill:none;stroke:rgb(34, 232, 122);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.7;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Corps bouclier -->
+  <path d="M340 44 Q424 44 498 68 L498 298 Q498 402 340 444 Q182 402 182 298 L182 68 Q256 44 340 44Z" fill="url(#shieldInner)" style="stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <path d="M340 44 Q424 44 498 68 L498 298 Q498 402 340 444 Q182 402 182 298 L182 68 Q256 44 340 44Z" fill="url(#glowGreen)" style="stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, &quot;system-ui&quot;, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- JERSEY — bien centré, marges confortables -->
+  <text x="340" y="196" text-anchor="middle" font-family="Impact,Arial Black,sans-serif" font-size="88" font-weight="900" letter-spacing="0.06em" fill="#2233aa" opacity="0.55" style="fill:rgb(34, 51, 170);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.55;font-family:Impact, &quot;Arial Black&quot;, sans-serif;font-size:88px;font-weight:900;text-anchor:middle;dominant-baseline:auto">JERSEY</text>
+  <text x="340" y="196" text-anchor="middle" font-family="Impact,Arial Black,sans-serif" font-size="88" font-weight="900" letter-spacing="0.06em" fill="url(#jerseyGrad)" filter="url(#blueGlowSoft)" style="stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Impact, &quot;Arial Black&quot;, sans-serif;font-size:88px;font-weight:900;text-anchor:middle;dominant-baseline:auto">JERSEY</text>
+
+  <!-- SELECT outline vert -->
+  <text x="340" y="300" text-anchor="middle" font-family="Impact,Arial Black,sans-serif" font-size="84" font-weight="900" letter-spacing="0.08em" fill="none" stroke="#22e87a" stroke-width="2.8" style="fill:none;stroke:rgb(34, 232, 122);color:rgb(255, 255, 255);stroke-width:2.8px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Impact, &quot;Arial Black&quot;, sans-serif;font-size:84px;font-weight:900;text-anchor:middle;dominant-baseline:auto">SELECT</text>
+  <text x="340" y="300" text-anchor="middle" font-family="Impact,Arial Black,sans-serif" font-size="84" font-weight="900" letter-spacing="0.08em" fill="none" stroke="#88ffcc" stroke-width="0.9" opacity="0.85" style="fill:none;stroke:rgb(136, 255, 204);color:rgb(255, 255, 255);stroke-width:0.9px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.85;font-family:Impact, &quot;Arial Black&quot;, sans-serif;font-size:84px;font-weight:900;text-anchor:middle;dominant-baseline:auto">SELECT</text>
+
+  <!-- NÉ DU TERRAIN — bien espacé sous SELECT, lisible -->
+  <text x="340" y="376" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" letter-spacing="0.32em" fill="#22e87a" filter="url(#tagGlow)" style="fill:rgb(34, 232, 122);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:ui-sans-serif, system-ui, sans-serif;font-size:15px;font-weight:400;text-anchor:middle;dominant-baseline:auto">NÉ DU TERRAIN</text>
+
+</svg>
