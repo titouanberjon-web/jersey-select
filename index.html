@@ -573,8 +573,33 @@
     .cart-footer { padding:1.5rem; border-top:1px solid var(--border); }
     .cart-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; }
     .cart-total-amount { color:var(--green); font-size:1.6rem; }
-    .btn-order { width:100%; background:var(--green); color:#000; font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.1em; border:none; padding:1rem; cursor:pointer; border-radius:4px; transition:background .2s; }
+    .btn-order {
+      width:100%; background:var(--green); color:#000;
+      font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.1em;
+      border:none; padding:1rem; cursor:pointer; transition:background .2s;
+      clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+    }
     .btn-order:hover { background:#00ff88; }
+
+    /* ===== BON DE COMMANDE (RÉCAP WHATSAPP) ===== */
+    .order-recap-items { display:flex; flex-direction:column; gap:.75rem; }
+    .order-recap-item {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:8px; padding:.85rem 1rem;
+      display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+    }
+    .order-recap-item-info { flex:1; }
+    .order-recap-item-name { font-weight:600; margin-bottom:.2rem; font-size:.95rem; }
+    .order-recap-item-details { font-size:.8rem; color:var(--text-muted); line-height:1.6; }
+    .order-recap-item-price { color:var(--green); font-family:'Bebas Neue',sans-serif; font-size:1.2rem; white-space:nowrap; }
+    .order-recap-instructions { color:var(--text-muted); font-size:.9rem; line-height:1.6; margin:1.25rem 0; text-align:center; }
+    .btn-whatsapp {
+      width:100%; background:var(--green); color:#000;
+      font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.05em;
+      border:none; padding:1rem; cursor:pointer; transition:all .2s;
+      clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+    }
+    .btn-whatsapp:hover { background:#00ff88; box-shadow:var(--glow-green); }
 
     /* ===== TOAST ===== */
     .toast-container { position:fixed; bottom:2rem; right:2rem; z-index:3000; display:flex; flex-direction:column; gap:.5rem; }
@@ -980,7 +1005,7 @@
         <li><a href="mailto:jerseyselect@mail.com">jerseyselect@mail.com</a></li>
         <li><a href="#">Instagram</a></li>
         <li><a href="#">Vinted</a></li>
-        <li><a href="#">WhatsApp</a></li>
+        <li><a href="#" class="wa-link" target="_blank" rel="noopener">WhatsApp</a></li>
       </ul>
     </div>
   </div>
@@ -989,7 +1014,7 @@
     <div class="social-links">
       <a href="#" class="social-link">Instagram</a>
       <a href="#" class="social-link">Vinted</a>
-      <a href="#" class="social-link">WhatsApp</a>
+      <a href="#" class="social-link wa-link" target="_blank" rel="noopener">WhatsApp</a>
     </div>
   </div>
 </footer>
@@ -1009,7 +1034,40 @@
       <span>Total</span>
       <span class="cart-total-amount" id="cartTotal">0 €</span>
     </div>
-    <button class="btn-order" onclick="showToast('✅ Commande en cours de traitement !','success')">Commander maintenant →</button>
+    <button class="btn-order" onclick="openOrderRecap()">Valider mon bon de commande</button>
+  </div>
+</div>
+
+<!-- ===== BON DE COMMANDE (RÉCAP WHATSAPP) ===== -->
+<div class="modal-overlay" id="orderModal" onclick="handleModalOverlayClick(event,'orderModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">📋 Bon de commande</span>
+      <button class="modal-close" onclick="closeOrderRecap()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="custom-step">
+        <div class="custom-step-title">Prénom / Pseudo <span style="color:#ff4444;font-size:.8rem;">*</span></div>
+        <input type="text" class="form-input" id="orderNameInput" placeholder="Ex : Léo" maxlength="30">
+        <div class="error-msg" id="orderNameError">Merci d'indiquer ton prénom ou pseudo.</div>
+      </div>
+
+      <div class="custom-step">
+        <div class="custom-step-title">Récapitulatif</div>
+        <div class="order-recap-items" id="orderRecapItems"></div>
+      </div>
+
+      <div class="price-summary">
+        <div class="price-total"><span>Total</span><span class="amount" id="orderRecapTotal">0 €</span></div>
+      </div>
+
+      <p class="order-recap-instructions">
+        Ton bon de commande est prêt ! Clique sur le bouton ci-dessous pour nous l'envoyer directement sur WhatsApp et finaliser ta commande.
+      </p>
+
+      <button class="btn-whatsapp" onclick="sendOrderToWhatsApp()">📲 Envoyer ma commande sur WhatsApp</button>
+    </div>
   </div>
 </div>
 
@@ -1190,6 +1248,7 @@ const popularProducts = [
 ];
 
 /* ===== STATE ===== */
+const WHATSAPP_NUMBER = '33601334655'; // format international sans + ni espaces
 let activeLeague    = 'Tous';
 let activeClub      = '';
 let cartItems       = [];
@@ -1933,6 +1992,70 @@ function closeCart() {
   document.getElementById('cartOverlay').classList.remove('open');
 }
 
+/* ===== BON DE COMMANDE (RÉCAP WHATSAPP) ===== */
+function openOrderRecap() {
+  if (!cartItems.length) {
+    showToast('Ton panier est vide, ajoute un maillot avant de valider ta commande', 'error');
+    return;
+  }
+
+  document.getElementById('orderNameError').style.display = 'none';
+
+  const itemsEl = document.getElementById('orderRecapItems');
+  itemsEl.innerHTML = cartItems.map(item => `
+<div class="order-recap-item">
+  <div class="order-recap-item-info">
+    <div class="order-recap-item-name">${item.name} · ${item.club}</div>
+    <div class="order-recap-item-details">
+      Version : ${item.version}<br>
+      Taille : ${item.size}<br>
+      Flocage : ${item.flocage}
+    </div>
+  </div>
+  <div class="order-recap-item-price">${item.price} €</div>
+</div>`).join('');
+
+  const total = cartItems.reduce((s, i) => s + i.price, 0);
+  document.getElementById('orderRecapTotal').textContent = total + ' €';
+
+  closeCart();
+  document.getElementById('orderModal').classList.add('open');
+}
+
+function closeOrderRecap() {
+  document.getElementById('orderModal').classList.remove('open');
+}
+
+function sendOrderToWhatsApp() {
+  const name = document.getElementById('orderNameInput').value.trim();
+  if (!name) {
+    document.getElementById('orderNameError').style.display = 'block';
+    return;
+  }
+  document.getElementById('orderNameError').style.display = 'none';
+
+  const total = cartItems.reduce((s, i) => s + i.price, 0);
+  const lines = cartItems.map(item =>
+    `- Maillot ${item.club} ${item.version} - Taille ${item.size} - Flocage: ${item.flocage} - ${item.price}€`
+  );
+
+  const message = [
+    'Bonjour Jersey Select ! 👋',
+    'Voici ma commande :',
+    '',
+    name,
+    '',
+    ...lines,
+    '',
+    `Total : ${total}€`,
+    '',
+    "J'attends vos infos pour la suite ! 😊"
+  ].join('\n');
+
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank');
+}
+
 /* ===== LEGAL MODALS ===== */
 
 /* ===== TOAST ===== */
@@ -1949,6 +2072,7 @@ function showToast(msg, type='success') {
 /* ===== INIT ===== */
 renderPopular();
 renderProducts();
+document.querySelectorAll('.wa-link').forEach(a => { a.href = `https://wa.me/${WHATSAPP_NUMBER}`; });
 </script>
 <!-- D3 + TopoJSON for world map -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
