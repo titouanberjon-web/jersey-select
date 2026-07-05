@@ -1048,9 +1048,9 @@
     <div class="modal-body">
 
       <div class="custom-step">
-        <div class="custom-step-title">Prénom / Pseudo <span style="color:#ff4444;font-size:.8rem;">*</span></div>
-        <input type="text" class="form-input" id="orderNameInput" placeholder="Ex : Léo" maxlength="30">
-        <div class="error-msg" id="orderNameError">Merci d'indiquer ton prénom ou pseudo.</div>
+        <div class="custom-step-title">Prénom NOM <span style="color:#ff4444;font-size:.8rem;">*</span></div>
+        <input type="text" class="form-input" id="orderNameInput" placeholder="Ex : Léo Dupont" maxlength="40">
+        <div class="error-msg" id="orderNameError">Merci d'indiquer ton prénom et ton nom.</div>
       </div>
 
       <div class="custom-step">
@@ -1063,7 +1063,7 @@
       </div>
 
       <p class="order-recap-instructions">
-        Ton bon de commande est prêt ! Clique sur le bouton ci-dessous pour nous l'envoyer directement sur WhatsApp et finaliser ta commande.
+        Ton bon de commande est prêt ! Clique sur le bouton ci-dessous : ton bon de commande PDF se télécharge et WhatsApp s'ouvre avec le message prêt à envoyer. Joins le PDF 📎 à la conversation pour finaliser ta commande.
       </p>
 
       <button class="btn-whatsapp" onclick="sendOrderToWhatsApp()">📲 Envoyer ma commande sur WhatsApp</button>
@@ -1185,6 +1185,8 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- ===== JAVASCRIPT ===== -->
+<!-- jsPDF pour la génération du bon de commande PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ===== PRODUCT DATA ===== */
 const products = [
@@ -1937,6 +1939,7 @@ function addToCart() {
     emoji: currentProduct.emoji,
     name:  currentProduct.name,
     club:  currentProduct.club,
+    image: currentProduct.frontImage || null,
     version: versionLabel,
     size, flocage, price
   });
@@ -2026,13 +2029,115 @@ function closeOrderRecap() {
   document.getElementById('orderModal').classList.remove('open');
 }
 
-function sendOrderToWhatsApp() {
+/* — Chargement d'une image produit en dataURL JPEG (pour insertion dans le PDF) — */
+function loadImageData(src) {
+  return new Promise(resolve => {
+    if (!src) return resolve(null);
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      const scale = Math.min(1, 600 / img.width);
+      c.width  = Math.round(img.width  * scale);
+      c.height = Math.round(img.height * scale);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      resolve({ data: c.toDataURL('image/jpeg', .85), ratio: c.height / c.width });
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+/* — Génération du bon de commande PDF (récap + photos des maillots) — */
+async function buildOrderPDF(name) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const W = doc.internal.pageSize.getWidth();
+  let y;
+
+  // Bandeau titre
+  doc.setFillColor(10, 14, 26);
+  doc.rect(0, 0, W, 30, 'F');
+  doc.setTextColor(0, 230, 118);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.text('JERSEY SELECT', 14, 19);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11);
+  doc.text('Bon de commande', W - 14, 19, { align: 'right' });
+
+  // Client + date
+  y = 42;
+  doc.setTextColor(20, 20, 20);
+  doc.setFontSize(12);
+  doc.text(`Client : ${name}`, 14, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`, W - 14, y, { align: 'right' });
+  y += 10;
+
+  // Articles
+  for (const item of cartItems) {
+    const imgInfo = await loadImageData(item.image);
+    const imgW = 34;
+    const imgH = imgInfo ? Math.min(imgW * imgInfo.ratio, 44) : 0;
+    const rowH = Math.max(imgH + 8, 38);
+    if (y + rowH > 280) { doc.addPage(); y = 20; }
+
+    doc.setDrawColor(220, 220, 220);
+    doc.roundedRect(14, y, W - 28, rowH, 2, 2);
+    if (imgInfo) doc.addImage(imgInfo.data, 'JPEG', 18, y + 4, imgW, imgH);
+
+    const tx = 18 + imgW + 8;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(20, 20, 20);
+    doc.text(`${item.name} · ${item.club}`, tx, y + 10);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(90, 90, 90);
+    doc.text(`Version : ${item.version}`, tx, y + 18);
+    doc.text(`Taille : ${item.size}`, tx, y + 24);
+    doc.text(`Flocage : ${item.flocage}`, tx, y + 30);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(0, 160, 80);
+    doc.text(`${item.price} €`, W - 18, y + 10, { align: 'right' });
+    y += rowH + 4;
+  }
+
+  // Total
+  const total = cartItems.reduce((s, i) => s + i.price, 0);
+  if (y + 20 > 285) { doc.addPage(); y = 20; }
+  doc.setFillColor(10, 14, 26);
+  doc.roundedRect(14, y, W - 28, 14, 2, 2, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(12);
+  doc.text('TOTAL', 20, y + 9);
+  doc.setTextColor(0, 230, 118);
+  doc.text(`${total} €`, W - 20, y + 9, { align: 'right' });
+
+  return doc;
+}
+
+async function sendOrderToWhatsApp() {
   const name = document.getElementById('orderNameInput').value.trim();
   if (!name) {
     document.getElementById('orderNameError').style.display = 'block';
     return;
   }
   document.getElementById('orderNameError').style.display = 'none';
+
+  // Téléchargement du bon de commande PDF (WhatsApp ne permet pas de joindre
+  // un fichier via lien wa.me : le client l'attache lui-même à la conversation)
+  try {
+    const doc = await buildOrderPDF(name);
+    doc.save('bon-de-commande-jersey-select.pdf');
+    showToast('📄 Bon de commande PDF téléchargé ! Joins-le à la conversation WhatsApp.', 'success');
+  } catch (e) {
+    // PDF indisponible (ex : librairie non chargée) : on continue vers WhatsApp
+  }
 
   const total = cartItems.reduce((s, i) => s + i.price, 0);
   const lines = cartItems.map(item =>
@@ -2049,6 +2154,7 @@ function sendOrderToWhatsApp() {
     '',
     `Total : ${total}€`,
     '',
+    'Je joins mon bon de commande en PDF 📄',
     "J'attends vos infos pour la suite ! 😊"
   ].join('\n');
 
