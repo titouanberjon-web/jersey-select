@@ -93,6 +93,30 @@
       display:flex; align-items:center; gap:.5rem; transition:all .2s; letter-spacing:.05em;
     }
     .cart-btn:hover { background:var(--blue); }
+    .nav-actions { display:flex; gap:.75rem; align-items:center; }
+
+    /* ===== COMPTE CLIENT ===== */
+    .account-tabs { display:flex; gap:.5rem; margin-bottom:1.5rem; }
+    .account-tab {
+      flex:1; background:var(--surface2); border:2px solid var(--border);
+      color:var(--text-muted); font-family:'Bebas Neue',sans-serif; font-size:1.05rem;
+      letter-spacing:.05em; padding:.6rem; cursor:pointer; border-radius:6px; transition:all .2s;
+    }
+    .account-tab.active { border-color:var(--green); color:var(--text); background:rgba(0,230,118,.05); }
+    .account-field { margin-bottom:1rem; }
+    .account-field label { display:block; font-size:.85rem; color:var(--text-muted); margin-bottom:.25rem; }
+    .account-logged-box {
+      background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+      padding:1.25rem; margin-bottom:1.25rem; line-height:1.9; font-size:.95rem;
+    }
+    .account-logged-box .account-name { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; letter-spacing:.05em; color:var(--green); }
+    .btn-logout {
+      width:100%; background:transparent; color:var(--text-muted);
+      font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.08em;
+      border:2px solid var(--border); padding:.75rem; cursor:pointer; transition:all .2s;
+      clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%); margin-top:.75rem;
+    }
+    .btn-logout:hover { border-color:#ff4444; color:#ff4444; }
     .cart-count {
       background:var(--green); color:#000; font-size:.7rem; font-weight:700;
       width:18px; height:18px; border-radius:50%;
@@ -667,9 +691,14 @@
     <li><a href="#apropos">À propos</a></li>
     <li><a href="#avis">Avis</a></li>
   </ul>
-  <button class="cart-btn" onclick="openCart()">
-    🛒 Panier <span class="cart-count" id="cartCount">0</span>
-  </button>
+  <div class="nav-actions">
+    <button class="cart-btn" id="accountBtn" onclick="openAccountModal()">
+      👤 <span id="accountBtnLabel">Compte</span>
+    </button>
+    <button class="cart-btn" onclick="openCart()">
+      🛒 Panier <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
 </nav>
 
 <!-- ===== BANNER ===== -->
@@ -1035,6 +1064,79 @@
       <span class="cart-total-amount" id="cartTotal">0 €</span>
     </div>
     <button class="btn-order" onclick="openOrderRecap()">Valider mon bon de commande</button>
+  </div>
+</div>
+
+<!-- ===== COMPTE CLIENT ===== -->
+<div class="modal-overlay" id="accountModal" onclick="handleModalOverlayClick(event,'accountModal')">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <span class="modal-title">👤 Mon compte</span>
+      <button class="modal-close" onclick="closeAccountModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Vue connecté -->
+      <div id="accountLoggedView" style="display:none;">
+        <div class="account-logged-box">
+          <div class="account-name" id="accountInfoName"></div>
+          <div id="accountInfoEmail"></div>
+          <div id="accountInfoPhone"></div>
+        </div>
+        <button class="btn-logout" onclick="logoutAccount()">Se déconnecter</button>
+      </div>
+
+      <!-- Vue connexion / inscription -->
+      <div id="accountAuthView">
+        <div class="error-msg" id="accountRequiredMsg" style="margin-bottom:1rem;">Connecte-toi ou crée un compte pour valider ton bon de commande.</div>
+
+        <div class="account-tabs">
+          <button class="account-tab active" id="tabLogin" onclick="switchAccountTab('login')">Connexion</button>
+          <button class="account-tab" id="tabRegister" onclick="switchAccountTab('register')">Inscription</button>
+        </div>
+
+        <!-- Connexion -->
+        <div id="loginForm">
+          <div class="account-field">
+            <label for="loginEmail">Email</label>
+            <input type="email" class="form-input" id="loginEmail" placeholder="ton@email.com">
+          </div>
+          <div class="account-field">
+            <label for="loginPassword">Mot de passe</label>
+            <input type="password" class="form-input" id="loginPassword" placeholder="••••••••">
+          </div>
+          <div class="error-msg" id="loginError"></div>
+          <button class="btn-primary" style="width:100%;text-align:center;display:block;margin-top:.75rem;" onclick="loginAccount()">Se connecter</button>
+        </div>
+
+        <!-- Inscription -->
+        <div id="registerForm" style="display:none;">
+          <div class="account-field">
+            <label for="regFirstname">Prénom</label>
+            <input type="text" class="form-input" id="regFirstname" placeholder="Léo" maxlength="30">
+          </div>
+          <div class="account-field">
+            <label for="regLastname">Nom</label>
+            <input type="text" class="form-input" id="regLastname" placeholder="Dupont" maxlength="30">
+          </div>
+          <div class="account-field">
+            <label for="regEmail">Email</label>
+            <input type="email" class="form-input" id="regEmail" placeholder="ton@email.com" maxlength="60">
+          </div>
+          <div class="account-field">
+            <label for="regPhone">Téléphone (optionnel)</label>
+            <input type="tel" class="form-input" id="regPhone" placeholder="06 12 34 56 78" maxlength="20">
+          </div>
+          <div class="account-field">
+            <label for="regPassword">Mot de passe (6 caractères min.)</label>
+            <input type="password" class="form-input" id="regPassword" placeholder="••••••••" maxlength="50">
+          </div>
+          <div class="error-msg" id="registerError"></div>
+          <button class="btn-primary" style="width:100%;text-align:center;display:block;margin-top:.75rem;" onclick="registerAccount()">Créer mon compte</button>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -1995,6 +2097,101 @@ function closeCart() {
   document.getElementById('cartOverlay').classList.remove('open');
 }
 
+/* ===== COMPTE CLIENT (stockage local au navigateur) ===== */
+function getAccounts() {
+  try { return JSON.parse(localStorage.getItem('jsAccounts')) || []; }
+  catch (e) { return []; }
+}
+
+function saveAccounts(accounts) {
+  localStorage.setItem('jsAccounts', JSON.stringify(accounts));
+}
+
+function getCurrentUser() {
+  try { return JSON.parse(localStorage.getItem('jsCurrentUser')); }
+  catch (e) { return null; }
+}
+
+function setCurrentUser(user) {
+  if (user) localStorage.setItem('jsCurrentUser', JSON.stringify(user));
+  else localStorage.removeItem('jsCurrentUser');
+  updateAccountUI();
+}
+
+function openAccountModal(requireMsg) {
+  document.getElementById('accountRequiredMsg').style.display = requireMsg ? 'block' : 'none';
+  ['loginError','registerError'].forEach(id => document.getElementById(id).textContent = '');
+  updateAccountUI();
+  document.getElementById('accountModal').classList.add('open');
+}
+
+function closeAccountModal() {
+  document.getElementById('accountModal').classList.remove('open');
+}
+
+function switchAccountTab(tab) {
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('loginForm').style.display    = tab === 'login'    ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+function registerAccount() {
+  const firstname = document.getElementById('regFirstname').value.trim();
+  const lastname  = document.getElementById('regLastname').value.trim();
+  const email     = document.getElementById('regEmail').value.trim().toLowerCase();
+  const phone     = document.getElementById('regPhone').value.trim();
+  const password  = document.getElementById('regPassword').value;
+  const errEl     = document.getElementById('registerError');
+  errEl.textContent = '';
+
+  if (!firstname || !lastname) { errEl.textContent = 'Merci d\'indiquer ton prénom et ton nom.'; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Email invalide.'; return; }
+  if (password.length < 6) { errEl.textContent = 'Le mot de passe doit faire au moins 6 caractères.'; return; }
+
+  const accounts = getAccounts();
+  if (accounts.find(a => a.email === email)) { errEl.textContent = 'Un compte existe déjà avec cet email. Connecte-toi.'; return; }
+
+  const user = { firstname, lastname, email, phone, password };
+  accounts.push(user);
+  saveAccounts(accounts);
+  setCurrentUser(user);
+  closeAccountModal();
+  showToast(`✅ Bienvenue ${firstname} ! Ton compte est créé.`, 'success');
+}
+
+function loginAccount() {
+  const email    = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const errEl    = document.getElementById('loginError');
+  errEl.textContent = '';
+
+  const user = getAccounts().find(a => a.email === email && a.password === password);
+  if (!user) { errEl.textContent = 'Email ou mot de passe incorrect.'; return; }
+
+  setCurrentUser(user);
+  closeAccountModal();
+  showToast(`✅ Content de te revoir, ${user.firstname} !`, 'success');
+}
+
+function logoutAccount() {
+  setCurrentUser(null);
+  closeAccountModal();
+  showToast('Tu es déconnecté(e).', 'success');
+}
+
+function updateAccountUI() {
+  const user = getCurrentUser();
+  document.getElementById('accountBtnLabel').textContent = user ? user.firstname : 'Compte';
+  document.getElementById('accountLoggedView').style.display = user ? 'block' : 'none';
+  document.getElementById('accountAuthView').style.display   = user ? 'none'  : 'block';
+  if (user) {
+    document.getElementById('accountInfoName').textContent  = `${user.firstname} ${user.lastname}`;
+    document.getElementById('accountInfoEmail').textContent = user.email;
+    document.getElementById('accountInfoPhone').textContent = user.phone || '';
+  }
+}
+
 /* ===== BON DE COMMANDE (RÉCAP WHATSAPP) ===== */
 function openOrderRecap() {
   if (!cartItems.length) {
@@ -2002,6 +2199,15 @@ function openOrderRecap() {
     return;
   }
 
+  // Compte obligatoire pour valider un bon de commande
+  const user = getCurrentUser();
+  if (!user) {
+    closeCart();
+    openAccountModal(true);
+    return;
+  }
+
+  document.getElementById('orderNameInput').value = `${user.firstname} ${user.lastname}`;
   document.getElementById('orderNameError').style.display = 'none';
 
   const itemsEl = document.getElementById('orderRecapItems');
@@ -2068,13 +2274,22 @@ async function buildOrderPDF(name) {
   doc.setFontSize(11);
   doc.text('Bon de commande', W - 14, 19, { align: 'right' });
 
-  // Client + date
+  // Client + date + coordonnées du compte
   y = 42;
   doc.setTextColor(20, 20, 20);
   doc.setFontSize(12);
   doc.text(`Client : ${name}`, 14, y);
   doc.setFont('helvetica', 'normal');
   doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`, W - 14, y, { align: 'right' });
+  const user = getCurrentUser();
+  if (user) {
+    y += 7;
+    doc.setFontSize(10);
+    doc.setTextColor(90, 90, 90);
+    doc.text(`Email : ${user.email}${user.phone ? '   ·   Tél : ' + user.phone : ''}`, 14, y);
+    doc.setTextColor(20, 20, 20);
+    doc.setFontSize(12);
+  }
   y += 10;
 
   // Articles
@@ -2122,6 +2337,13 @@ async function buildOrderPDF(name) {
 }
 
 async function sendOrderToWhatsApp() {
+  const user = getCurrentUser();
+  if (!user) {
+    closeOrderRecap();
+    openAccountModal(true);
+    return;
+  }
+
   const name = document.getElementById('orderNameInput').value.trim();
   if (!name) {
     document.getElementById('orderNameError').style.display = 'block';
@@ -2144,11 +2366,13 @@ async function sendOrderToWhatsApp() {
     `- Maillot ${item.club} ${item.version} - Taille ${item.size} - Flocage: ${item.flocage} - ${item.price}€`
   );
 
+  const contact = [user.email, user.phone].filter(Boolean).join(' · ');
   const message = [
     'Bonjour Jersey Select ! 👋',
     'Voici ma commande :',
     '',
     name,
+    contact,
     '',
     ...lines,
     '',
@@ -2178,6 +2402,7 @@ function showToast(msg, type='success') {
 /* ===== INIT ===== */
 renderPopular();
 renderProducts();
+updateAccountUI();
 document.querySelectorAll('.wa-link').forEach(a => { a.href = `https://wa.me/${WHATSAPP_NUMBER}`; });
 </script>
 <!-- D3 + TopoJSON for world map -->
