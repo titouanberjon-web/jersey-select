@@ -594,6 +594,15 @@
     .cart-item-remove { background:none; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer; padding:0; transition:color .2s; flex-shrink:0; }
     .cart-item-remove:hover { color:#ff4444; }
     .cart-empty { text-align:center; padding:3rem 1rem; color:var(--text-muted); font-size:1rem; }
+    /* Liste de souhaits */
+    .wish-item-img { width:56px; height:56px; flex-shrink:0; border-radius:6px; background:var(--surface); object-fit:contain; padding:2px; }
+    .wish-item-actions { display:flex; flex-direction:column; gap:.4rem; align-items:flex-end; }
+    .wish-item-add {
+      background:var(--green); color:#000; border:none; cursor:pointer;
+      font-family:'Bebas Neue',sans-serif; font-size:.8rem; letter-spacing:.03em;
+      padding:.35rem .7rem; border-radius:4px; white-space:nowrap; transition:background .2s;
+    }
+    .wish-item-add:hover { background:#00ff88; }
     .cart-footer { padding:1.5rem; border-top:1px solid var(--border); }
     .cart-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; }
     .cart-total-amount { color:var(--green); font-size:1.6rem; }
@@ -694,6 +703,9 @@
   <div class="nav-actions">
     <button class="cart-btn" id="accountBtn" onclick="openAccountModal()">
       👤 <span id="accountBtnLabel">Compte</span>
+    </button>
+    <button class="cart-btn" onclick="openWishlist()">
+      ❤️ <span class="cart-count" id="wishCount">0</span>
     </button>
     <button class="cart-btn" onclick="openCart()">
       🛒 Panier <span class="cart-count" id="cartCount">0</span>
@@ -1064,6 +1076,18 @@
       <span class="cart-total-amount" id="cartTotal">0 €</span>
     </div>
     <button class="btn-order" onclick="openOrderRecap()">Valider mon bon de commande</button>
+  </div>
+</div>
+
+<!-- ===== LISTE DE SOUHAITS ===== -->
+<div class="cart-overlay" id="wishOverlay" onclick="closeWishlist()"></div>
+<div class="cart-panel" id="wishPanel">
+  <div class="cart-panel-header">
+    <span class="cart-panel-title">❤️ Ma liste de souhaits</span>
+    <button class="modal-close" onclick="closeWishlist()">✕</button>
+  </div>
+  <div class="cart-items" id="wishItems">
+    <div class="cart-empty">Ta liste de souhaits est vide.</div>
   </div>
 </div>
 
@@ -1635,8 +1659,7 @@ function renderPopular() {
 
 function toggleFavPop(e, id) {
   e.stopPropagation();
-  favorites.has(id) ? favorites.delete(id) : favorites.add(id);
-  renderPopular();
+  toggleFavorite(id);
 }
 
 /* ===== RENDER PRODUCTS ===== */
@@ -1688,11 +1711,99 @@ function renderProducts() {
   }).join('');
 }
 
-/* ===== FAVORITES ===== */
+/* ===== FAVORITES / LISTE DE SOUHAITS ===== */
 function toggleFav(e, id) {
   e.stopPropagation();
+  toggleFavorite(id);
+}
+
+/* Favoris liés au compte : sauvegardés dans localStorage par email */
+function favKey() {
+  const u = getCurrentUser();
+  return u ? 'jsFav_' + u.email : null;
+}
+function loadFavorites() {
+  const key = favKey();
+  if (!key) { favorites = new Set(); return; }
+  try { favorites = new Set(JSON.parse(localStorage.getItem(key)) || []); }
+  catch (e) { favorites = new Set(); }
+}
+function saveFavorites() {
+  const key = favKey();
+  if (key) localStorage.setItem(key, JSON.stringify([...favorites]));
+}
+function toggleFavorite(id) {
+  // Compte obligatoire : la liste de souhaits est liée au compte
+  if (!getCurrentUser()) {
+    openAccountModal('Crée un compte ou connecte-toi pour sauvegarder tes favoris ❤️');
+    return;
+  }
   favorites.has(id) ? favorites.delete(id) : favorites.add(id);
+  saveFavorites();
+  refreshFavViews();
+}
+function refreshFavViews() {
+  renderPopular();
   renderProducts();
+  renderWishlist();
+  updateWishCount();
+}
+function updateWishCount() {
+  document.getElementById('wishCount').textContent = favorites.size;
+}
+function findProductById(id) {
+  return products.find(p => p.id === id) || popularProducts.find(p => p.id === id);
+}
+function renderWishlist() {
+  const el = document.getElementById('wishItems');
+  const ids = [...favorites];
+  if (!ids.length) {
+    el.innerHTML = '<div class="cart-empty">Ta liste de souhaits est vide.</div>';
+    return;
+  }
+  el.innerHTML = ids.map(id => {
+    const p = findProductById(id);
+    if (!p) return '';
+    const priceLabel = p.type === 'vintage' ? '26 €' : (p.type === 'concept' ? '21 €' : 'Dès 16 €');
+    const img = p.frontImage
+      ? `<img class="wish-item-img" src="${p.frontImage}" alt="${escHtml(p.name)}">`
+      : `<span class="cart-item-emoji">${p.emoji}</span>`;
+    return `
+<div class="cart-item">
+  ${img}
+  <div class="cart-item-info">
+    <div class="cart-item-name">${escHtml(p.name)} · ${escHtml(p.club)}</div>
+    <div class="cart-item-details">${escHtml(p.league)} · ${escHtml(p.season)}</div>
+    <div class="cart-item-price">${priceLabel}</div>
+  </div>
+  <div class="wish-item-actions">
+    <button class="cart-item-remove" onclick="removeFav(${id})" title="Retirer">✕</button>
+    <button class="wish-item-add" onclick="wishToCustomize(${id})">Commander</button>
+  </div>
+</div>`;
+  }).join('');
+}
+function removeFav(id) {
+  favorites.delete(id);
+  saveFavorites();
+  refreshFavViews();
+}
+function wishToCustomize(id) {
+  closeWishlist();
+  openCustomModal(id);
+}
+function openWishlist() {
+  if (!getCurrentUser()) {
+    openAccountModal('Crée un compte ou connecte-toi pour retrouver ta liste de souhaits ❤️');
+    return;
+  }
+  renderWishlist();
+  document.getElementById('wishPanel').classList.add('open');
+  document.getElementById('wishOverlay').classList.add('open');
+}
+function closeWishlist() {
+  document.getElementById('wishPanel').classList.remove('open');
+  document.getElementById('wishOverlay').classList.remove('open');
 }
 
 /* ===== FILTERS ===== */
@@ -2046,12 +2157,20 @@ function addToCart() {
     size, flocage, price
   });
 
+  saveCart();
   updateCartUI();
   closeCustomModal();
   showToast('✅ Maillot ajouté au panier !', 'success');
 }
 
 /* ===== CART ===== */
+function saveCart() {
+  localStorage.setItem('jsCart', JSON.stringify(cartItems));
+}
+function loadCart() {
+  try { cartItems = JSON.parse(localStorage.getItem('jsCart')) || []; }
+  catch (e) { cartItems = []; }
+}
 function updateCartUI() {
   document.getElementById('cartCount').textContent = cartItems.length;
   const itemsEl  = document.getElementById('cartItems');
@@ -2085,6 +2204,7 @@ function updateCartUI() {
 
 function removeCartItem(uid) {
   cartItems = cartItems.filter(i => i.uid !== uid);
+  saveCart();
   updateCartUI();
 }
 
@@ -2116,10 +2236,21 @@ function setCurrentUser(user) {
   if (user) localStorage.setItem('jsCurrentUser', JSON.stringify(user));
   else localStorage.removeItem('jsCurrentUser');
   updateAccountUI();
+  loadFavorites();      // charge les favoris du compte (ou vide si déconnecté)
+  refreshFavViews();
 }
 
 function openAccountModal(requireMsg) {
-  document.getElementById('accountRequiredMsg').style.display = requireMsg ? 'block' : 'none';
+  const msgEl = document.getElementById('accountRequiredMsg');
+  if (requireMsg) {
+    msgEl.textContent = typeof requireMsg === 'string'
+      ? requireMsg
+      : 'Connecte-toi ou crée un compte pour valider ton bon de commande.';
+    msgEl.style.display = 'block';
+    switchAccountTab('register');
+  } else {
+    msgEl.style.display = 'none';
+  }
   ['loginError','registerError'].forEach(id => document.getElementById(id).textContent = '');
   updateAccountUI();
   document.getElementById('accountModal').classList.add('open');
@@ -2445,9 +2576,13 @@ function showToast(msg, type='success') {
 }
 
 /* ===== INIT ===== */
+loadCart();           // panier restauré même après rafraîchissement de la page
+loadFavorites();      // liste de souhaits du compte connecté
 renderPopular();
 renderProducts();
 updateAccountUI();
+updateCartUI();
+updateWishCount();
 document.querySelectorAll('.wa-link').forEach(a => { a.href = `https://wa.me/${WHATSAPP_NUMBER}`; });
 </script>
 <!-- D3 + TopoJSON for world map -->
