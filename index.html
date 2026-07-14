@@ -2110,7 +2110,7 @@ function addToCart() {
   }
 
   if (hasText) {
-    const textRe = /^[a-zA-ZÀ-ÿ\s]+$/;
+    const textRe = /^[a-zA-ZÀ-ÿ\s.'-]+$/;
     const topOk  = hasTextTop && topVal.length > 0;
     const botOk  = hasTextBot && botVal.length > 0;
     if (!topOk && !botOk) {
@@ -2118,10 +2118,10 @@ function addToCart() {
       valid = false;
     } else {
       if (topOk && !textRe.test(topVal)) {
-        document.getElementById('globalError').textContent = 'Le texte haut contient des caractères invalides (lettres et espaces uniquement).';
+        document.getElementById('globalError').textContent = 'Le texte haut contient des caractères invalides (lettres, espaces, . \' - uniquement).';
         valid = false;
       } else if (botOk && !textRe.test(botVal)) {
-        document.getElementById('globalError').textContent = 'Le texte bas contient des caractères invalides (lettres et espaces uniquement).';
+        document.getElementById('globalError').textContent = 'Le texte bas contient des caractères invalides (lettres, espaces, . \' - uniquement).';
         valid = false;
       }
     }
