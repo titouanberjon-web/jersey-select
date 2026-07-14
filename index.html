@@ -2256,8 +2256,18 @@ function loadImageData(src) {
   });
 }
 
+/* — Numéro de commande unique (ex : JS-260706-A4K2) — */
+function generateOrderNumber() {
+  const d = new Date();
+  const ymd = String(d.getFullYear()).slice(2)
+    + String(d.getMonth() + 1).padStart(2, '0')
+    + String(d.getDate()).padStart(2, '0');
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `JS-${ymd}-${rand}`;
+}
+
 /* — Génération du bon de commande PDF (récap + photos des maillots) — */
-async function buildOrderPDF(name) {
+async function buildOrderPDF(name, orderNumber) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const W = doc.internal.pageSize.getWidth();
@@ -2272,7 +2282,7 @@ async function buildOrderPDF(name) {
   doc.text('JERSEY SELECT', 14, 19);
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(11);
-  doc.text('Bon de commande', W - 14, 19, { align: 'right' });
+  doc.text(`Bon de commande n° ${orderNumber}`, W - 14, 19, { align: 'right' });
 
   // Client + date + coordonnées du compte
   y = 42;
@@ -2351,17 +2361,21 @@ async function sendOrderToWhatsApp() {
   }
   document.getElementById('orderNameError').style.display = 'none';
 
+  const orderNumber = generateOrderNumber();
+  const total = cartItems.reduce((s, i) => s + i.price, 0);
+
   // Téléchargement du bon de commande PDF (WhatsApp ne permet pas de joindre
   // un fichier via lien wa.me : le client l'attache lui-même à la conversation)
+  let pdfBase64 = null;
   try {
-    const doc = await buildOrderPDF(name);
-    doc.save('bon-de-commande-jersey-select.pdf');
+    const doc = await buildOrderPDF(name, orderNumber);
+    doc.save(`bon-de-commande-${orderNumber}.pdf`);
+    pdfBase64 = doc.output('datauristring').split(',')[1];
     showToast('📄 Bon de commande PDF téléchargé ! Joins-le à la conversation WhatsApp.', 'success');
   } catch (e) {
     // PDF indisponible (ex : librairie non chargée) : on continue vers WhatsApp
   }
 
-  const total = cartItems.reduce((s, i) => s + i.price, 0);
   const lines = cartItems.map(item =>
     `- Maillot ${item.club} ${item.version} - Taille ${item.size} - Flocage: ${item.flocage} - ${item.price}€`
   );
@@ -2369,7 +2383,7 @@ async function sendOrderToWhatsApp() {
   const contact = [user.email, user.phone].filter(Boolean).join(' · ');
   const message = [
     'Bonjour Jersey Select ! 👋',
-    'Voici ma commande :',
+    `Voici ma commande n° ${orderNumber} :`,
     '',
     name,
     contact,
@@ -2384,6 +2398,25 @@ async function sendOrderToWhatsApp() {
 
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
   window.open(url, '_blank');
+
+  // Copie de la commande par email à Jersey Select (fonction serverless /api/send-order),
+  // envoyée en arrière-plan pour ne pas retarder l'ouverture de WhatsApp
+  fetch('/api/send-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      orderNumber, name,
+      email: user.email,
+      phone: user.phone || '',
+      items: cartItems.map(i => ({
+        product: i.name, club: i.club, version: i.version,
+        size: i.size, flocage: i.flocage, price: i.price
+      })),
+      total, pdfBase64
+    })
+  }).then(r => {
+    if (r.ok) showToast('📧 Commande transmise par email à Jersey Select !', 'success');
+  }).catch(() => { /* email en échec : la commande passe quand même par WhatsApp */ });
 }
 
 /* ===== LEGAL MODALS ===== */
