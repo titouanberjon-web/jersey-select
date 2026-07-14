@@ -2361,6 +2361,10 @@ async function sendOrderToWhatsApp() {
   }
   document.getElementById('orderNameError').style.display = 'none';
 
+  // Onglet ouvert immédiatement au clic : Safari bloque tout window.open
+  // survenant après une opération asynchrone (ici la génération du PDF)
+  const waTab = window.open('about:blank', '_blank');
+
   const orderNumber = generateOrderNumber();
   const total = cartItems.reduce((s, i) => s + i.price, 0);
 
@@ -2397,11 +2401,10 @@ async function sendOrderToWhatsApp() {
   ].join('\n');
 
   const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-  window.open(url, '_blank');
 
   // Copie de la commande par email à Jersey Select (fonction serverless /api/send-order),
   // envoyée en arrière-plan pour ne pas retarder l'ouverture de WhatsApp
-  fetch('/api/send-order', {
+  const emailPromise = fetch('/api/send-order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -2417,6 +2420,15 @@ async function sendOrderToWhatsApp() {
   }).then(r => {
     if (r.ok) showToast('📧 Commande transmise par email à Jersey Select !', 'success');
   }).catch(() => { /* email en échec : la commande passe quand même par WhatsApp */ });
+
+  if (waTab && !waTab.closed) {
+    waTab.location.href = url;
+  } else {
+    // Onglet bloqué malgré tout : navigation directe, en laissant 1,5 s
+    // à l'email pour partir avant de quitter la page
+    Promise.race([emailPromise, new Promise(r => setTimeout(r, 1500))])
+      .then(() => { window.location.href = url; });
+  }
 }
 
 /* ===== LEGAL MODALS ===== */
