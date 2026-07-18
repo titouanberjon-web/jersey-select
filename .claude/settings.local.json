@@ -31,7 +31,12 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8000)",
       "Read(//private/tmp/**)",
       "Read(//Users/titouanberjongmail.com/**)",
-      "Read(//Users/titouanberjongmail.com/Desktop/**)"
+      "Read(//Users/titouanberjongmail.com/Desktop/**)",
+      "Bash(grep -oE \"\\\\{ id:[0-9]+, club:'[^']+', +name:'[^']+', season:'[^']+', league:'Ligue 1'[^}]*\" index.html)",
+      "Bash(curl -s -o test-barca.webp -w \"HTTP %{http_code} · %{size_download} bytes · type %{content_type}\\\\n\" \"https://thumblr.uniid.it/product/462384/10f01c5cb195.jpg?width=1200&format=webp&q=80\")",
+      "Bash(sort -t'|' -k2)",
+      "Bash(curl -s \"https://unisportstore.com/football-shirts/sweden-home-shirt-world-cup-2026/430343/\" -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36\")",
+      "Bash(curl -s \"https://unisportstore.com/football-shirts/sweden-home-shirt-world-cup-2026/430343/\" -A \"Mozilla/5.0\")"
     ]
   }
 }
