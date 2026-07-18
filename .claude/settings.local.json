@@ -18,7 +18,18 @@
       "mcp__e48386d2-12be-432a-9155-563d19b00a54__list_projects",
       "mcp__e48386d2-12be-432a-9155-563d19b00a54__web_fetch_vercel_url",
       "Bash(mv jersey-select.html index.html)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git commit *)",
+      "WebFetch(domain:jersey-select.vercel.app)",
+      "Bash(curl -s https://jersey-select.vercel.app)",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "Bash(curl -s \"https://jersey-select.vercel.app?t=$\\(date +%s\\)\")",
+      "Bash(find /private/tmp/claude-501 /tmp -type f \\\\\\( -iname \"*.png\" -o -iname \"*.jpg\" -o -iname \"*.jpeg\" -o -iname \"*.webp\" \\\\\\) -newermt \"2026-07-18 00:00:00\" 2>/dev/null | head -20; echo \"---clipboard/paste dirs---\"; ls -lat ~/Library/Caches/claude* 2>/dev/null | head; ls -lat \"/private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/\" 2>/dev/null | head)",
+      "Bash(nohup python3 -m http.server 8000)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8000)",
+      "Read(//private/tmp/**)"
     ]
   }
 }
