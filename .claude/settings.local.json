@@ -40,7 +40,10 @@
       "Bash(python3 -c \"import PIL; print\\('PIL OK', PIL.__version__\\)\")",
       "Bash(pip3 install *)",
       "Bash(python3 -c \"from PIL import Image; print\\('OK'\\)\")",
-      "Bash(python3)"
+      "Bash(python3)",
+      "WebSearch",
+      "WebFetch(domain:en.wikipedia.org)",
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && rm -f images/real-home-2627-*.webp && grep -nE \"club:'Manchester \\(City|United\\)'\" index.html)"
     ]
   }
 }
