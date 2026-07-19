@@ -44,7 +44,8 @@
       "WebSearch",
       "WebFetch(domain:en.wikipedia.org)",
       "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && rm -f images/real-home-2627-*.webp && grep -nE \"club:'Manchester \\(City|United\\)'\" index.html)",
-      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select/images\" && rm -f inter-home-2627-*.webp && echo \"supprimé\")"
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select/images\" && rm -f inter-home-2627-*.webp && echo \"supprimé\")",
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && rm -f images/atalanta-ext-2526-*.webp && grep -nE \"id:[0-9]+, club:'Inter de Milan'\" index.html | head -1; grep -nE \"'Serie A':\" index.html)"
     ]
   }
 }
