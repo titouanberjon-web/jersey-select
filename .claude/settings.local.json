@@ -58,7 +58,11 @@
       "Bash(python3 -c ' *)",
       "Bash(awk '{print $5, $9}')",
       "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select/images\" && rm -f psg-home-2627-*.jpg && echo \"PSG supprimés\")",
-      "Bash(rm -f monaco-home-2627-*.jpg)"
+      "Bash(rm -f monaco-home-2627-*.jpg)",
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select/images\" && rm -f dortmund-home-2526-*.jpg && echo \"images Dortmund 25-26 supprimées\")",
+      "Bash(python3 -c \"from PIL import Image; im=Image.open\\('benfica-ext-2526-2.jpg'\\); print\\('dims', im.size\\); import os; print\\('bytes', os.path.getsize\\('benfica-ext-2526-2.jpg'\\)\\)\")",
+      "Bash(python3 -c \"from PIL import Image; im=Image.open\\('benfica-ext-2526-1.jpg'\\); print\\('dims', im.size\\)\")",
+      "Bash(python3 -c \"from PIL import Image; print\\('benfica-ext-2526-2.jpg ->', Image.open\\('/Users/titouanberjongmail.com/Desktop/Jersey Select/images/benfica-ext-2526-2.jpg'\\).size\\)\")"
     ]
   }
 }
