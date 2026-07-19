@@ -52,7 +52,13 @@
       "Bash(mv ajax-home-2627-*.webp /private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/scratchpad/ajax-hold/)",
       "Bash(awk 'NR>=805 && NR<=825 { if \\(length\\($0\\)>400\\) print NR\": [ligne longue base64 tronquée] \"substr\\($0,1,80\\)\"...\"; else print NR\": \"$0 }' index.html)",
       "Bash(awk '{ if \\(length\\($0\\)>300\\) print NR\": [long]\"; else print $0 }')",
-      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && mv /private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/scratchpad/ajax-hold/ajax-home-2627-*.webp images/ && ls images/ajax-home-2627-*.webp | wc -l; grep -nE \"'Liga Portugal':\" index.html; grep -nE \"id:12, club:'FC Porto'\" index.html)"
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && mv /private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/scratchpad/ajax-hold/ajax-home-2627-*.webp images/ && ls images/ajax-home-2627-*.webp | wc -l; grep -nE \"'Liga Portugal':\" index.html; grep -nE \"id:12, club:'FC Porto'\" index.html)",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36\" -o fc-test.jpg -w \"HTTP %{http_code} · %{size_download} bytes · %{content_type}\\\\n\" \"https://www.footcenter.fr/media/catalog/product/m/a/maillot-psg-domicile-2026-2027202605150712166a06c7500cf56.jpg\")",
+      "Bash(curl -s -o fc2.jpg -w 'HTTP %{http_code} · %{size_download}\\\\n' -H 'User-Agent: Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/126.0.0.0 Safari/537.36' -H 'Accept: image/avif,image/webp,image/apng,image/*,*/*;q=0.8' -H 'Accept-Language: fr-FR,fr;q=0.9' -H 'Referer: https://www.footcenter.fr/fr/maillot-psg-domicile-2026-2027-psg26-mah-dom.html' -H 'Sec-Fetch-Dest: image' -H 'Sec-Fetch-Mode: no-cors' -H 'Sec-Fetch-Site: same-origin' https://www.footcenter.fr/media/catalog/product/m/a/maillot-psg-domicile-2026-2027202605150712166a06c7500cf56.jpg)",
+      "Bash(python3 -c ' *)",
+      "Bash(awk '{print $5, $9}')",
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select/images\" && rm -f psg-home-2627-*.jpg && echo \"PSG supprimés\")",
+      "Bash(rm -f monaco-home-2627-*.jpg)"
     ]
   }
 }
