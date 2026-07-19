@@ -812,6 +812,11 @@
         <div class="league-name">Liga Portugal</div>
         <div class="league-sub">Portugal</div>
       </div>
+      <div class="league-card" onclick="filterByLeague('Eredivisie')">
+        <span class="league-flag">🇳🇱</span>
+        <div class="league-name">Eredivisie</div>
+        <div class="league-sub">Pays-Bas</div>
+      </div>
       <div class="league-card" onclick="filterByLeague('International')">
         <span class="league-flag">🌍</span>
         <div class="league-name">International</div>
@@ -863,6 +868,7 @@
         <button class="pill"        data-league="Serie A"        onclick="setPill(this)">Serie A</button>
         <button class="pill"        data-league="Bundesliga"     onclick="setPill(this)">Bundesliga</button>
         <button class="pill"        data-league="Liga Portugal"  onclick="setPill(this)">Liga Portugal</button>
+        <button class="pill"        data-league="Eredivisie"     onclick="setPill(this)">Eredivisie</button>
         <button class="pill"        data-league="Vintage"        onclick="setPill(this)">Vintage</button>
         <button class="pill"        data-league="International"  onclick="setPill(this)">International</button>
         <button class="pill"        data-league="Concept"        onclick="setPill(this)">Concept</button>
@@ -1367,6 +1373,7 @@ const products = [
   { id:374, club:'Athletic Bilbao',        name:'Maillot Extérieur', season:'2026-27', league:'Liga',           type:'standard', emoji:'👕', mainColor:'#1A1A1A', accentColor:'#E30613', flocageColor:'#FFFFFF', frontImage:'images/athletic-ext-2627-1.webp', carouselImages:['images/athletic-ext-2627-1.webp','images/athletic-ext-2627-2.webp','images/athletic-ext-2627-3.webp','images/athletic-ext-2627-4.webp','images/athletic-ext-2627-5.webp','images/athletic-ext-2627-6.webp','images/athletic-ext-2627-7.webp'] },
   { id:11, club:'Benfica',                name:'Maillot Domicile', season:'2024-25', league:'Liga Portugal',  type:'standard', emoji:'👕', mainColor:'#E20B12', accentColor:'#FFFFFF', flocageColor:'#FFFFFF' },
   { id:12, club:'FC Porto',               name:'Maillot Domicile', season:'2026-27', league:'Liga Portugal',  type:'standard', emoji:'👕', mainColor:'#003B8E', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/porto-home-26-1.jpg', carouselImages:['images/porto-home-26-1.jpg'] },
+  { id:378, club:'Ajax',                  name:'Maillot Domicile', season:'2026-27', league:'Eredivisie',    type:'standard', emoji:'👕', mainColor:'#FFFFFF', accentColor:'#E30613', flocageColor:'#111111', frontImage:'images/ajax-home-2627-1.webp', carouselImages:['images/ajax-home-2627-1.webp','images/ajax-home-2627-2.webp','images/ajax-home-2627-3.webp','images/ajax-home-2627-4.webp','images/ajax-home-2627-5.webp','images/ajax-home-2627-6.webp','images/ajax-home-2627-7.webp'] },
   /* ===== INTERNATIONAL ===== */
   { id:300, club:'Équipe de France',  name:'Maillot Domicile', season:'2026-27', league:'International', type:'standard', emoji:'🇫🇷', mainColor:'#002395', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/france-home-26-1.webp', carouselImages:['images/france-home-26-1.webp','images/france-home-26-2.webp','images/france-home-26-3.webp','images/france-home-26-4.webp','images/france-home-26-5.webp','images/france-home-26-6.webp','images/france-home-26-7.webp','images/france-home-26-8.webp'] },
   { id:301, club:'Algérie',         name:'Maillot Domicile',  season:'2026-27', league:'International', type:'standard', emoji:'🇩🇿', mainColor:'#FFFFFF', accentColor:'#006233', flocageColor:'#006233', frontImage:'images/algerie-home-26-1.webp', carouselImages:['images/algerie-home-26-1.webp','images/algerie-home-26-2.webp','images/algerie-home-26-3.webp','images/algerie-home-26-4.webp','images/algerie-home-26-5.webp','images/algerie-home-26-6.webp','images/algerie-home-26-7.webp','images/algerie-home-26-8.webp'] },
@@ -1441,6 +1448,7 @@ const clubsByLeague = {
   'Serie A':        ['Inter de Milan', 'AC Milan', 'Juventus', 'Napoli', 'Atalanta'],
   'Bundesliga':     ['Borussia Dortmund', 'Bayern Munich', 'Eintracht Frankfurt', 'Bayer Leverkusen'],
   'Liga Portugal':  ['Benfica', 'FC Porto'],
+  'Eredivisie':     ['Ajax'],
   'Vintage':        [],
   'International':  ['Équipe de France','Algérie','Pays-Bas','Italie','Maroc','Espagne','Brésil','Sénégal','Portugal','Cameroun','Norvège','Allemagne','Argentine','Angleterre','Ghana','Japon','Belgique','Suède','Irak','Uruguay','Colombie','Costa Rica','Danemark','Bosnie'],
   'Concept':        [],

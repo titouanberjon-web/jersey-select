@@ -49,7 +49,10 @@
       "Bash(rm leverkusen-home-2526-2.webp leverkusen-home-2526-3.webp leverkusen-home-2526-4.webp leverkusen-home-2526-6.webp leverkusen-home-2526-7.webp)",
       "Bash(mv leverkusen-home-2526-5.webp leverkusen-home-2526-2.webp)",
       "Bash(mkdir -p /private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/scratchpad/ajax-hold)",
-      "Bash(mv ajax-home-2627-*.webp /private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/scratchpad/ajax-hold/)"
+      "Bash(mv ajax-home-2627-*.webp /private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/scratchpad/ajax-hold/)",
+      "Bash(awk 'NR>=805 && NR<=825 { if \\(length\\($0\\)>400\\) print NR\": [ligne longue base64 tronquée] \"substr\\($0,1,80\\)\"...\"; else print NR\": \"$0 }' index.html)",
+      "Bash(awk '{ if \\(length\\($0\\)>300\\) print NR\": [long]\"; else print $0 }')",
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && mv /private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/scratchpad/ajax-hold/ajax-home-2627-*.webp images/ && ls images/ajax-home-2627-*.webp | wc -l; grep -nE \"'Liga Portugal':\" index.html; grep -nE \"id:12, club:'FC Porto'\" index.html)"
     ]
   }
 }
