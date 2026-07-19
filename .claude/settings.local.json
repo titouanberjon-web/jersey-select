@@ -43,7 +43,8 @@
       "Bash(python3)",
       "WebSearch",
       "WebFetch(domain:en.wikipedia.org)",
-      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && rm -f images/real-home-2627-*.webp && grep -nE \"club:'Manchester \\(City|United\\)'\" index.html)"
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && rm -f images/real-home-2627-*.webp && grep -nE \"club:'Manchester \\(City|United\\)'\" index.html)",
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select/images\" && rm -f inter-home-2627-*.webp && echo \"supprimé\")"
     ]
   }
 }
