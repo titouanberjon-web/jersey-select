@@ -45,7 +45,11 @@
       "WebFetch(domain:en.wikipedia.org)",
       "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && rm -f images/real-home-2627-*.webp && grep -nE \"club:'Manchester \\(City|United\\)'\" index.html)",
       "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select/images\" && rm -f inter-home-2627-*.webp && echo \"supprimé\")",
-      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && rm -f images/atalanta-ext-2526-*.webp && grep -nE \"id:[0-9]+, club:'Inter de Milan'\" index.html | head -1; grep -nE \"'Serie A':\" index.html)"
+      "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select\" && rm -f images/atalanta-ext-2526-*.webp && grep -nE \"id:[0-9]+, club:'Inter de Milan'\" index.html | head -1; grep -nE \"'Serie A':\" index.html)",
+      "Bash(rm leverkusen-home-2526-2.webp leverkusen-home-2526-3.webp leverkusen-home-2526-4.webp leverkusen-home-2526-6.webp leverkusen-home-2526-7.webp)",
+      "Bash(mv leverkusen-home-2526-5.webp leverkusen-home-2526-2.webp)",
+      "Bash(mkdir -p /private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/scratchpad/ajax-hold)",
+      "Bash(mv ajax-home-2627-*.webp /private/tmp/claude-501/-Users-titouanberjongmail-com-Desktop-Jersey-Select/469abda6-1348-41c7-b27a-1babb52c4e20/scratchpad/ajax-hold/)"
     ]
   }
 }
