@@ -817,6 +817,16 @@
         <div class="league-name">Eredivisie</div>
         <div class="league-sub">Pays-Bas</div>
       </div>
+      <div class="league-card" onclick="filterByLeague('2ème Division')">
+        <span class="league-flag">2️⃣</span>
+        <div class="league-name">2ème Division</div>
+        <div class="league-sub">Ligue 2, etc.</div>
+      </div>
+      <div class="league-card" onclick="filterByLeague('Reste du monde')">
+        <span class="league-flag">🌎</span>
+        <div class="league-name">Reste du monde</div>
+        <div class="league-sub">MLS, etc.</div>
+      </div>
       <div class="league-card" onclick="filterByLeague('International')">
         <span class="league-flag">🌍</span>
         <div class="league-name">International</div>
@@ -869,6 +879,8 @@
         <button class="pill"        data-league="Bundesliga"     onclick="setPill(this)">Bundesliga</button>
         <button class="pill"        data-league="Liga Portugal"  onclick="setPill(this)">Liga Portugal</button>
         <button class="pill"        data-league="Eredivisie"     onclick="setPill(this)">Eredivisie</button>
+        <button class="pill"        data-league="2ème Division"  onclick="setPill(this)">2ème Division</button>
+        <button class="pill"        data-league="Reste du monde" onclick="setPill(this)">Reste du monde</button>
         <button class="pill"        data-league="Vintage"        onclick="setPill(this)">Vintage</button>
         <button class="pill"        data-league="International"  onclick="setPill(this)">International</button>
         <button class="pill"        data-league="Concept"        onclick="setPill(this)">Concept</button>
@@ -1447,6 +1459,8 @@ const popularProducts = [
 const WHATSAPP_NUMBER = '33601334655'; // format international sans + ni espaces
 let activeLeague    = 'Tous';
 let activeClub      = '';
+// Méta-ligues : le menu déroulant liste des sous-ligues (champ subLeague) au lieu des clubs
+const META_LEAGUES  = ['Reste du monde', '2ème Division'];
 let cartItems       = [];
 let currentProduct  = null;
 let currentVersion  = 'standard';
@@ -1741,7 +1755,7 @@ function renderProducts() {
     const lm = activeLeague === 'Tous'
       || (activeLeague === 'Vintage' ? p.type === 'vintage' : p.league === activeLeague)
       || (activeLeague === 'Concept' ? p.type === 'concept' : false);
-    const cm = !activeClub || p.club === activeClub;
+    const cm = !activeClub || (META_LEAGUES.includes(activeLeague) ? p.subLeague === activeClub : p.club === activeClub);
     return lm && cm;
   });
 
@@ -1890,17 +1904,22 @@ function setPill(btn) {
 function updateClubDropdown() {
   const wrap = document.getElementById('clubFilterWrap');
   const sel  = document.getElementById('clubSelect');
-  const clubs = clubsByLeague[activeLeague] || [];
+  const isMeta = META_LEAGUES.includes(activeLeague);
+  // Méta-ligue : options = sous-ligues distinctes des produits de cette ligue. Sinon : clubs habituels.
+  const options = isMeta
+    ? [...new Set(products.filter(p => p.league === activeLeague).map(p => p.subLeague).filter(Boolean))].sort()
+    : (clubsByLeague[activeLeague] || []);
+  const label = isMeta ? '— Toutes les ligues —' : '— Tous les clubs de cette ligue —';
 
-  if (activeLeague === 'Tous' || clubs.length === 0) {
+  if (activeLeague === 'Tous' || options.length === 0) {
     wrap.style.display = 'none';
     sel.value = '';
     return;
   }
 
   // Rebuild options
-  sel.innerHTML = '<option value="">— Tous les clubs de cette ligue —</option>';
-  clubs.forEach(c => {
+  sel.innerHTML = '<option value="">' + label + '</option>';
+  options.forEach(c => {
     const opt = document.createElement('option');
     opt.value = c; opt.textContent = c;
     sel.appendChild(opt);
