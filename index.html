@@ -1759,6 +1759,18 @@ function renderProducts() {
     return lm && cm;
   });
 
+  // Tri : regrouper les maillots d'un même club/sélection, puis du plus récent au plus ancien
+  // (et Domicile → Extérieur → Third au sein d'une même saison).
+  const clubOrder = {}; let _ci = 0;
+  allProducts.forEach(p => { if (!(p.club in clubOrder)) clubOrder[p.club] = _ci++; });
+  const seasonYear = s => { const m = String(s || '').match(/\d{4}/); return m ? parseInt(m[0], 10) : 0; };
+  const nameRank   = n => { n = String(n || ''); if (/Domicile/.test(n)) return 0; if (/Extérieur/.test(n)) return 1; if (/Third/.test(n)) return 2; if (/Fourth/.test(n)) return 3; if (/Fifth/.test(n)) return 4; return 5; };
+  filtered.sort((a, b) => {
+    if (clubOrder[a.club] !== clubOrder[b.club]) return clubOrder[a.club] - clubOrder[b.club];
+    const sy = seasonYear(b.season) - seasonYear(a.season); if (sy) return sy;
+    return nameRank(a.name) - nameRank(b.name);
+  });
+
   if (!filtered.length) {
     grid.innerHTML = '<div class="no-results">Aucun maillot trouvé pour ces filtres.</div>';
     return;
