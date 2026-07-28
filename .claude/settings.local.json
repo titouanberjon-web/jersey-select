@@ -62,7 +62,13 @@
       "Bash(cd \"/Users/titouanberjongmail.com/Desktop/Jersey Select/images\" && rm -f dortmund-home-2526-*.jpg && echo \"images Dortmund 25-26 supprimées\")",
       "Bash(python3 -c \"from PIL import Image; im=Image.open\\('benfica-ext-2526-2.jpg'\\); print\\('dims', im.size\\); import os; print\\('bytes', os.path.getsize\\('benfica-ext-2526-2.jpg'\\)\\)\")",
       "Bash(python3 -c \"from PIL import Image; im=Image.open\\('benfica-ext-2526-1.jpg'\\); print\\('dims', im.size\\)\")",
-      "Bash(python3 -c \"from PIL import Image; print\\('benfica-ext-2526-2.jpg ->', Image.open\\('/Users/titouanberjongmail.com/Desktop/Jersey Select/images/benfica-ext-2526-2.jpg'\\).size\\)\")"
+      "Bash(python3 -c \"from PIL import Image; print\\('benfica-ext-2526-2.jpg ->', Image.open\\('/Users/titouanberjongmail.com/Desktop/Jersey Select/images/benfica-ext-2526-2.jpg'\\).size\\)\")",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/605.1.15 \\(KHTML, like Gecko\\) Version/17.0 Safari/605.1.15\" -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://www.unisportstore.fr/football-clubs/marseille\")",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/605.1.15\" \"https://www.unisportstore.fr/football-clubs/marseille\")",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36\" -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://unisportstore.com/football-shirts/sweden-home-shirt-world-cup-2026/430343/\")",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36\" \"https://unisportstore.com/search/?query=marseille\")",
+      "Bash(grep -oE \"\\\\{ id:[0-9]+,[^}]*\\\\}\" index.html)",
+      "Bash(python3 -c \"import PIL; print\\('Pillow OK', PIL.__version__\\)\")"
     ]
   }
 }
