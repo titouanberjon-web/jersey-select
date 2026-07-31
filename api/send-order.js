@@ -7,6 +7,13 @@ function escHtml(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/* Prix en format FR : entier -> "15", décimal -> "17,50" */
+function fmtPrice(n) {
+  const v = Number(n);
+  if (!isFinite(v)) return escHtml(n);
+  return Number.isInteger(v) ? String(v) : v.toFixed(2).replace('.', ',');
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Méthode non autorisée' });
@@ -32,7 +39,7 @@ module.exports = async (req, res) => {
       <td style="padding:8px 12px;border-bottom:1px solid #eee;">${escHtml(i.version)}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #eee;">${escHtml(i.size)}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #eee;">${escHtml(i.flocage)}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${escHtml(i.price)} €</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${fmtPrice(i.price)} €</td>
     </tr>`).join('');
 
   const html = `
@@ -56,7 +63,7 @@ module.exports = async (req, res) => {
         </tr>
         ${rows}
       </table>
-      <p style="font-size:18px;text-align:right;"><strong>Total : <span style="color:#00a050;">${escHtml(total)} €</span></strong></p>
+      <p style="font-size:18px;text-align:right;"><strong>Total : <span style="color:#00a050;">${fmtPrice(total)} €</span></strong></p>
       <p style="color:#888;font-size:12px;">Le bon de commande PDF est en pièce jointe. Le client va aussi te contacter sur WhatsApp.</p>
     </div>
   </div>`;
@@ -64,7 +71,7 @@ module.exports = async (req, res) => {
   const payload = {
     from: 'Jersey Select <onboarding@resend.dev>',
     to: [process.env.ORDER_EMAIL_TO],
-    subject: `🛒 Commande ${orderNumber} — ${name} (${total} €)`,
+    subject: `🛒 Commande ${orderNumber} — ${name} (${fmtPrice(total)} €)`,
     html,
   };
   if (pdfBase64) {

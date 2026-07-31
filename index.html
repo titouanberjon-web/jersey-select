@@ -1230,19 +1230,19 @@
         <div class="radio-group-grid" id="versionGrid">
           <div class="radio-option selected" id="optStandard" onclick="selectVersion('standard',this)">
             <div class="radio-label">Standard</div>
-            <div class="radio-price">16 €</div>
+            <div class="radio-price">15 €</div>
           </div>
           <div class="radio-option" id="optPlayer" onclick="selectVersion('player',this)">
             <div class="radio-label">Player</div>
-            <div class="radio-price">21 €</div>
+            <div class="radio-price">20 €</div>
           </div>
           <div class="radio-option" id="optLongStandard" style="display:none;" onclick="selectVersion('longstandard',this)">
             <div class="radio-label">Manches longues Standard</div>
-            <div class="radio-price">16 €</div>
+            <div class="radio-price">15 €</div>
           </div>
           <div class="radio-option" id="optLongPlayer" style="display:none;" onclick="selectVersion('longplayer',this)">
             <div class="radio-label">Manches longues Player</div>
-            <div class="radio-price">21 €</div>
+            <div class="radio-price">20 €</div>
           </div>
         </div>
       </div>
@@ -1274,7 +1274,7 @@
         <div class="checkbox-row" onclick="toggleCB('chkNumber', event)">
           <input type="checkbox" id="chkNumber" onchange="updatePrice();toggleNumberField()">
           <span class="checkbox-label">Ajouter un numéro</span>
-          <span class="checkbox-price">+2 €</span>
+          <span class="checkbox-price">+2,50 €</span>
         </div>
         <div class="sub-field" id="numberField">
           <input type="text" class="form-input" id="inputNumber" placeholder="Ex : 10 (max 2 chiffres)" maxlength="2" oninput="updatePreview()">
@@ -1284,7 +1284,7 @@
         <div class="checkbox-row" onclick="toggleCB('chkText', event)">
           <input type="checkbox" id="chkText" onchange="updatePrice();toggleTextField()">
           <span class="checkbox-label">Ajouter du texte</span>
-          <span class="checkbox-price">+2 €</span>
+          <span class="checkbox-price">+2,50 €</span>
         </div>
         <div class="sub-field" id="textField">
           <div class="sub-checkbox-row">
@@ -1309,11 +1309,11 @@
 
       <!-- Récapitulatif prix -->
       <div class="price-summary">
-        <div class="price-line"><span>Prix de base</span><span id="priceBase">16 €</span></div>
-        <div class="price-line" id="lineNumber" style="display:none;"><span>+ Numéro</span><span>+2 €</span></div>
-        <div class="price-line" id="lineText"   style="display:none;"><span>+ Texte flocage</span><span>+2 €</span></div>
+        <div class="price-line"><span>Prix de base</span><span id="priceBase">15 €</span></div>
+        <div class="price-line" id="lineNumber" style="display:none;"><span>+ Numéro</span><span>+2,50 €</span></div>
+        <div class="price-line" id="lineText"   style="display:none;"><span>+ Texte flocage</span><span>+2,50 €</span></div>
         <hr class="price-divider">
-        <div class="price-total"><span>Total</span><span class="amount" id="priceTotal">16 €</span></div>
+        <div class="price-total"><span>Total</span><span class="amount" id="priceTotal">15 €</span></div>
       </div>
 
       <div class="error-msg" id="globalError" style="display:block;margin-bottom:.75rem;"></div>
@@ -1612,13 +1612,18 @@ const clubsByLeague = {
 
 /* ===== PRICING ===== */
 function getBasePrice(type, version) {
-  if (type === 'vintage') return 26;
-  if (type === 'concept') return 21;
-  if (version === 'player' || version === 'longplayer') return 21;
-  return 16;
+  if (type === 'vintage') return 25;
+  if (type === 'concept') return 20;
+  if (version === 'player' || version === 'longplayer') return 20;
+  return 15;
 }
+const FLOCAGE_PRICE = 2.5;
 function calcTotal(type, version, hasNumber, hasText) {
-  return getBasePrice(type, version) + (hasNumber ? 2 : 0) + (hasText ? 2 : 0);
+  return getBasePrice(type, version) + (hasNumber ? FLOCAGE_PRICE : 0) + (hasText ? FLOCAGE_PRICE : 0);
+}
+/* Prix en format FR : entier -> "15", décimal -> "17,50" (sans le €) */
+function fmtPrice(n) {
+  return Number.isInteger(n) ? String(n) : n.toFixed(2).replace('.', ',');
 }
 
 
@@ -1843,8 +1848,8 @@ function renderPopular() {
     const isVintage = p.type === 'vintage';
     const isConcept = p.type === 'concept';
     const isFav = favorites.has(p.id);
-    const priceLabel = isVintage ? '26 €' : (isConcept ? '21 €' : 'Dès 16 €');
-    const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 16 € · Player 21 €</div>';
+    const priceLabel = isVintage ? '25 €' : (isConcept ? '20 €' : 'Dès 15 €');
+    const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 15 € · Player 20 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
 <div class="product-card">
@@ -1910,8 +1915,8 @@ function renderProducts() {
     const isVintage = p.type === 'vintage';
     const isConcept = p.type === 'concept';
     const isFav = favorites.has(p.id);
-    const priceLabel = isVintage ? '26 €' : (isConcept ? '21 €' : 'Dès 16 €');
-    const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 16 € · Player 21 €</div>';
+    const priceLabel = isVintage ? '25 €' : (isConcept ? '20 €' : 'Dès 15 €');
+    const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 15 € · Player 20 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
 <div class="product-card">
@@ -1989,7 +1994,7 @@ function renderWishlist() {
   el.innerHTML = ids.map(id => {
     const p = findProductById(id);
     if (!p) return '';
-    const priceLabel = p.type === 'vintage' ? '26 €' : (p.type === 'concept' ? '21 €' : 'Dès 16 €');
+    const priceLabel = p.type === 'vintage' ? '25 €' : (p.type === 'concept' ? '20 €' : 'Dès 15 €');
     const img = p.frontImage
       ? `<img class="wish-item-img" src="${p.frontImage}" alt="${escHtml(p.name)}">`
       : `<span class="cart-item-emoji">${p.emoji}</span>`;
@@ -2279,9 +2284,9 @@ function updatePrice() {
   const hasNumber = document.getElementById('chkNumber').checked;
   const hasText   = document.getElementById('chkText').checked;
   const base  = getBasePrice(currentProduct.type, currentVersion);
-  const total = base + (hasNumber ? 2 : 0) + (hasText ? 2 : 0);
-  document.getElementById('priceBase').textContent   = base  + ' €';
-  document.getElementById('priceTotal').textContent  = total + ' €';
+  const total = base + (hasNumber ? FLOCAGE_PRICE : 0) + (hasText ? FLOCAGE_PRICE : 0);
+  document.getElementById('priceBase').textContent   = fmtPrice(base)  + ' €';
+  document.getElementById('priceTotal').textContent  = fmtPrice(total) + ' €';
   document.getElementById('lineNumber').style.display = hasNumber ? 'flex' : 'none';
   document.getElementById('lineText').style.display   = hasText   ? 'flex' : 'none';
 }
@@ -2423,13 +2428,13 @@ function updateCartUI() {
       Taille : ${item.size}<br>
       Flocage : ${item.flocage}
     </div>
-    <div class="cart-item-price">${item.price} €</div>
+    <div class="cart-item-price">${fmtPrice(item.price)} €</div>
   </div>
   <button class="cart-item-remove" onclick="removeCartItem(${item.uid})">✕</button>
 </div>`).join('');
 
   const total = cartItems.reduce((s, i) => s + i.price, 0);
-  document.getElementById('cartTotal').textContent = total + ' €';
+  document.getElementById('cartTotal').textContent = fmtPrice(total) + ' €';
 }
 
 function removeCartItem(uid) {
@@ -2582,11 +2587,11 @@ function openOrderRecap() {
       Flocage : ${item.flocage}
     </div>
   </div>
-  <div class="order-recap-item-price">${item.price} €</div>
+  <div class="order-recap-item-price">${fmtPrice(item.price)} €</div>
 </div>`).join('');
 
   const total = cartItems.reduce((s, i) => s + i.price, 0);
-  document.getElementById('orderRecapTotal').textContent = total + ' €';
+  document.getElementById('orderRecapTotal').textContent = fmtPrice(total) + ' €';
 
   closeCart();
   document.getElementById('orderModal').classList.add('open');
@@ -2689,7 +2694,7 @@ async function buildOrderPDF(name, orderNumber) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(0, 160, 80);
-    doc.text(`${item.price} €`, W - 18, y + 10, { align: 'right' });
+    doc.text(`${fmtPrice(item.price)} €`, W - 18, y + 10, { align: 'right' });
     y += rowH + 4;
   }
 
@@ -2702,7 +2707,7 @@ async function buildOrderPDF(name, orderNumber) {
   doc.setFontSize(12);
   doc.text('TOTAL', 20, y + 9);
   doc.setTextColor(0, 230, 118);
-  doc.text(`${total} €`, W - 20, y + 9, { align: 'right' });
+  doc.text(`${fmtPrice(total)} €`, W - 20, y + 9, { align: 'right' });
 
   return doc;
 }
@@ -2742,7 +2747,7 @@ async function sendOrderToWhatsApp() {
   }
 
   const lines = cartItems.map(item =>
-    `- Maillot ${item.club} ${item.version} - Taille ${item.size} - Flocage: ${item.flocage} - ${item.price}€`
+    `- Maillot ${item.club} ${item.version} - Taille ${item.size} - Flocage: ${item.flocage} - ${fmtPrice(item.price)}€`
   );
 
   const contact = [user.email, user.phone].filter(Boolean).join(' · ');
@@ -2755,7 +2760,7 @@ async function sendOrderToWhatsApp() {
     '',
     ...lines,
     '',
-    `Total : ${total}€`,
+    `Total : ${fmtPrice(total)}€`,
     '',
     'Je joins mon bon de commande en PDF 📄',
     "J'attends vos infos pour la suite ! 😊"
