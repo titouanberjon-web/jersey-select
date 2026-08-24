@@ -74,7 +74,8 @@
       "Bash(curl -s https://jersey-select.vercel.app/index.html?t=__CMDSUB_OUTPUT__)",
       "Bash(grep -n \"item.price\\\\|+ ' €'\\\\|reduce\\(\\(s\\\\|Total : \\\\|orderRecapTotal\\\\|cartTotal\\\\|priceTotal\\\\|\\\\`\\\\${item.price}\" index.html)",
       "Bash(awk 'length < 600' index.html)",
-      "Bash(node -c api/send-order.js)"
+      "Bash(node -c api/send-order.js)",
+      "Bash(grep -oE \"\\\\{ id:[0-9]+, club:'FC Barcelone'[^}]*\\\\}\" index.html)"
     ]
   }
 }
