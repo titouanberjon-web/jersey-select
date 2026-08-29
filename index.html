@@ -916,6 +916,7 @@
       <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇵🇹</span><div class="int-name">Portugal</div></div>
       <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇩🇪</span><div class="int-name">Allemagne</div></div>
       <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇪🇸</span><div class="int-name">Espagne</div></div>
+      <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇲🇽</span><div class="int-name">Mexique</div></div>
       <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span><div class="int-name">Angleterre</div></div>
       <div class="int-card" onclick="filterByLeague('International')"><span class="int-flag">🇮🇹</span><div class="int-name">Italie</div></div>
     </div>
@@ -1503,6 +1504,9 @@ const products = [
   { id:548, club:'Girona FC',              name:'Maillot Domicile',  season:'2026-27', league:'Liga',          type:'standard', emoji:'👕', mainColor:'#D6001C', accentColor:'#1E6FD9', flocageColor:'#FFFFFF', frontImage:'images/girona-dom-2627-1.webp', carouselImages:['images/girona-dom-2627-1.webp','images/girona-dom-2627-2.webp'] },
   { id:549, club:'Girona FC',              name:'Maillot Extérieur', season:'2026-27', league:'Liga',          type:'standard', emoji:'👕', mainColor:'#1A1A1A', accentColor:'#E30613', flocageColor:'#F5D000', frontImage:'images/girona-ext-2627-1.webp', carouselImages:['images/girona-ext-2627-1.webp','images/girona-ext-2627-2.webp'] },
   { id:550, club:'Girona FC',              name:'Maillot Third',     season:'2026-27', league:'Liga',          type:'standard', emoji:'👕', mainColor:'#4FB58C', accentColor:'#E8F59B', flocageColor:'#1A1A1A', frontImage:'images/girona-third-2627-1.webp', carouselImages:['images/girona-third-2627-1.webp','images/girona-third-2627-2.webp'] },
+  { id:551, club:'Mexique',                name:'Maillot Domicile',  season:'2026-27', league:'International', type:'standard', emoji:'🇲🇽', mainColor:'#0B6B3A', accentColor:'#E30613', flocageColor:'#FFFFFF', frontImage:'images/mexique-dom-2627-1.webp', carouselImages:['images/mexique-dom-2627-1.webp','images/mexique-dom-2627-2.webp'] },
+  { id:552, club:'Mexique',                name:'Maillot Extérieur', season:'2026-27', league:'International', type:'standard', emoji:'🇲🇽', mainColor:'#F5F5F5', accentColor:'#0B4A2F', flocageColor:'#0B4A2F', frontImage:'images/mexique-ext-2627-1.webp', carouselImages:['images/mexique-ext-2627-1.webp','images/mexique-ext-2627-2.webp'] },
+  { id:553, club:'Mexique',                name:'Maillot Third',     season:'2026-27', league:'International', type:'standard', emoji:'🇲🇽', mainColor:'#111111', accentColor:'#0B8A4B', flocageColor:'#0B8A4B', frontImage:'images/mexique-third-2627-1.webp', carouselImages:['images/mexique-third-2627-1.webp','images/mexique-third-2627-2.webp'] },
   { id:357, club:'Atlético Madrid',        name:'Maillot Domicile', season:'2026-27', league:'Liga',           type:'standard', emoji:'👕', mainColor:'#E01A22', accentColor:'#1A2B5E', stripeColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/atletico-home-2627-1.webp', carouselImages:['images/atletico-home-2627-1.webp'] },
   { id:358, club:'Atlético Madrid',        name:'Maillot Extérieur', season:'2026-27', league:'Liga',           type:'standard', emoji:'👕', mainColor:'#111111', accentColor:'#C7F94B', flocageColor:'#C7F94B', frontImage:'images/atletico-ext-2627-1.webp', carouselImages:['images/atletico-ext-2627-1.webp','images/atletico-ext-2627-3.webp'] },
   { id:359, club:'Atlético Madrid',        name:'Maillot Domicile', season:'2025-26', league:'Liga',           type:'standard', emoji:'👕', mainColor:'#E01A22', accentColor:'#1A2B5E', stripeColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/atletico-home-2526-1.webp', carouselImages:['images/atletico-home-2526-1.webp','images/atletico-home-2526-2.webp'] },
@@ -1664,7 +1668,7 @@ const clubsByLeague = {
   'Liga Portugal':  ['Benfica', 'FC Porto'],
   'Eredivisie':     ['Ajax', 'Feyenoord', 'PSV Eindhoven', 'FC Twente', 'FC Utrecht', 'SC Heerenveen'],
   'Vintage':        ['Liverpool', 'Argentine', 'Allemagne', 'Manchester United', 'Arsenal', 'Japon', 'Santos FC'],
-  'International':  ['Équipe de France','Algérie','Pays-Bas','Italie','Maroc','Espagne','Brésil','Sénégal','Portugal','Norvège','Allemagne','Argentine','Angleterre','Ghana','Japon','Belgique','Suède','Irak','Uruguay','Colombie','Costa Rica','Danemark','Bosnie','Croatie','Turquie','Groenland','Hongrie','Pologne','Nigeria','Afrique du Sud','Qatar','Émirats arabes unis','Pérou','Chili','Venezuela','Nouvelle-Zélande','Arabie Saoudite','Albanie','Tunisie','Côte d\'Ivoire','Luxembourg'],
+  'International':  ['Équipe de France','Algérie','Pays-Bas','Italie','Maroc','Espagne','Brésil','Sénégal','Portugal','Norvège','Allemagne','Argentine','Angleterre','Ghana','Japon','Belgique','Suède','Irak','Uruguay','Colombie','Costa Rica','Danemark','Bosnie','Croatie','Turquie','Mexique','Groenland','Hongrie','Pologne','Nigeria','Afrique du Sud','Qatar','Émirats arabes unis','Pérou','Chili','Venezuela','Nouvelle-Zélande','Arabie Saoudite','Albanie','Tunisie','Côte d\'Ivoire','Luxembourg'],
   'Concept':        [],
 };
 
