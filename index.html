@@ -2082,9 +2082,10 @@ function updateClubDropdown() {
   const sel  = document.getElementById('clubSelect');
   const isMeta = META_LEAGUES.includes(activeLeague);
   // Méta-ligue : options = sous-ligues distinctes des produits de cette ligue. Sinon : clubs habituels.
-  const options = isMeta
-    ? [...new Set(products.filter(p => p.league === activeLeague).map(p => p.subLeague).filter(Boolean))].sort()
-    : (clubsByLeague[activeLeague] || []);
+  const options = (isMeta
+    ? [...new Set(products.filter(p => p.league === activeLeague).map(p => p.subLeague).filter(Boolean))]
+    : (clubsByLeague[activeLeague] || []).slice()
+  ).sort((a, b) => a.localeCompare(b, 'fr'));
   const label = isMeta ? '— Toutes les ligues —' : '— Tous les clubs de cette ligue —';
 
   if (activeLeague === 'Tous' || options.length === 0) {
