@@ -683,7 +683,20 @@
         border:2px solid var(--bg,#0a0e1a);
       }
       .nav-links { display:none; }
-      .products-grid { grid-template-columns:1fr; }
+      .products-grid { grid-template-columns:repeat(2,1fr); gap:.7rem; }
+      .product-card { border-radius:8px; }
+      .product-card:hover { transform:none; }
+      .product-img { height:auto; aspect-ratio:1/1; }
+      .product-actions { opacity:1; }
+      .btn-customize { padding:.4rem .2rem; font-size:.6rem; line-height:1.15; white-space:normal; }
+      .btn-fav { padding:.4rem .5rem; font-size:.9rem; }
+      .badge-rare { font-size:.65rem; padding:.15rem .4rem; top:.5rem; left:.5rem; }
+      .product-info { padding:.6rem .7rem; }
+      .product-league-club { font-size:.62rem; margin-bottom:.15rem; }
+      .product-name { font-size:1.05rem; margin-bottom:.1rem; }
+      .product-season { font-size:.68rem; margin-bottom:.3rem; }
+      .product-price { font-size:1.15rem; }
+      .product-price-note { font-size:.62rem; }
       .trust-grid { grid-template-columns:1fr; }
       .trust-item { border-right:none; border-bottom:1px solid var(--border); }
       .trust-item:last-child { border-bottom:none; }
