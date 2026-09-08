@@ -1735,7 +1735,7 @@ const clubsByLeague = {
 /* ===== PRICING ===== */
 function getBasePrice(type, version) {
   if (type === 'vintage') return 30;
-  if (type === 'concept') return 25;
+  if (type === 'concept') return 20;
   if (version === 'player' || version === 'longplayer') return 25;
   return 20;
 }
@@ -1971,7 +1971,7 @@ function renderPopular() {
     const isVintage = p.type === 'vintage';
     const isConcept = p.type === 'concept';
     const isFav = favorites.has(p.id);
-    const priceLabel = isVintage ? '30 €' : (isConcept ? '25 €' : 'Dès 20 €');
+    const priceLabel = isVintage ? '30 €' : (isConcept ? '20 €' : 'Dès 20 €');
     const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 20 € · Player 25 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
@@ -2038,7 +2038,7 @@ function renderProducts() {
     const isVintage = p.type === 'vintage';
     const isConcept = p.type === 'concept';
     const isFav = favorites.has(p.id);
-    const priceLabel = isVintage ? '30 €' : (isConcept ? '25 €' : 'Dès 20 €');
+    const priceLabel = isVintage ? '30 €' : (isConcept ? '20 €' : 'Dès 20 €');
     const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 20 € · Player 25 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
@@ -2117,7 +2117,7 @@ function renderWishlist() {
   el.innerHTML = ids.map(id => {
     const p = findProductById(id);
     if (!p) return '';
-    const priceLabel = p.type === 'vintage' ? '30 €' : (p.type === 'concept' ? '25 €' : 'Dès 20 €');
+    const priceLabel = p.type === 'vintage' ? '30 €' : (p.type === 'concept' ? '20 €' : 'Dès 20 €');
     const img = p.frontImage
       ? `<img class="wish-item-img" src="${p.frontImage}" alt="${escHtml(p.name)}">`
       : `<span class="cart-item-emoji">${p.emoji}</span>`;
