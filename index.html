@@ -1190,6 +1190,8 @@
           <div id="accountInfoEmail"></div>
           <div id="accountInfoPhone"></div>
         </div>
+        <button class="btn-outline" style="width:100%;text-align:center;display:block;margin-bottom:.75rem;" onclick="toggleOrderHistory()">📦 Mes commandes</button>
+        <div id="orderHistoryList" style="display:none;margin-bottom:.75rem;"></div>
         <button class="btn-logout" onclick="logoutAccount()">Se déconnecter</button>
       </div>
 
@@ -1407,6 +1409,25 @@
 <!-- ===== JAVASCRIPT ===== -->
 <!-- jsPDF pour la génération du bon de commande PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Firebase (Auth + Firestore) : comptes clients partagés entre tous les appareils -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCs4XtlXjV_dLlha8KOw5CCoe7f8PkVtTU",
+    authDomain: "jersey-select.firebaseapp.com",
+    projectId: "jersey-select",
+    storageBucket: "jersey-select.firebasestorage.app",
+    messagingSenderId: "648405575337",
+    appId: "1:648405575337:web:2389cc3510477f19e8ebb8"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const fbAuth = firebase.auth();
+  const fbDb   = firebase.firestore();
+</script>
+
 <script>
 /* ===== PRODUCT DATA ===== */
 const products = [
@@ -1700,9 +1721,9 @@ const popularProducts = [
   { id:101, club:'Santos FC',              name:'Maillot Rétro',     season:'2011-2012', league:'Vintage',        type:'vintage',  emoji:'⚽', popular:true, mainColor:'#FFFFFF', accentColor:'#000000', flocageColor:'#000000', frontImage:'images/santos-retro-1.jpg', carouselImages:['images/santos-retro-1.jpg','images/santos-retro-2.webp'] },
   { id:102, club:'Paris Saint-Germain',    name:'Maillot Fourth',    season:'2024-25', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true, mainColor:'#1A1A2E', accentColor:'#8B6914', flocageColor:'#8B6914', hasLongSleeve:true, frontImage:'images/psg-fourth-1.jpg', carouselImages:['images/psg-fourth-1.jpg','images/psg-fourth-5.jpg'] },
   { id:103, club:'Équipe de France',       name:'Maillot Extérieur', season:'2026-27', league:'International',  type:'standard', emoji:'🇫🇷', popular:true, mainColor:'#BFD8CE', accentColor:'#8B6430', flocageColor:'#8B6430', frontImage:'images/france-ext-1.webp', carouselImages:['images/france-ext-1.webp','images/france-ext-7.webp'] },
-  { id:104, club:'Manchester United',      name:'Maillot Third',     season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', popular:true, mainColor:'#1C1C1C', accentColor:'#DA291C', flocageColor:'#FFFFFF', frontImage:'images/manutd-3rd-2627-1.webp', carouselImages:['images/manutd-3rd-2627-1.webp','images/manutd-3rd-2627-2.webp'] },
+  { id:104, club:'FC Barcelone',           name:'Maillot Extérieur', season:'2026-27', league:'Liga',           type:'standard', emoji:'👕', popular:true, mainColor:'#2A1A4A', accentColor:'#E8C87A', flocageColor:'#E8C87A', frontImage:'images/barca-ext-2627-1.webp', carouselImages:['images/barca-ext-2627-1.webp','images/barca-ext-2627-2.webp'] },
   { id:105, club:'Real Madrid',            name:'Maillot Domicile',  season:'2026-27', league:'Liga',           type:'standard', emoji:'👕', popular:true, mainColor:'#FAFAFA', accentColor:'#1A3A28', flocageColor:'#1A3A28', frontImage:'images/real-home-26-1.png', carouselImages:['images/real-home-26-1.png','images/real-home-26-5.png'] },
-  { id:106, club:'Paris Saint-Germain',    name:'Maillot Domicile',  season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true, mainColor:'#004170', accentColor:'#DA291C', flocageColor:'#FFFFFF', frontImage:'images/psg-home-1.jpg', carouselImages:['images/psg-home-1.jpg','images/psg-home-7.jpg'] },
+  { id:106, club:'Paris Saint-Germain',    name:'Maillot Extérieur', season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true, mainColor:'#F5F5F5', accentColor:'#1B2A6B', flocageColor:'#1B2A6B', frontImage:'images/psg-ext-2627-1.webp', carouselImages:['images/psg-ext-2627-1.webp','images/psg-ext-2627-2.webp'] },
   { id:107, club:'Olympique de Marseille', name:'Maillot Domicile',  season:'2026-27', league:'Ligue 1',        type:'standard', emoji:'👕', popular:true, mainColor:'#F0F4FF', accentColor:'#009BC4', flocageColor:'#009BC4', frontImage:'images/om-home-1.webp', carouselImages:['images/om-home-1.webp','images/om-home-2.webp'] },
   { id:109, club:'FC Barcelone',           name:'Maillot Concept',   season:'2025-26', league:'Concept',         type:'concept', emoji:'👕', popular:true, mainColor:'#004D98', accentColor:'#A50044', flocageColor:'#EDBB00', frontImage:'images/barca-concept-1.jpg', carouselImages:['images/barca-concept-1.jpg','images/barca-concept-2.jpg'] },
 ];
@@ -1734,7 +1755,7 @@ const clubsByLeague = {
 
 /* ===== PRICING ===== */
 function getBasePrice(type, version) {
-  if (type === 'vintage') return 30;
+  if (type === 'vintage') return 25;
   if (type === 'concept') return 20;
   if (version === 'player' || version === 'longplayer') return 25;
   return 20;
@@ -1971,7 +1992,7 @@ function renderPopular() {
     const isVintage = p.type === 'vintage';
     const isConcept = p.type === 'concept';
     const isFav = favorites.has(p.id);
-    const priceLabel = isVintage ? '30 €' : (isConcept ? '20 €' : 'Dès 20 €');
+    const priceLabel = isVintage ? '25 €' : (isConcept ? '20 €' : 'Dès 20 €');
     const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 20 € · Player 25 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
@@ -2038,7 +2059,7 @@ function renderProducts() {
     const isVintage = p.type === 'vintage';
     const isConcept = p.type === 'concept';
     const isFav = favorites.has(p.id);
-    const priceLabel = isVintage ? '30 €' : (isConcept ? '20 €' : 'Dès 20 €');
+    const priceLabel = isVintage ? '25 €' : (isConcept ? '20 €' : 'Dès 20 €');
     const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 20 € · Player 25 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
@@ -2070,20 +2091,17 @@ function toggleFav(e, id) {
   toggleFavorite(id);
 }
 
-/* Favoris liés au compte : sauvegardés dans localStorage par email */
-function favKey() {
-  const u = getCurrentUser();
-  return u ? 'jsFav_' + u.email : null;
-}
+/* Favoris liés au compte : sauvegardés dans Firestore -> suivent l'utilisateur sur tous ses appareils */
 function loadFavorites() {
-  const key = favKey();
-  if (!key) { favorites = new Set(); return; }
-  try { favorites = new Set(JSON.parse(localStorage.getItem(key)) || []); }
-  catch (e) { favorites = new Set(); }
+  const u = getCurrentUser();
+  favorites = new Set(u && Array.isArray(u.favorites) ? u.favorites : []);
 }
 function saveFavorites() {
-  const key = favKey();
-  if (key) localStorage.setItem(key, JSON.stringify([...favorites]));
+  const u = getCurrentUser();
+  if (!u) return;
+  u.favorites = [...favorites]; // garde le profil en mémoire synchro (évite un aller-retour réseau)
+  fbDb.collection('users').doc(u.uid).set({ favorites: u.favorites }, { merge: true })
+    .catch(() => showToast('⚠️ Favori non sauvegardé (connexion internet)', 'error'));
 }
 function toggleFavorite(id) {
   // Compte obligatoire : la liste de souhaits est liée au compte
@@ -2117,7 +2135,7 @@ function renderWishlist() {
   el.innerHTML = ids.map(id => {
     const p = findProductById(id);
     if (!p) return '';
-    const priceLabel = p.type === 'vintage' ? '30 €' : (p.type === 'concept' ? '20 €' : 'Dès 20 €');
+    const priceLabel = p.type === 'vintage' ? '25 €' : (p.type === 'concept' ? '20 €' : 'Dès 20 €');
     const img = p.frontImage
       ? `<img class="wish-item-img" src="${p.frontImage}" alt="${escHtml(p.name)}">`
       : `<span class="cart-item-emoji">${p.emoji}</span>`;
@@ -2536,12 +2554,32 @@ function addToCart() {
 }
 
 /* ===== CART ===== */
+/* Le panier reste toujours dispo hors-ligne (localStorage) ; s'il y a un compte
+   connecté, il est aussi répliqué dans Firestore pour suivre l'utilisateur
+   sur tous ses appareils (fusion à la connexion, voir mergeCartOnLogin). */
 function saveCart() {
   localStorage.setItem('jsCart', JSON.stringify(cartItems));
+  const u = getCurrentUser();
+  if (u) {
+    fbDb.collection('users').doc(u.uid).set({ cart: cartItems }, { merge: true }).catch(() => {});
+  }
 }
 function loadCart() {
   try { cartItems = JSON.parse(localStorage.getItem('jsCart')) || []; }
   catch (e) { cartItems = []; }
+}
+async function mergeCartOnLogin(uid) {
+  try {
+    const doc = await fbDb.collection('users').doc(uid).get();
+    const cloudCart = (doc.exists && Array.isArray(doc.data().cart)) ? doc.data().cart : [];
+    const localUids = new Set(cartItems.map(i => i.uid));
+    let changed = false;
+    cloudCart.forEach(item => {
+      if (!localUids.has(item.uid)) { cartItems.push(item); changed = true; }
+    });
+    if (changed || cloudCart.length !== cartItems.length) { saveCart(); }
+    updateCartUI();
+  } catch (e) { /* hors-ligne : le panier local reste utilisable tel quel */ }
 }
 function updateCartUI() {
   document.getElementById('cartCount').textContent = cartItems.length;
@@ -2589,28 +2627,73 @@ function closeCart() {
   document.getElementById('cartOverlay').classList.remove('open');
 }
 
-/* ===== COMPTE CLIENT (stockage local au navigateur) ===== */
-function getAccounts() {
-  try { return JSON.parse(localStorage.getItem('jsAccounts')) || []; }
-  catch (e) { return []; }
-}
-
-function saveAccounts(accounts) {
-  localStorage.setItem('jsAccounts', JSON.stringify(accounts));
-}
+/* ===== COMPTE CLIENT (Firebase Auth + Firestore : même compte sur tous les appareils) ===== */
+let currentUserProfile = null;
 
 function getCurrentUser() {
-  try { return JSON.parse(localStorage.getItem('jsCurrentUser')); }
-  catch (e) { return null; }
+  return currentUserProfile;
 }
 
 function setCurrentUser(user) {
-  if (user) localStorage.setItem('jsCurrentUser', JSON.stringify(user));
-  else localStorage.removeItem('jsCurrentUser');
+  currentUserProfile = user;
   updateAccountUI();
   loadFavorites();      // charge les favoris du compte (ou vide si déconnecté)
   refreshFavViews();
 }
+
+/* Récupère prénom/nom/téléphone stockés dans Firestore pour ce compte */
+async function loadUserProfile(fbUser) {
+  let firstname = '', lastname = '', phone = '', favorites = [];
+  try {
+    const doc = await fbDb.collection('users').doc(fbUser.uid).get();
+    if (doc.exists) {
+      const d = doc.data();
+      firstname = d.firstname || '';
+      lastname  = d.lastname  || '';
+      phone     = d.phone     || '';
+      favorites = Array.isArray(d.favorites) ? d.favorites : [];
+    }
+  } catch (e) { /* hors-ligne ou règles Firestore : on retombe sur le nom Firebase Auth */ }
+  if (!firstname && fbUser.displayName) {
+    const parts = fbUser.displayName.split(' ');
+    firstname = parts[0] || '';
+    lastname  = parts.slice(1).join(' ') || '';
+  }
+  return { uid: fbUser.uid, firstname, lastname, email: fbUser.email, phone, favorites };
+}
+
+/* Affiche/masque un message dans un .error-msg (display:none par défaut) */
+function showAccountMsg(errEl, text, muted) {
+  errEl.textContent = text || '';
+  errEl.style.display = text ? 'block' : 'none';
+  errEl.style.color = muted ? 'var(--text-muted)' : '#ff4444';
+}
+
+function mapFirebaseError(err) {
+  switch (err.code) {
+    case 'auth/email-already-in-use': return 'Un compte existe déjà avec cet email. Connecte-toi.';
+    case 'auth/invalid-email':        return 'Email invalide.';
+    case 'auth/weak-password':        return 'Le mot de passe doit faire au moins 6 caractères.';
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+    case 'auth/invalid-credential':   return 'Email ou mot de passe incorrect.';
+    case 'auth/too-many-requests':    return 'Trop de tentatives. Réessaie dans quelques minutes.';
+    case 'auth/network-request-failed': return 'Problème de connexion internet.';
+    default: return 'Une erreur est survenue. Réessaie.';
+  }
+}
+
+/* Reste connecté(e) automatiquement sur cet appareil, et permet de se connecter
+   au même compte (email + mot de passe) depuis n'importe quel autre appareil. */
+fbAuth.onAuthStateChanged(async (fbUser) => {
+  if (fbUser) {
+    const profile = await loadUserProfile(fbUser);
+    setCurrentUser(profile);
+    mergeCartOnLogin(fbUser.uid);
+  } else {
+    setCurrentUser(null);
+  }
+});
 
 function openAccountModal(requireMsg) {
   const msgEl = document.getElementById('accountRequiredMsg');
@@ -2623,7 +2706,7 @@ function openAccountModal(requireMsg) {
   } else {
     msgEl.style.display = 'none';
   }
-  ['loginError','registerError'].forEach(id => document.getElementById(id).textContent = '');
+  ['loginError','registerError'].forEach(id => showAccountMsg(document.getElementById(id), ''));
   updateAccountUI();
   document.getElementById('accountModal').classList.add('open');
 }
@@ -2646,39 +2729,49 @@ function registerAccount() {
   const phone     = document.getElementById('regPhone').value.trim();
   const password  = document.getElementById('regPassword').value;
   const errEl     = document.getElementById('registerError');
-  errEl.textContent = '';
+  showAccountMsg(errEl, '');
 
-  if (!firstname || !lastname) { errEl.textContent = 'Merci d\'indiquer ton prénom et ton nom.'; return; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Email invalide.'; return; }
-  if (password.length < 6) { errEl.textContent = 'Le mot de passe doit faire au moins 6 caractères.'; return; }
+  if (!firstname || !lastname) { showAccountMsg(errEl, 'Merci d\'indiquer ton prénom et ton nom.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAccountMsg(errEl, 'Email invalide.'); return; }
+  if (password.length < 6) { showAccountMsg(errEl, 'Le mot de passe doit faire au moins 6 caractères.'); return; }
 
-  const accounts = getAccounts();
-  if (accounts.find(a => a.email === email)) { errEl.textContent = 'Un compte existe déjà avec cet email. Connecte-toi.'; return; }
+  showAccountMsg(errEl, 'Création du compte…', true);
 
-  const user = { firstname, lastname, email, phone, password };
-  accounts.push(user);
-  saveAccounts(accounts);
-  setCurrentUser(user);
-  closeAccountModal();
-  showToast(`✅ Bienvenue ${firstname} ! Ton compte est créé.`, 'success');
+  fbAuth.createUserWithEmailAndPassword(email, password)
+    .then(cred => cred.user.updateProfile({ displayName: `${firstname} ${lastname}` }).then(() => cred.user))
+    .then(fbUser => fbDb.collection('users').doc(fbUser.uid).set({ firstname, lastname, email, phone }).then(() => fbUser))
+    .then(fbUser => {
+      showAccountMsg(errEl, '');
+      setCurrentUser({ uid: fbUser.uid, firstname, lastname, email, phone, favorites: [] });
+      closeAccountModal();
+      showToast(`✅ Bienvenue ${firstname} ! Ton compte est créé.`, 'success');
+    })
+    .catch(err => showAccountMsg(errEl, mapFirebaseError(err)));
 }
 
 function loginAccount() {
   const email    = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value;
   const errEl    = document.getElementById('loginError');
-  errEl.textContent = '';
+  showAccountMsg(errEl, '');
 
-  const user = getAccounts().find(a => a.email === email && a.password === password);
-  if (!user) { errEl.textContent = 'Email ou mot de passe incorrect.'; return; }
+  if (!email || !password) { showAccountMsg(errEl, 'Merci de remplir tous les champs.'); return; }
 
-  setCurrentUser(user);
-  closeAccountModal();
-  showToast(`✅ Content de te revoir, ${user.firstname} !`, 'success');
+  showAccountMsg(errEl, 'Connexion…', true);
+
+  fbAuth.signInWithEmailAndPassword(email, password)
+    .then(cred => loadUserProfile(cred.user))
+    .then(profile => {
+      showAccountMsg(errEl, '');
+      setCurrentUser(profile);
+      closeAccountModal();
+      showToast(`✅ Content de te revoir, ${profile.firstname} !`, 'success');
+    })
+    .catch(err => showAccountMsg(errEl, mapFirebaseError(err)));
 }
 
 function logoutAccount() {
-  setCurrentUser(null);
+  fbAuth.signOut();
   closeAccountModal();
   showToast('Tu es déconnecté(e).', 'success');
 }
@@ -2849,6 +2942,45 @@ async function buildOrderPDF(name, orderNumber) {
   return doc;
 }
 
+/* Historique des commandes : suit le compte sur tous les appareils */
+function saveOrderToHistory(uid, orderNumber, name, items, total) {
+  return fbDb.collection('users').doc(uid).collection('orders').doc(orderNumber).set({
+    orderNumber, name, items, total,
+    date: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(() => { /* la commande part déjà par WhatsApp/email : pas bloquant */ });
+}
+
+async function toggleOrderHistory() {
+  const el = document.getElementById('orderHistoryList');
+  const opening = el.style.display === 'none';
+  el.style.display = opening ? 'block' : 'none';
+  if (!opening) return;
+
+  const u = getCurrentUser();
+  if (!u) return;
+  el.innerHTML = '<div class="cart-empty">Chargement…</div>';
+  try {
+    const snap = await fbDb.collection('users').doc(u.uid).collection('orders')
+      .orderBy('date', 'desc').limit(20).get();
+    if (snap.empty) { el.innerHTML = '<div class="cart-empty">Aucune commande pour l\'instant.</div>'; return; }
+    el.innerHTML = snap.docs.map(d => {
+      const o = d.data();
+      const dateStr = (o.date && o.date.toDate) ? o.date.toDate().toLocaleDateString('fr-FR') : '';
+      const itemsSummary = (o.items || []).map(i => `${escHtml(i.name)} · ${escHtml(i.club)}`).join('<br>');
+      return `
+<div class="cart-item">
+  <div class="cart-item-info">
+    <div class="cart-item-name">Commande n° ${escHtml(o.orderNumber)}${dateStr ? ' · ' + dateStr : ''}</div>
+    <div class="cart-item-details">${itemsSummary}</div>
+    <div class="cart-item-price">${fmtPrice(o.total)} €</div>
+  </div>
+</div>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="cart-empty">Impossible de charger l\'historique.</div>';
+  }
+}
+
 async function sendOrderToWhatsApp() {
   const user = getCurrentUser();
   if (!user) {
@@ -2870,6 +3002,7 @@ async function sendOrderToWhatsApp() {
 
   const orderNumber = generateOrderNumber();
   const total = cartItems.reduce((s, i) => s + i.price, 0);
+  saveOrderToHistory(user.uid, orderNumber, name, cartItems, total);
 
   // Téléchargement du bon de commande PDF (WhatsApp ne permet pas de joindre
   // un fichier via lien wa.me : le client l'attache lui-même à la conversation)
