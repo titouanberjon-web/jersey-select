@@ -1295,19 +1295,19 @@
         <div class="radio-group-grid" id="versionGrid">
           <div class="radio-option selected" id="optStandard" onclick="selectVersion('standard',this)">
             <div class="radio-label">Standard</div>
-            <div class="radio-price">15 €</div>
+            <div class="radio-price">20 €</div>
           </div>
           <div class="radio-option" id="optPlayer" onclick="selectVersion('player',this)">
             <div class="radio-label">Player</div>
-            <div class="radio-price">20 €</div>
+            <div class="radio-price">25 €</div>
           </div>
           <div class="radio-option" id="optLongStandard" style="display:none;" onclick="selectVersion('longstandard',this)">
             <div class="radio-label">Manches longues Standard</div>
-            <div class="radio-price">15 €</div>
+            <div class="radio-price">20 €</div>
           </div>
           <div class="radio-option" id="optLongPlayer" style="display:none;" onclick="selectVersion('longplayer',this)">
             <div class="radio-label">Manches longues Player</div>
-            <div class="radio-price">20 €</div>
+            <div class="radio-price">25 €</div>
           </div>
         </div>
       </div>
@@ -1384,12 +1384,12 @@
 
       <!-- Récapitulatif prix -->
       <div class="price-summary">
-        <div class="price-line"><span>Prix de base</span><span id="priceBase">15 €</span></div>
+        <div class="price-line"><span>Prix de base</span><span id="priceBase">20 €</span></div>
         <div class="price-line" id="lineShort" style="display:none;"><span>+ Short assorti</span><span>+10 €</span></div>
         <div class="price-line" id="lineNumber" style="display:none;"><span>+ Numéro</span><span>+2,50 €</span></div>
         <div class="price-line" id="lineText"   style="display:none;"><span>+ Texte flocage</span><span>+2,50 €</span></div>
         <hr class="price-divider">
-        <div class="price-total"><span>Total</span><span class="amount" id="priceTotal">15 €</span></div>
+        <div class="price-total"><span>Total</span><span class="amount" id="priceTotal">20 €</span></div>
       </div>
 
       <div class="error-msg" id="globalError" style="display:block;margin-bottom:.75rem;"></div>
@@ -1734,10 +1734,10 @@ const clubsByLeague = {
 
 /* ===== PRICING ===== */
 function getBasePrice(type, version) {
-  if (type === 'vintage') return 25;
-  if (type === 'concept') return 20;
-  if (version === 'player' || version === 'longplayer') return 20;
-  return 15;
+  if (type === 'vintage') return 30;
+  if (type === 'concept') return 25;
+  if (version === 'player' || version === 'longplayer') return 25;
+  return 20;
 }
 const FLOCAGE_PRICE = 2.5;
 const SHORT_PRICE = 10;
@@ -1971,8 +1971,8 @@ function renderPopular() {
     const isVintage = p.type === 'vintage';
     const isConcept = p.type === 'concept';
     const isFav = favorites.has(p.id);
-    const priceLabel = isVintage ? '25 €' : (isConcept ? '20 €' : 'Dès 15 €');
-    const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 15 € · Player 20 €</div>';
+    const priceLabel = isVintage ? '30 €' : (isConcept ? '25 €' : 'Dès 20 €');
+    const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 20 € · Player 25 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
 <div class="product-card" onclick="openCustomModal(${p.id})">
@@ -2038,8 +2038,8 @@ function renderProducts() {
     const isVintage = p.type === 'vintage';
     const isConcept = p.type === 'concept';
     const isFav = favorites.has(p.id);
-    const priceLabel = isVintage ? '25 €' : (isConcept ? '20 €' : 'Dès 15 €');
-    const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 15 € · Player 20 €</div>';
+    const priceLabel = isVintage ? '30 €' : (isConcept ? '25 €' : 'Dès 20 €');
+    const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 20 € · Player 25 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
 <div class="product-card" onclick="openCustomModal(${p.id})">
@@ -2117,7 +2117,7 @@ function renderWishlist() {
   el.innerHTML = ids.map(id => {
     const p = findProductById(id);
     if (!p) return '';
-    const priceLabel = p.type === 'vintage' ? '25 €' : (p.type === 'concept' ? '20 €' : 'Dès 15 €');
+    const priceLabel = p.type === 'vintage' ? '30 €' : (p.type === 'concept' ? '25 €' : 'Dès 20 €');
     const img = p.frontImage
       ? `<img class="wish-item-img" src="${p.frontImage}" alt="${escHtml(p.name)}">`
       : `<span class="cart-item-emoji">${p.emoji}</span>`;
