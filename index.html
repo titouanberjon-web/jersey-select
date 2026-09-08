@@ -301,12 +301,13 @@
     .products-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:2rem; }
     .product-card {
       background:var(--surface); border:1px solid var(--border);
-      border-radius:12px; overflow:hidden; transition:all .3s;
+      border-radius:12px; overflow:hidden; transition:all .3s; cursor:pointer;
     }
     .product-card:hover {
       border-color:rgba(43,78,230,.5);
       transform:translateY(-6px); box-shadow:0 12px 40px rgba(0,0,0,.4);
     }
+    .product-card:active { transform:scale(.98); border-color:var(--green); }
     .product-img {
       position:relative; height:200px; background:#ffffff;
       display:flex; align-items:center; justify-content:center; overflow:hidden;
@@ -1972,7 +1973,7 @@ function renderPopular() {
     const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 15 € · Player 20 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
-<div class="product-card">
+<div class="product-card" onclick="openCustomModal(${p.id})">
   <div class="product-img">
     ${p.frontImage
       ? `<img src="${p.frontImage}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:.5rem;">`
@@ -1980,7 +1981,7 @@ function renderPopular() {
     ${rareBadge}
     <span class="pop-badge">🔥 Tendance</span>
     <div class="product-actions">
-      <button class="btn-customize" onclick="openCustomModal(${p.id})">Personnaliser &amp; Commander</button>
+      <button class="btn-customize" onclick="event.stopPropagation();openCustomModal(${p.id})">Personnaliser &amp; Commander</button>
       <button class="btn-fav${isFav ? ' active' : ''}" onclick="toggleFavPop(event,${p.id})">${isFav ? '❤️' : '♡'}</button>
     </div>
   </div>
@@ -2039,14 +2040,14 @@ function renderProducts() {
     const priceNote  = (isVintage || isConcept) ? '' : '<div class="product-price-note">Standard 15 € · Player 20 €</div>';
     const rareBadge  = isVintage ? '<span class="badge-rare">★ Rare</span>' : (isConcept ? '<span class="badge-rare">★ Concept</span>' : '');
     return `
-<div class="product-card">
+<div class="product-card" onclick="openCustomModal(${p.id})">
   <div class="product-img">
     ${p.frontImage
       ? `<img src="${p.frontImage}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:.5rem;">`
       : makeJerseySVG(p)}
     ${rareBadge}
     <div class="product-actions">
-      <button class="btn-customize" onclick="openCustomModal(${p.id})">Personnaliser &amp; Commander</button>
+      <button class="btn-customize" onclick="event.stopPropagation();openCustomModal(${p.id})">Personnaliser &amp; Commander</button>
       <button class="btn-fav${isFav ? ' active' : ''}" onclick="toggleFav(event,${p.id})">${isFav ? '❤️' : '♡'}</button>
     </div>
   </div>
