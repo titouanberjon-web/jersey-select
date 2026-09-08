@@ -1332,17 +1332,9 @@
         <div class="error-msg" id="sizeError">Veuillez choisir une taille.</div>
       </div>
 
-      <!-- Étape 3 : Options -->
+      <!-- Étape 3 : Flocage -->
       <div class="custom-step">
-        <div class="custom-step-title">3 — Options (optionnel)</div>
-
-        <div class="checkbox-row checkbox-row-short" onclick="toggleCB('chkShort', event)">
-          <input type="checkbox" id="chkShort" onchange="updatePrice()">
-          <span class="checkbox-label">🩳 Ajouter le short assorti</span>
-          <span class="checkbox-price">+10 €</span>
-        </div>
-
-        <div class="custom-step-subtitle">Flocage</div>
+        <div class="custom-step-title">3 — Flocage (optionnel)</div>
 
         <div class="checkbox-row" onclick="toggleCB('chkNumber', event)">
           <input type="checkbox" id="chkNumber" onchange="updatePrice();toggleNumberField()">
@@ -1378,6 +1370,16 @@
       <div class="jersey-preview">
         <div class="jersey-preview-title">APERÇU — DOS DU MAILLOT</div>
         <div id="jerseyPreviewContainer" style="display:flex;justify-content:center;align-items:center;padding:.5rem;min-height:210px;"></div>
+      </div>
+
+      <!-- Étape 4 : Short -->
+      <div class="custom-step">
+        <div class="custom-step-title">4 — Options (optionnel)</div>
+        <div class="checkbox-row checkbox-row-short" onclick="toggleCB('chkShort', event)">
+          <input type="checkbox" id="chkShort" onchange="updatePrice()">
+          <span class="checkbox-label">🩳 Ajouter le short assorti</span>
+          <span class="checkbox-price">+10 €</span>
+        </div>
       </div>
 
       <!-- Récapitulatif prix -->
