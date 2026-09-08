@@ -513,6 +513,15 @@
     .checkbox-row input[type="checkbox"] { width:16px; height:16px; accent-color:var(--green); cursor:pointer; }
     .checkbox-label { font-size:.95rem; flex:1; }
     .checkbox-price { color:var(--green); font-size:.85rem; font-weight:600; }
+    .checkbox-row-short {
+      background:linear-gradient(135deg,rgba(0,230,118,.08),rgba(43,78,230,.06));
+      border:1px solid rgba(0,230,118,.25); margin-bottom:1rem;
+    }
+    .checkbox-row-short:hover { border-color:var(--green); }
+    .custom-step-subtitle {
+      font-size:.78rem; letter-spacing:.12em; text-transform:uppercase;
+      color:var(--text-muted); margin:0 0 .5rem .1rem;
+    }
     .sub-field { margin-left:2rem; margin-top:.5rem; display:none; }
     .sub-field.visible { display:block; }
     .sub-checkbox-row { display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; }
@@ -1322,9 +1331,17 @@
         <div class="error-msg" id="sizeError">Veuillez choisir une taille.</div>
       </div>
 
-      <!-- Étape 3 : Flocage -->
+      <!-- Étape 3 : Options -->
       <div class="custom-step">
-        <div class="custom-step-title">3 — Flocage (optionnel)</div>
+        <div class="custom-step-title">3 — Options (optionnel)</div>
+
+        <div class="checkbox-row checkbox-row-short" onclick="toggleCB('chkShort', event)">
+          <input type="checkbox" id="chkShort" onchange="updatePrice()">
+          <span class="checkbox-label">🩳 Ajouter le short assorti</span>
+          <span class="checkbox-price">+10 €</span>
+        </div>
+
+        <div class="custom-step-subtitle">Flocage</div>
 
         <div class="checkbox-row" onclick="toggleCB('chkNumber', event)">
           <input type="checkbox" id="chkNumber" onchange="updatePrice();toggleNumberField()">
@@ -1365,6 +1382,7 @@
       <!-- Récapitulatif prix -->
       <div class="price-summary">
         <div class="price-line"><span>Prix de base</span><span id="priceBase">15 €</span></div>
+        <div class="price-line" id="lineShort" style="display:none;"><span>+ Short assorti</span><span>+10 €</span></div>
         <div class="price-line" id="lineNumber" style="display:none;"><span>+ Numéro</span><span>+2,50 €</span></div>
         <div class="price-line" id="lineText"   style="display:none;"><span>+ Texte flocage</span><span>+2,50 €</span></div>
         <hr class="price-divider">
@@ -1719,8 +1737,9 @@ function getBasePrice(type, version) {
   return 15;
 }
 const FLOCAGE_PRICE = 2.5;
-function calcTotal(type, version, hasNumber, hasText) {
-  return getBasePrice(type, version) + (hasNumber ? FLOCAGE_PRICE : 0) + (hasText ? FLOCAGE_PRICE : 0);
+const SHORT_PRICE = 10;
+function calcTotal(type, version, hasNumber, hasText, hasShort) {
+  return getBasePrice(type, version) + (hasNumber ? FLOCAGE_PRICE : 0) + (hasText ? FLOCAGE_PRICE : 0) + (hasShort ? SHORT_PRICE : 0);
 }
 /* Prix en format FR : entier -> "15", décimal -> "17,50" (sans le €) */
 function fmtPrice(n) {
@@ -2327,7 +2346,7 @@ function openCustomModal(productId) {
 
   // Reset all fields
   ['sizeSelect','inputNumber','inputTextTop','inputTextBot'].forEach(id => document.getElementById(id).value = '');
-  ['chkNumber','chkText','chkTextTop','chkTextBot'].forEach(id => document.getElementById(id).checked = false);
+  ['chkNumber','chkText','chkTextTop','chkTextBot','chkShort'].forEach(id => document.getElementById(id).checked = false);
   ['numberField','textField'].forEach(id => document.getElementById(id).classList.remove('visible'));
   ['sizeError','numberError','textError'].forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('globalError').textContent = '';
@@ -2395,10 +2414,12 @@ function updatePrice() {
   if (!currentProduct) return;
   const hasNumber = document.getElementById('chkNumber').checked;
   const hasText   = document.getElementById('chkText').checked;
+  const hasShort  = document.getElementById('chkShort').checked;
   const base  = getBasePrice(currentProduct.type, currentVersion);
-  const total = base + (hasNumber ? FLOCAGE_PRICE : 0) + (hasText ? FLOCAGE_PRICE : 0);
+  const total = calcTotal(currentProduct.type, currentVersion, hasNumber, hasText, hasShort);
   document.getElementById('priceBase').textContent   = fmtPrice(base)  + ' €';
   document.getElementById('priceTotal').textContent  = fmtPrice(total) + ' €';
+  document.getElementById('lineShort').style.display  = hasShort  ? 'flex' : 'none';
   document.getElementById('lineNumber').style.display = hasNumber ? 'flex' : 'none';
   document.getElementById('lineText').style.display   = hasText   ? 'flex' : 'none';
 }
@@ -2429,6 +2450,7 @@ function updatePreview() {
 function addToCart() {
   if (!currentProduct) return;
   const size       = document.getElementById('sizeSelect').value;
+  const hasShort   = document.getElementById('chkShort').checked;
   const hasNumber  = document.getElementById('chkNumber').checked;
   const hasText    = document.getElementById('chkText').checked;
   const numVal     = document.getElementById('inputNumber').value.trim();
@@ -2476,7 +2498,7 @@ function addToCart() {
 
   if (!valid) return;
 
-  const price = calcTotal(currentProduct.type, currentVersion, hasNumber, hasText);
+  const price = calcTotal(currentProduct.type, currentVersion, hasNumber, hasText, hasShort);
 
   let flocage = 'Sans flocage';
   const parts = [];
@@ -2501,7 +2523,7 @@ function addToCart() {
     club:  currentProduct.club,
     image: currentProduct.frontImage || null,
     version: versionLabel,
-    size, flocage, price
+    size, flocage, short: hasShort, price
   });
 
   saveCart();
@@ -2538,7 +2560,7 @@ function updateCartUI() {
     <div class="cart-item-details">
       Version : ${item.version}<br>
       Taille : ${item.size}<br>
-      Flocage : ${item.flocage}
+      Flocage : ${item.flocage}${item.short ? '<br>🩳 Short assorti inclus' : ''}
     </div>
     <div class="cart-item-price">${fmtPrice(item.price)} €</div>
   </div>
@@ -2696,7 +2718,7 @@ function openOrderRecap() {
     <div class="order-recap-item-details">
       Version : ${item.version}<br>
       Taille : ${item.size}<br>
-      Flocage : ${item.flocage}
+      Flocage : ${item.flocage}${item.short ? '<br>🩳 Short assorti inclus' : ''}
     </div>
   </div>
   <div class="order-recap-item-price">${fmtPrice(item.price)} €</div>
@@ -2802,7 +2824,7 @@ async function buildOrderPDF(name, orderNumber) {
     doc.setTextColor(90, 90, 90);
     doc.text(`Version : ${item.version}`, tx, y + 18);
     doc.text(`Taille : ${item.size}`, tx, y + 24);
-    doc.text(`Flocage : ${item.flocage}`, tx, y + 30);
+    doc.text(`Flocage : ${item.flocage}${item.short ? '  ·  Short assorti inclus' : ''}`, tx, y + 30);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(0, 160, 80);
@@ -2859,7 +2881,7 @@ async function sendOrderToWhatsApp() {
   }
 
   const lines = cartItems.map(item =>
-    `- Maillot ${item.club} ${item.version} - Taille ${item.size} - Flocage: ${item.flocage} - ${fmtPrice(item.price)}€`
+    `- Maillot ${item.club} ${item.version} - Taille ${item.size} - Flocage: ${item.flocage}${item.short ? ' - Short assorti inclus' : ''} - ${fmtPrice(item.price)}€`
   );
 
   const contact = [user.email, user.phone].filter(Boolean).join(' · ');
@@ -2891,7 +2913,7 @@ async function sendOrderToWhatsApp() {
       phone: user.phone || '',
       items: cartItems.map(i => ({
         product: i.name, club: i.club, version: i.version,
-        size: i.size, flocage: i.flocage, price: i.price
+        size: i.size, flocage: i.flocage + (i.short ? ' · Short assorti inclus' : ''), price: i.price
       })),
       total, pdfBase64
     })
