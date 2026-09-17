@@ -1996,8 +1996,8 @@ const products = [
   { id:828, club:'Borussia Dortmund', name:'Maillot Extérieur', season:'2025-26', league:'Bundesliga', type:'standard', emoji:'👕', mainColor:'#E8E8E8', accentColor:'#D7FF00', flocageColor:'#111111', frontImage:'images/dortmund-ext-2526-1.webp', carouselImages:['images/dortmund-ext-2526-1.webp','images/dortmund-ext-2526-2.webp'] },
   { id:829, club:'Besiktas', name:'Maillot Extérieur', season:'2025-26', league:'Reste du monde', subLeague:'Turquie — Süper Lig', type:'standard', emoji:'👕', mainColor:'#111111', accentColor:'#FFFFFF', flocageColor:'#E4032E', frontImage:'images/besiktas-ext-2526-1.webp', carouselImages:['images/besiktas-ext-2526-1.webp','images/besiktas-ext-2526-2.webp'] },
   { id:830, club:'Besiktas', name:'Maillot Third', season:'2025-26', league:'Reste du monde', subLeague:'Turquie — Süper Lig', type:'standard', emoji:'👕', mainColor:'#111111', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/besiktas-3rd-2526-1.webp', carouselImages:['images/besiktas-3rd-2526-1.webp','images/besiktas-3rd-2526-2.webp'] },
-  { id:832, club:'AC Milan', name:'Maillot Fourth Silver', season:'2025-26', league:'Serie A', type:'standard', emoji:'👕', mainColor:'#C7C9CB', accentColor:'#111111', flocageColor:'#E4032E', hasLongSleeve:true, frontImage:'images/acmilan-4th-silver-2526-1.webp', carouselImages:['images/acmilan-4th-silver-2526-1.webp','images/acmilan-4th-silver-2526-2.webp'] },
-  { id:833, club:'AC Milan', name:'Maillot Fourth Red', season:'2025-26', league:'Serie A', type:'standard', emoji:'👕', mainColor:'#D8232A', accentColor:'#111111', flocageColor:'#111111', hasLongSleeve:true, frontImage:'images/acmilan-4th-red-2526-1.webp', carouselImages:['images/acmilan-4th-red-2526-1.webp','images/acmilan-4th-red-2526-2.webp'] },
+  { id:832, club:'AC Milan', name:'Maillot Fourth Silver', season:'2025-26', league:'Serie A', type:'standard', emoji:'👕', mainColor:'#C7C9CB', accentColor:'#111111', flocageColor:'#E4032E', hasLongSleeve:true, longSleeveOnly:true, frontImage:'images/acmilan-4th-silver-2526-1.webp', carouselImages:['images/acmilan-4th-silver-2526-1.webp','images/acmilan-4th-silver-2526-2.webp'] },
+  { id:833, club:'AC Milan', name:'Maillot Fourth Red', season:'2025-26', league:'Serie A', type:'standard', emoji:'👕', mainColor:'#D8232A', accentColor:'#111111', flocageColor:'#111111', hasLongSleeve:true, longSleeveOnly:true, frontImage:'images/acmilan-4th-red-2526-1.webp', carouselImages:['images/acmilan-4th-red-2526-1.webp','images/acmilan-4th-red-2526-2.webp'] },
   { id:851, club:'Ajax', name:'Maillot Domicile', season:'2025-26', league:'Eredivisie', type:'standard', emoji:'👕', mainColor:'#FFFFFF', accentColor:'#D2122E', flocageColor:'#D2122E', frontImage:'images/ajax-home-2526-1.webp', carouselImages:['images/ajax-home-2526-1.webp','images/ajax-home-2526-2.webp'] },
   { id:852, club:'Ajax', name:'Maillot Extérieur', season:'2025-26', league:'Eredivisie', type:'standard', emoji:'👕', mainColor:'#0A3A6B', accentColor:'#7EC8E3', flocageColor:'#FFFFFF', frontImage:'images/ajax-ext-2526-1.webp', carouselImages:['images/ajax-ext-2526-1.webp','images/ajax-ext-2526-2.webp'] },
   { id:853, club:'Olympique de Marseille', name:'Maillot Domicile', season:'2025-26', league:'Ligue 1', type:'standard', emoji:'👕', mainColor:'#FFFFFF', accentColor:'#4FC3E8', flocageColor:'#0F1E3D', frontImage:'images/om-home-2526-1.webp', carouselImages:['images/om-home-2526-1.webp','images/om-home-2526-2.webp'] },
@@ -2684,8 +2684,7 @@ function openCustomModal(productId) {
     currentVersion = currentProduct.type;
   } else {
     stepVersion.style.display = 'block';
-    currentVersion = 'standard';
-    document.getElementById('optStandard').classList.add('selected');
+    document.getElementById('optStandard').classList.remove('selected');
     document.getElementById('optPlayer').classList.remove('selected');
     document.getElementById('optLongStandard').classList.remove('selected');
     document.getElementById('optLongPlayer').classList.remove('selected');
@@ -2693,6 +2692,17 @@ function openCustomModal(productId) {
     var ls = currentProduct.hasLongSleeve ? 'block' : 'none';
     document.getElementById('optLongStandard').style.display = ls;
     document.getElementById('optLongPlayer').style.display = ls;
+    // Produits vendus uniquement en manches longues : masquer Standard/Player courtes
+    var shortDisplay = currentProduct.longSleeveOnly ? 'none' : 'block';
+    document.getElementById('optStandard').style.display = shortDisplay;
+    document.getElementById('optPlayer').style.display = shortDisplay;
+    if (currentProduct.longSleeveOnly) {
+      currentVersion = 'longstandard';
+      document.getElementById('optLongStandard').classList.add('selected');
+    } else {
+      currentVersion = 'standard';
+      document.getElementById('optStandard').classList.add('selected');
+    }
   }
 
   // Reset all fields
