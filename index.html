@@ -2287,14 +2287,29 @@ function renderProducts() {
     return lm && cm;
   });
 
-  // Tri : regrouper les maillots d'un même club/sélection, puis du plus récent au plus ancien
-  // (et Domicile → Extérieur → Third au sein d'une même saison).
-  const clubOrder = {}; let _ci = 0;
-  allProducts.forEach(p => { if (!(p.club in clubOrder)) clubOrder[p.club] = _ci++; });
+  // Tri du catalogue : 1) groupe (5 grands championnats > Concept > International >
+  // Vintage > Liga Portugal > Eredivisie > Reste du monde > 2ème Division),
+  // 2) club par ordre alphabétique, 3) saison en cours d'abord puis plus récent -> plus ancien,
+  // 4) Domicile -> Extérieur -> Third -> Fourth.
+  const CURRENT_SEASON_START_YEAR = 2026; // à incrémenter chaque été
+  const LEAGUE_GROUP = {
+    'Premier League': 1, 'Liga': 1, 'Serie A': 1, 'Bundesliga': 1, 'Ligue 1': 1,
+    'Concept': 2,
+    'International': 3,
+    'Vintage': 4,
+    'Liga Portugal': 5,
+    'Eredivisie': 6,
+    'Reste du monde': 7,
+    '2ème Division': 8,
+  };
+  const groupRank  = p => LEAGUE_GROUP[p.league] ?? 7;
   const seasonYear = s => { const m = String(s || '').match(/\d{4}/); return m ? parseInt(m[0], 10) : 0; };
+  const isCurrent  = p => seasonYear(p.season) >= CURRENT_SEASON_START_YEAR;
   const nameRank   = n => { n = String(n || ''); if (/Domicile/.test(n)) return 0; if (/Extérieur/.test(n)) return 1; if (/Third/.test(n)) return 2; if (/Fourth/.test(n)) return 3; if (/Fifth/.test(n)) return 4; return 5; };
   filtered.sort((a, b) => {
-    if (clubOrder[a.club] !== clubOrder[b.club]) return clubOrder[a.club] - clubOrder[b.club];
+    const gr = groupRank(a) - groupRank(b); if (gr) return gr;
+    const cn = a.club.localeCompare(b.club, 'fr', { sensitivity: 'base' }); if (cn) return cn;
+    const ac = isCurrent(a), bc = isCurrent(b); if (ac !== bc) return ac ? -1 : 1;
     const sy = seasonYear(b.season) - seasonYear(a.season); if (sy) return sy;
     return nameRank(a.name) - nameRank(b.name);
   });
