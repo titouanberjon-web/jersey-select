@@ -2375,9 +2375,9 @@ function renderProducts() {
   filtered.sort((a, b) => {
     const gr = groupRank(a) - groupRank(b); if (gr) return gr;
     const cn = a.club.localeCompare(b.club, 'fr', { sensitivity: 'base' }); if (cn) return cn;
-    const nr = nameRank(a.name) - nameRank(b.name); if (nr) return nr;
     const ac = isCurrent(a), bc = isCurrent(b); if (ac !== bc) return ac ? -1 : 1;
-    return seasonYear(b.season) - seasonYear(a.season);
+    const sy = seasonYear(b.season) - seasonYear(a.season); if (sy) return sy;
+    return nameRank(a.name) - nameRank(b.name);
   });
 
   if (!filtered.length) {
