@@ -3431,6 +3431,14 @@ const mapCountries = {
   '784': { club: 'Émirats arabes unis', flag: '🇦🇪', label: 'Émirats arabes unis' },
 };
 
+// Pays sans polygone propre dans le fond de carte (rattachés au Royaume-Uni dans
+// le jeu de données world-atlas) : affichés comme des pastilles cliquables au lieu
+// de colorer une zone du Royaume-Uni.
+const mapExtraPins = [
+  { club: 'Écosse',          flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', label: 'Écosse',          lon: -4.2, lat: 56.8 },
+  { club: 'Pays de Galles',  flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', label: 'Pays de Galles',  lon: -3.6, lat: 52.3 },
+];
+
 // Calcule dynamiquement quels clubs ont des maillots dans le catalogue
 function getAvailableIntClubs() {
   const allProds = [...products];
@@ -3443,6 +3451,7 @@ function getAvailableIntClubs() {
 let _mapInitialized = false;
 let _mapSvg = null;
 let _mapPaths = null;
+let _mapPins = null;
 
 function showWorldMap(selectedClub) {
   const section = document.getElementById('worldMapSection');
@@ -3530,6 +3539,42 @@ function initWorldMap(selectedClub) {
           filterByLeagueAndClub('International', info.club);
         });
 
+      // Pastilles pour les pays sans polygone propre (Écosse, Pays de Galles...)
+      _mapPins = g.selectAll('circle.map-pin')
+        .data(mapExtraPins.filter(p => proj([p.lon, p.lat])))
+        .enter().append('circle')
+        .attr('class', 'map-pin')
+        .attr('cx', d => proj([d.lon, d.lat])[0])
+        .attr('cy', d => proj([d.lon, d.lat])[1])
+        .attr('r', 5)
+        .attr('fill', d => available.has(d.club) ? '#4ade80' : '#2d5a3d')
+        .attr('stroke', d => available.has(d.club) ? '#16a34a' : '#1e3d2a')
+        .attr('stroke-width', 1)
+        .style('cursor', d => available.has(d.club) ? 'pointer' : 'default')
+        .on('mouseover', function(event, d) {
+          if (!available.has(d.club)) return;
+          d3.select(this).attr('fill', '#86efac').attr('stroke', '#22c55e').attr('stroke-width', 2);
+          tooltip.style.display = 'block';
+          tooltip.textContent = d.flag + ' ' + d.label;
+        })
+        .on('mousemove', function(event) {
+          tooltip.style.left = (event.clientX + 14) + 'px';
+          tooltip.style.top  = (event.clientY - 28) + 'px';
+        })
+        .on('mouseout', function(event, d) {
+          tooltip.style.display = 'none';
+          if (!available.has(d.club)) return;
+          const isSel = activeClub === d.club;
+          d3.select(this)
+            .attr('fill', isSel ? '#facc15' : '#4ade80')
+            .attr('stroke', isSel ? '#ca8a04' : '#16a34a')
+            .attr('stroke-width', isSel ? 2 : 1);
+        })
+        .on('click', function(event, d) {
+          if (!available.has(d.club)) return;
+          filterByLeagueAndClub('International', d.club);
+        });
+
       // Labels continents
       const labels = [
         { name: 'AM. DU NORD', lon: -100, lat: 50 },
@@ -3604,6 +3649,22 @@ function updateMapHighlight(selectedClub) {
       const info = mapCountries[d.id];
       return (info && available.has(info.club)) ? 'pointer' : 'default';
     });
+
+  if (_mapPins) {
+    _mapPins
+      .attr('fill', d => {
+        if (!available.has(d.club)) return '#2d5a3d';
+        if (selectedClub && d.club === selectedClub) return '#facc15';
+        return '#4ade80';
+      })
+      .attr('stroke', d => {
+        if (!available.has(d.club)) return '#1e3d2a';
+        if (selectedClub && d.club === selectedClub) return '#ca8a04';
+        return '#16a34a';
+      })
+      .attr('stroke-width', d => (available.has(d.club) && selectedClub && d.club === selectedClub) ? 2 : 1)
+      .style('cursor', d => available.has(d.club) ? 'pointer' : 'default');
+  }
 }
 </script>
 </body>
