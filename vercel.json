@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/commande-confirmee", "destination": "/index.html" },
+    { "source": "/panier", "destination": "/index.html" }
+  ]
+}

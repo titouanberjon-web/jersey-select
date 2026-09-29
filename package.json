@@ -1,0 +1,9 @@
+{
+  "name": "jersey-select",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Site Jersey Select (front statique) + fonctions serverless Vercel (commande, email, paiement Stripe).",
+  "dependencies": {
+    "stripe": "^17.0.0"
+  }
+}

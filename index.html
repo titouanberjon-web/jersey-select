@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jersey Select — Né du terrain</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
   <style>
     /* ===== CSS VARIABLES ===== */
     :root {
@@ -18,8 +18,10 @@
       --text: #e0e6f0;
       --text-muted: #8899bb;
       --border: rgba(43,78,230,0.2);
+      --cyan: #22D3EE;
       --glow-green: 0 0 20px rgba(0,230,118,0.4);
       --glow-blue: 0 0 20px rgba(43,78,230,0.4);
+      --glow-cyan: 0 0 24px rgba(34,211,238,0.45);
     }
 
     /* ===== RESET ===== */
@@ -51,6 +53,10 @@
       0%, 100% { transform: translateY(0); }
       50%       { transform: translateY(-12px); }
     }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
     @keyframes pulse {
       0%, 100% { opacity:1; transform:scale(1);    box-shadow:0 0 0 0 rgba(0,230,118,0.7); }
       50%       { opacity:.8; transform:scale(1.15); box-shadow:0 0 0 6px rgba(0,230,118,0); }
@@ -75,11 +81,14 @@
       color:var(--text); text-decoration:none;
       display:flex; align-items:center; gap:.5rem;
     }
+    .nav-logo-text { display:flex; flex-direction:column; line-height:1.05; }
+    .nav-logo-sub { font-size:.55rem; letter-spacing:.35em; color:var(--text-muted); font-family:'Rajdhani',sans-serif; margin-top:.1rem; }
     .logo-dot {
       width:8px; height:8px; background:var(--green); border-radius:50%;
       animation: pulse 2s infinite; box-shadow:var(--glow-green);
       flex-shrink:0;
     }
+    .nav-logo-hl { color:var(--green); }
     .nav-links { display:flex; gap:2rem; list-style:none; }
     .nav-links a {
       font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.08em;
@@ -153,62 +162,121 @@
 
     /* ===== BANNER ===== */
     #banner {
-      min-height:100vh; display:flex; align-items:center;
-      padding:100px 2rem 4rem; position:relative; overflow:hidden;
+      --hero-green:#19F58C; --hero-cyan:#00D8FF; --hero-blue:#4F7CFF;
+      min-height:96vh; display:flex; align-items:center;
+      padding:110px 2rem 2.5rem; position:relative; overflow:hidden;
+      background:
+        radial-gradient(ellipse 900px 700px at 78% 45%, rgba(25,245,140,.14), transparent 60%),
+        radial-gradient(ellipse 700px 600px at 92% 70%, rgba(0,216,255,.12), transparent 60%),
+        linear-gradient(180deg, rgba(5,11,24,.2) 0%, rgba(5,11,24,.55) 100%);
+    }
+    #banner::after {
+      content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+      background:linear-gradient(90deg, rgba(5,11,24,.65) 0%, rgba(5,11,24,.15) 42%, transparent 60%);
     }
     .banner-watermark {
       position:absolute; right:-2%; top:50%; transform:translateY(-50%);
       font-family:'Bebas Neue',sans-serif; font-size:30vw;
-      color:rgba(43,78,230,.05); line-height:1; pointer-events:none;
+      color:rgba(25,245,140,.05); line-height:1; pointer-events:none;
       user-select:none; white-space:nowrap;
     }
-    .banner-content { position:relative; z-index:2; max-width:900px; margin:0 auto; }
-    .banner-badge {
-      display:inline-block;
-      background:rgba(0,230,118,.1); border:1px solid var(--green);
-      color:var(--green); font-size:.85rem; letter-spacing:.1em;
-      padding:.4rem 1rem; border-radius:20px; margin-bottom:2rem;
-      font-family:'Bebas Neue',sans-serif;
+    .banner-content {
+      position:relative; z-index:2; max-width:1500px; margin:0 auto;
+      display:grid; grid-template-columns:45fr 55fr; gap:1.5rem; align-items:center;
     }
-    .banner-h1 { font-size:clamp(5rem,15vw,12rem); line-height:.9; margin-bottom:1rem; }
-    .banner-h1 .word1 { color:var(--blue-light); display:block; }
+    .banner-text { min-width:0; }
+    .banner-label {
+      display:flex; align-items:center; gap:.7rem; margin-bottom:1.4rem;
+      color:var(--hero-cyan); font-size:.85rem; letter-spacing:.3em;
+      text-transform:uppercase; font-family:'Bebas Neue',sans-serif;
+    }
+    .banner-label::before { content:''; width:3px; height:1.4em; background:var(--hero-green); display:inline-block; flex-shrink:0; box-shadow:0 0 8px var(--hero-green); }
+    .banner-h1 { font-size:clamp(3.4rem,6.5vw,7rem); line-height:.95; margin-bottom:1.2rem; color:#F4F8FF; }
+    .banner-h1 .word1 { display:block; }
     .banner-h1 .word2 {
-      display:block; -webkit-text-stroke:2px var(--green); color:transparent;
-      text-shadow:0 0 40px rgba(0,230,118,.3);
+      display:block; color:var(--hero-green);
+      text-shadow:0 0 30px rgba(25,245,140,.7), 0 0 80px rgba(25,245,140,.4);
     }
-    .banner-slogan { font-size:1.4rem; color:var(--text-muted); margin-bottom:2.5rem; font-weight:500; }
-    .banner-ctas { display:flex; gap:1rem; margin-bottom:3rem; flex-wrap:wrap; }
-    .banner-stats { display:flex; gap:3rem; flex-wrap:wrap; }
-    .stat-number { font-family:'Bebas Neue',sans-serif; font-size:2.5rem; color:var(--green); line-height:1; }
-    .stat-label { font-size:.85rem; color:var(--text-muted); letter-spacing:.05em; }
-
-    .float-badge {
-      position:absolute; z-index:3;
-      background:var(--surface2); border:1px solid var(--border);
-      padding:.6rem 1rem; border-radius:8px;
-      font-family:'Bebas Neue',sans-serif; font-size:.9rem; letter-spacing:.08em;
+    .banner-slogan { font-size:1.2rem; color:var(--text-muted); margin-bottom:.4rem; line-height:1.5; max-width:36ch; }
+    .banner-slogan .hl { color:var(--hero-green); font-weight:700; }
+    .banner-subtext2 { font-size:.95rem; color:var(--text-muted); margin-bottom:1.8rem; }
+    .banner-ctas { display:flex; gap:1rem; margin-bottom:1.75rem; flex-wrap:wrap; }
+    .banner-ctas .icon { width:1.1em; height:1.1em; vertical-align:-.15em; margin-right:.4em; }
+    .banner-ctas .btn-outline {
+      border-color:var(--hero-cyan); background:rgba(0,216,255,.08); color:#fff;
+      transition:all .2s;
     }
-    .float-badge-1 { top:20%; right:10%; animation:float 4s ease-in-out infinite; border-left:3px solid var(--green); color:var(--green); }
-    .float-badge-2 { bottom:25%; right:15%; animation:float 4s ease-in-out infinite 2s; border-left:3px solid var(--blue); color:var(--blue-light); }
+    .banner-ctas .btn-outline:hover { background:rgba(0,216,255,.18); box-shadow:0 0 20px rgba(0,216,255,.3); }
+    .banner-trustnums { display:flex; gap:2.5rem; margin-bottom:1.75rem; flex-wrap:wrap; }
+    .banner-trustnums .num { font-family:'Bebas Neue',sans-serif; font-size:1.9rem; color:var(--hero-green); line-height:1; }
+    .banner-trustnums .lbl { font-size:.75rem; color:var(--text-muted); letter-spacing:.04em; }
+    .banner-benefits {
+      display:flex; flex-wrap:wrap; gap:1.5rem 1.75rem; padding-top:1.5rem;
+      border-top:1px solid var(--border);
+    }
+    .banner-benefit { display:flex; align-items:flex-start; gap:.6rem; max-width:145px; }
+    .banner-benefit .icon { width:20px; height:20px; color:var(--hero-green); flex-shrink:0; margin-top:.1em; }
+    .banner-benefit-title { font-family:'Bebas Neue',sans-serif; font-size:.85rem; letter-spacing:.02em; color:var(--text); line-height:1.2; }
+    .banner-benefit-desc { font-size:.7rem; color:var(--text-muted); line-height:1.3; margin-top:.15rem; }
 
-    /* ===== TRUST BAND ===== */
+    /* ----- zone visuelle (maillots superposés) ----- */
+    .banner-visual { position:relative; min-height:660px; z-index:2; }
+    .banner-glow {
+      position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0;
+    }
+    .banner-glow-green { width:420px; height:420px; background:rgba(25,245,140,.34); top:-20px; right:14%; }
+    .banner-glow-cyan  { width:340px; height:340px; background:rgba(0,216,255,.28); bottom:8%; left:0; }
+    .banner-glow-blue  { width:360px; height:360px; background:rgba(79,124,255,.3); bottom:-40px; right:-40px; }
+    .banner-beams {
+      position:absolute; top:0; left:5%; width:90%; height:75%;
+      opacity:.3; pointer-events:none; z-index:0;
+    }
+    .banner-panel {
+      position:absolute; border-radius:22px; z-index:1; pointer-events:none;
+      background:linear-gradient(135deg, rgba(0,216,255,.1), rgba(25,245,140,.04));
+      border:1px solid rgba(0,216,255,.25);
+      backdrop-filter:blur(2px);
+    }
+    .banner-panel.panel-1 { width:44%; height:62%; top:4%; left:2%; transform:rotate(-9deg); }
+    .banner-panel.panel-2 { width:40%; height:58%; bottom:2%; right:4%; transform:rotate(8deg); border-color:rgba(25,245,140,.22); }
+    .banner-jersey {
+      position:absolute; z-index:2; filter:drop-shadow(0 25px 40px rgba(0,0,0,.6));
+    }
+    .banner-jersey.j-left  { top:13%;  left:-2%;  width:44%; transform:rotate(-13deg); z-index:1; opacity:.94; }
+    .banner-jersey.j-center{ top:-3%;  left:26%;  width:58%; transform:rotate(-2deg);  z-index:3; filter:drop-shadow(0 35px 55px rgba(0,0,0,.65)) drop-shadow(0 0 55px rgba(25,245,140,.4)); }
+    .banner-jersey.j-right { top:16%;  right:-6%; width:46%; transform:rotate(10deg);  z-index:2; opacity:.96; }
+    .banner-jersey img { width:100%; height:auto; display:block; }
+
+    .banner-badge-circle { position:absolute; bottom:4%; left:36%; width:120px; height:120px; z-index:4; animation:spin 18s linear infinite; }
+    .banner-side-text {
+      position:absolute; top:1%; right:0; z-index:4; text-align:right;
+      font-family:'Bebas Neue',sans-serif; font-style:italic; color:#fff;
+      font-size:.95rem; letter-spacing:.08em; line-height:1.7; text-transform:uppercase;
+      text-shadow:0 0 12px rgba(0,216,255,.3);
+    }
+    .banner-side-text .icon { width:20px; height:20px; color:var(--hero-green); margin-bottom:.5rem; }
+    .banner-signature {
+      position:absolute; bottom:-2%; right:2%; z-index:4;
+      font-family:'Permanent Marker',cursive; color:var(--hero-green);
+      font-size:1.8rem; line-height:1.15; transform:rotate(-7deg);
+      text-shadow:0 0 20px rgba(25,245,140,.5); text-align:right;
+    }
+
+    /* ===== TRUST BAND (bandeau de réassurance) ===== */
     #trust {
+      --hero-green:#19F58C;
       background:var(--surface);
       border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-      padding:2rem;
+      padding:.9rem 2rem;
     }
     .trust-grid {
-      display:grid; grid-template-columns:repeat(4,1fr);
-      max-width:1200px; margin:0 auto;
+      display:flex; flex-wrap:wrap; justify-content:space-between; gap:1rem 1.5rem;
+      max-width:1400px; margin:0 auto;
     }
-    .trust-item {
-      padding:1.5rem 2rem; text-align:center;
-      border-right:1px solid var(--border);
-    }
-    .trust-item:last-child { border-right:none; }
-    .trust-icon { font-size:2rem; margin-bottom:.5rem; }
-    .trust-title { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.05em; margin-bottom:.3rem; }
-    .trust-desc { font-size:.85rem; color:var(--text-muted); }
+    .trust-item { display:flex; align-items:center; gap:.7rem; flex:1 1 180px; }
+    .trust-icon { width:20px; height:20px; color:var(--hero-green); flex-shrink:0; }
+    .trust-title { font-family:'Bebas Neue',sans-serif; font-size:.82rem; letter-spacing:.02em; line-height:1.2; }
+    .trust-desc { font-size:.7rem; color:var(--text-muted); }
 
     /* ===== GENERIC SECTION ===== */
     section { padding:5rem 2rem; }
@@ -643,6 +711,8 @@
       clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
     }
     .btn-whatsapp:hover { background:#00ff88; box-shadow:var(--glow-green); }
+    .order-recap-support { text-align:center; font-size:.85rem; color:var(--text-muted); margin-top:.85rem; }
+    .order-recap-support a { color:var(--green); }
 
     /* ===== TOAST ===== */
     .toast-container { position:fixed; bottom:2rem; right:2rem; z-index:3000; display:flex; flex-direction:column; gap:.5rem; }
@@ -670,16 +740,19 @@
     @media(max-width:900px) {
       .leagues-grid { grid-template-columns:repeat(2,1fr); }
       .products-grid { grid-template-columns:repeat(2,1fr); }
-      .trust-grid { grid-template-columns:repeat(2,1fr); }
-      .trust-item:nth-child(2) { border-right:none; }
-      .trust-item:nth-child(3) { border-right:1px solid var(--border); }
       .about-grid { grid-template-columns:1fr; }
       .int-grid { grid-template-columns:repeat(2,1fr); }
       .reviews-grid { grid-template-columns:repeat(2,1fr); }
+      .banner-content { grid-template-columns:1fr; }
+      .banner-visual { min-height:380px; width:100%; max-width:440px; margin:0 auto; order:-1; }
+      .banner-side-text, .banner-signature, .banner-panel { display:none; }
+      .banner-trustnums { gap:1.5rem; }
+      #banner::after { display:none; }
     }
     @media(max-width:600px) {
       .navbar { padding:0 1rem; height:56px; }
       .nav-logo { font-size:1.1rem; gap:.4rem; letter-spacing:.06em; white-space:nowrap; }
+      .nav-logo-sub { display:none; }
       .nav-actions { gap:.5rem; }
       .cart-btn {
         position:relative; width:40px; height:40px; padding:0;
@@ -707,15 +780,21 @@
       .product-season { font-size:.68rem; margin-bottom:.3rem; }
       .product-price { font-size:1.15rem; }
       .product-price-note { font-size:.62rem; }
-      .trust-grid { grid-template-columns:1fr; }
-      .trust-item { border-right:none; border-bottom:1px solid var(--border); }
-      .trust-item:last-child { border-bottom:none; }
+      .trust-grid { flex-direction:column; align-items:flex-start; justify-content:flex-start; gap:1rem; }
+      .trust-item { flex:none; width:100%; }
       .reviews-grid { grid-template-columns:1fr; }
       .footer-grid { grid-template-columns:1fr; }
       .cart-panel { width:100%; right:-100%; }
-      .banner-h1 { font-size:clamp(4rem,20vw,8rem); }
-      .banner-stats { gap:1.5rem; }
-      .float-badge { display:none; }
+      .banner-h1 { font-size:clamp(2.6rem,11vw,4rem); }
+      .banner-visual { min-height:280px; }
+      .banner-jersey.j-left { display:none; }
+      .banner-badge-circle { display:none; }
+      .banner-glow { filter:blur(40px); }
+      .banner-ctas { flex-direction:column; }
+      .banner-ctas a { text-align:center; width:100%; }
+      .banner-trustnums { gap:1.25rem; }
+      .banner-benefits { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+      .banner-benefit { max-width:none; }
       .radio-group { flex-direction:column; }
       .newsletter-form { flex-direction:column; }
     }
@@ -727,7 +806,10 @@
 <nav class="navbar">
   <a href="#banner" class="nav-logo">
     <span class="logo-dot"></span>
-    Jersey Select
+    <span class="nav-logo-text">
+      <span>Jersey <span class="nav-logo-hl">Select</span></span>
+      <span class="nav-logo-sub">Né du terrain</span>
+    </span>
   </a>
   <ul class="nav-links">
     <li><a href="#ligues">Ligues</a></li>
@@ -753,58 +835,136 @@
 <!-- ===== BANNER ===== -->
 <section id="banner">
   <div class="banner-watermark">JS</div>
-  <div class="banner-content fade-up">
-    <div class="banner-badge">📦 Stock disponible · Expédition sous 2–3 semaines</div>
-    <h1 class="banner-h1">
-      <span class="word1">Jersey</span>
-      <span class="word2">Select</span>
-    </h1>
-    <p class="banner-slogan">— Né du terrain</p>
-    <div class="banner-ctas">
-      <a href="#catalogue" class="btn-primary">Voir le catalogue</a>
-      <a href="#apropos" class="btn-outline">Notre histoire</a>
+  <div class="banner-content">
+    <div class="banner-text fade-up">
+      <div class="banner-label">Maillots de football</div>
+      <h1 class="banner-h1">
+        <span class="word1">Les maillots</span>
+        <span class="word2">de ta passion.</span>
+      </h1>
+      <p class="banner-slogan">Clubs, sélections, vintage ou personnalisés, dès <span class="hl">20 €</span>. Standard, Player, flocage personnalisé.</p>
+      <div class="banner-ctas">
+        <a href="#catalogue" class="btn-primary">Voir les maillots
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#" class="btn-outline" onclick="event.preventDefault();openCustomModal(105);">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 3 3 8l3 3 2-1.2V21h8V9.8L18 11l3-3-5-5-2 2h-4L8 3z"/></svg>
+          Personnaliser un maillot
+        </a>
+      </div>
+      <div class="banner-trustnums">
+        <div><div class="num">500+</div><div class="lbl">Maillots</div></div>
+        <div><div class="num">4.9★</div><div class="lbl">Note Vinted</div></div>
+        <div><div class="num">100%</div><div class="lbl">Maillots</div></div>
+      </div>
+      <div class="banner-benefits">
+        <div class="banner-benefit">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 3 3 8l3 3 2-1.2V21h8V9.8L18 11l3-3-5-5-2 2h-4L8 3z"/></svg>
+          <div>
+            <div class="banner-benefit-title">Large choix</div>
+            <div class="banner-benefit-desc">Clubs, sélections, vintage...</div>
+          </div>
+        </div>
+        <div class="banner-benefit">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l4-1 12.5-12.5a1.5 1.5 0 0 0 0-2.1l-1.9-1.9a1.5 1.5 0 0 0-2.1 0L3 16l-1 5z"/><path d="M14.5 5.5l3 3"/></svg>
+          <div>
+            <div class="banner-benefit-title">Flocage personnalisé</div>
+            <div class="banner-benefit-desc">Ton nom, ton numéro, ton style</div>
+          </div>
+        </div>
+        <div class="banner-benefit">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+          <div>
+            <div class="banner-benefit-title">Qualité vérifiée</div>
+            <div class="banner-benefit-desc">Maillots soigneusement sélectionnés</div>
+          </div>
+        </div>
+        <div class="banner-benefit">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+          <div>
+            <div class="banner-benefit-title">Commande sous 1 semaine</div>
+            <div class="banner-benefit-desc">Puis livraison estimée 2 à 3 sem.</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="banner-stats">
-      <div class="stat-item">
-        <div class="stat-number">500+</div>
-        <div class="stat-label">Maillots</div>
+    <div class="banner-visual fade-up">
+      <div class="banner-glow banner-glow-green"></div>
+      <div class="banner-glow banner-glow-cyan"></div>
+      <div class="banner-glow banner-glow-blue"></div>
+      <svg class="banner-beams" viewBox="0 0 400 300" preserveAspectRatio="none">
+        <g stroke="var(--hero-cyan)" stroke-width="1" fill="none">
+          <path d="M0 300 L150 0"/>
+          <path d="M60 300 L220 0"/>
+          <path d="M400 300 L250 0"/>
+          <path d="M340 300 L180 0"/>
+        </g>
+      </svg>
+      <div class="banner-panel panel-1"></div>
+      <div class="banner-panel panel-2"></div>
+      <div class="banner-jersey j-left">
+        <img src="images/hero/real-cutout.webp" alt="Maillot Real Madrid" loading="lazy">
       </div>
-      <div class="stat-item">
-        <div class="stat-number">4.9★</div>
-        <div class="stat-label">Note Vinted</div>
+      <div class="banner-jersey j-right">
+        <img src="images/hero/barca-cutout.webp" alt="Maillot FC Barcelone" loading="lazy">
       </div>
-      <div class="stat-item">
-        <div class="stat-number">100%</div>
-        <div class="stat-label">Maillots</div>
+      <div class="banner-jersey j-center">
+        <img src="images/hero/psg-cutout.webp" alt="Maillot Paris Saint-Germain" loading="lazy">
       </div>
+      <svg class="banner-badge-circle" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="56" fill="rgba(5,11,24,.75)" stroke="var(--hero-green)" stroke-width="1.5"/>
+        <path id="badgeCirclePath" d="M60,60 m-42,0 a42,42 0 1,1 84,0 a42,42 0 1,1 -84,0" fill="none"/>
+        <text font-family="Bebas Neue,sans-serif" font-size="10.5" letter-spacing="2" fill="var(--hero-green)">
+          <textPath href="#badgeCirclePath" xlink:href="#badgeCirclePath" startOffset="0%">JERSEY SELECT · JERSEY SELECT ·</textPath>
+        </text>
+        <path d="M60 42l4 8 9 1-6.5 6 1.5 9-8-4.5-8 4.5 1.5-9-6.5-6 9-1z" fill="var(--hero-green)"/>
+      </svg>
+      <div class="banner-side-text">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 8l3 2 3-4 3 4 3-4 3 4 3-2-1.5 9h-15L3 8z"/></svg>
+        <div>Clubs<br>Sélections<br>Vintage<br>Personnalisation</div>
+      </div>
+      <div class="banner-signature">Né du<br>terrain</div>
     </div>
   </div>
-  <div class="float-badge float-badge-1">⏱ 2–3 semaines</div>
-  <div class="float-badge float-badge-2">✓ Certifié</div>
 </section>
 
-<!-- ===== TRUST BAND ===== -->
+<!-- ===== TRUST BAND (bandeau de réassurance) ===== -->
 <div id="trust">
   <div class="trust-grid">
     <div class="trust-item">
-      <div class="trust-icon">🏅</div>
-      <div class="trust-title">Qualité garantie</div>
-      <div class="trust-desc">Chaque maillot vérifié avant envoi</div>
+      <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+      <div>
+        <div class="trust-title">Commande traitée sous 1 semaine</div>
+        <div class="trust-desc">Préparation rapide</div>
+      </div>
     </div>
     <div class="trust-item">
-      <div class="trust-icon">🚚</div>
-      <div class="trust-title">Expédition 2–3 semaines</div>
-      <div class="trust-desc">Email de suivi inclus</div>
+      <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="12" height="9"/><path d="M14 10h4l4 3.5V16h-8z"/><circle cx="6.5" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/></svg>
+      <div>
+        <div class="trust-title">Livraison estimée : 2 à 3 semaines</div>
+        <div class="trust-desc">Après la commande</div>
+      </div>
     </div>
     <div class="trust-item">
-      <div class="trust-icon">🔄</div>
-      <div class="trust-title">Retours 14 jours</div>
-      <div class="trust-desc">Articles non floqués uniquement</div>
+      <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+      <div>
+        <div class="trust-title">Qualité vérifiée</div>
+        <div class="trust-desc">Maillots soigneusement sélectionnés</div>
+      </div>
     </div>
     <div class="trust-item">
-      <div class="trust-icon">💬</div>
-      <div class="trust-title">SAV réactif</div>
-      <div class="trust-desc">Réponse sous 24h</div>
+      <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5"/><path d="M20 20v-5h-5"/><path d="M5.5 9a7 7 0 0 1 12.6-2.5M18.5 15a7 7 0 0 1-12.6 2.5"/></svg>
+      <div>
+        <div class="trust-title">Retours faciles sous 14 jours</div>
+        <div class="trust-desc">Satisfait ou remboursé</div>
+      </div>
+    </div>
+    <div class="trust-item">
+      <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4V4z"/></svg>
+      <div>
+        <div class="trust-title">Une question ? On est là</div>
+        <div class="trust-desc">Support client réactif</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1021,21 +1181,21 @@
           <span>Comment passer commande sur Jersey Select ?</span>
           <span class="faq-arrow">▼</span>
         </div>
-        <div class="faq-a">Rien de plus simple : parcourez notre catalogue, personnalisez le maillot de votre choix (version, taille et flocage), puis ajoutez-le à votre panier. Lorsque votre sélection est prête, cliquez sur « Valider mon bon de commande » : un récapitulatif complet est généré, puis transmis directement à notre équipe via WhatsApp. Nous revenons ensuite vers vous en personne pour confirmer les détails et finaliser votre commande.</div>
+        <div class="faq-a">Rien de plus simple : parcourez notre catalogue, personnalisez le maillot de votre choix (version, taille et flocage), puis ajoutez-le à votre panier. Lorsque votre sélection est prête, cliquez sur « Payer ma commande » : vous êtes redirigé vers un paiement en ligne sécurisé, puis vous recevez un email de confirmation. Une question avant de commander ? Notre équipe reste joignable sur WhatsApp.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
           <span>Comment se déroule le paiement ?</span>
           <span class="faq-arrow">▼</span>
         </div>
-        <div class="faq-a">Le règlement s'effectue de manière simple et entièrement sécurisée via PayPal. Après validation de votre bon de commande, nous vous transmettons les instructions de paiement PayPal correspondant au montant exact de votre commande. PayPal protège chacune de vos transactions et n'expose jamais vos coordonnées bancaires, pour un achat en toute sérénité. Votre commande est préparée dès réception du paiement.</div>
+        <div class="faq-a">Le règlement s'effectue directement sur le site par carte bancaire, via un paiement en ligne sécurisé. Vos coordonnées bancaires ne transitent jamais par nos serveurs. Votre commande est préparée dès confirmation du paiement.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
           <span>Quels sont les délais de livraison ?</span>
           <span class="faq-arrow">▼</span>
         </div>
-        <div class="faq-a">Vos maillots sont expédiés sous 2 à 3 semaines à compter de la confirmation de votre paiement. Ce délai comprend la préparation soignée de votre commande, la réalisation éventuelle du flocage et le temps d'acheminement. Un suivi vous est communiqué afin que vous puissiez suivre votre colis jusqu'à sa livraison.</div>
+        <div class="faq-a">Votre commande est traitée sous 1 semaine à compter de la confirmation de votre paiement (préparation soignée, réalisation éventuelle du flocage). La livraison estimée est ensuite de 2 à 3 semaines. Une question sur votre commande ? Notre équipe reste joignable sur WhatsApp.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
@@ -1105,7 +1265,7 @@
         <span style="width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;flex-shrink:0;"></span>
         Jersey Select
       </div>
-      <p>Passionné de foot, je sélectionne les meilleurs maillots pour les vrais fans. Né du terrain, fait pour les vrais.</p>
+      <p>Passionné de foot, je sélectionne les meilleurs maillots pour les vrais fans. Né du terrain.</p>
     </div>
     <div class="footer-col">
       <h4>Boutique</h4>
@@ -1274,10 +1434,29 @@
       </div>
 
       <p class="order-recap-instructions">
-        Ton bon de commande est prêt ! Clique sur le bouton ci-dessous : ton bon de commande PDF se télécharge et WhatsApp s'ouvre avec le message prêt à envoyer. Joins le PDF 📎 à la conversation pour finaliser ta commande.
+        Clique sur le bouton ci-dessous pour régler ta commande en ligne, en toute sécurité. Tu recevras un email de confirmation juste après le paiement.
       </p>
 
-      <button class="btn-whatsapp" onclick="sendOrderToWhatsApp()">📲 Envoyer ma commande sur WhatsApp</button>
+      <button class="btn-whatsapp" id="btnPayerStripe" onclick="payerAvecStripe()">💳 Payer ma commande</button>
+      <p class="order-recap-support">Une question avant de payer ? <a href="#" class="wa-link" target="_blank" rel="noopener">Contacte-nous sur WhatsApp</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONFIRMATION DE COMMANDE (retour Stripe) ===== -->
+<div class="modal-overlay" id="orderConfirmedModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">✅ Commande confirmée</span>
+      <button class="modal-close" onclick="closeOrderConfirmedModal()">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <p style="font-size:1.1rem;font-weight:600;margin:.5rem 0;">Merci pour ta commande !</p>
+      <p class="order-recap-instructions" style="margin:1rem 0;">
+        Tu vas recevoir un email de confirmation.<br>
+        Livraison estimée : 2 à 3 semaines.
+      </p>
+      <button class="btn-whatsapp" onclick="closeOrderConfirmedModal()">Retour au site</button>
     </div>
   </div>
 </div>
@@ -3239,7 +3418,11 @@ async function toggleOrderHistory() {
   }
 }
 
-async function sendOrderToWhatsApp() {
+/* ===== PAIEMENT STRIPE ===== */
+/* Le panier + le nom du client sont gardés de côté le temps du paiement Stripe :
+   au retour sur /commande-confirmee (voir handlePostCheckoutRouting), on s'en sert
+   pour générer le bon de commande PDF et l'email, une fois la commande payée. */
+async function payerAvecStripe() {
   const user = getCurrentUser();
   if (!user) {
     closeOrderRecap();
@@ -3254,74 +3437,118 @@ async function sendOrderToWhatsApp() {
   }
   document.getElementById('orderNameError').style.display = 'none';
 
-  // Onglet ouvert immédiatement au clic : Safari bloque tout window.open
-  // survenant après une opération asynchrone (ici la génération du PDF)
-  const waTab = window.open('about:blank', '_blank');
-
   const orderNumber = generateOrderNumber();
   const total = cartItems.reduce((s, i) => s + i.price, 0);
   saveOrderToHistory(user.uid, orderNumber, name, cartItems, total);
+  localStorage.setItem('jsPendingOrder', JSON.stringify({
+    orderNumber, name, email: user.email, phone: user.phone || '', items: cartItems, total
+  }));
 
-  // Téléchargement du bon de commande PDF (WhatsApp ne permet pas de joindre
-  // un fichier via lien wa.me : le client l'attache lui-même à la conversation)
-  let pdfBase64 = null;
+  const btn = document.getElementById('btnPayerStripe');
+  const btnLabelOrig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Redirection vers le paiement…';
+
   try {
-    const doc = await buildOrderPDF(name, orderNumber);
-    doc.save(`bon-de-commande-${orderNumber}.pdf`);
-    pdfBase64 = doc.output('datauristring').split(',')[1];
-    showToast('📄 Bon de commande PDF téléchargé ! Joins-le à la conversation WhatsApp.', 'success');
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: cartItems.map(i => ({
+          name: i.name, club: i.club, version: i.version, size: i.size,
+          flocage: i.flocage + (i.short ? ' · Short assorti inclus' : ''),
+          price: i.price,
+          image: i.image ? new URL(i.image, window.location.origin).href : undefined
+        })),
+        customer: { name, email: user.email, phone: user.phone || '' },
+        orderReference: orderNumber
+      })
+    });
+    const data = await response.json();
+    if (response.ok && data.url) {
+      window.location.href = data.url;
+      return;
+    }
+    showToast(data.error || 'Impossible de lancer le paiement.', 'error');
   } catch (e) {
-    // PDF indisponible (ex : librairie non chargée) : on continue vers WhatsApp
+    showToast('Erreur lors du lancement du paiement.', 'error');
+  }
+  btn.disabled = false;
+  btn.textContent = btnLabelOrig;
+}
+
+function closeOrderConfirmedModal() {
+  document.getElementById('orderConfirmedModal').classList.remove('open');
+}
+
+/* Gère le retour depuis Stripe Checkout (succès /commande-confirmee ou annulation /panier) */
+function handlePostCheckoutRouting() {
+  const path = window.location.pathname;
+
+  if (path === '/panier') {
+    openCart();
+    return;
   }
 
-  const lines = cartItems.map(item =>
-    `- Maillot ${item.club} ${item.version} - Taille ${item.size} - Flocage: ${item.flocage}${item.short ? ' - Short assorti inclus' : ''} - ${fmtPrice(item.price)}€`
-  );
+  if (path !== '/commande-confirmee') return;
 
-  const contact = [user.email, user.phone].filter(Boolean).join(' · ');
-  const message = [
-    'Bonjour Jersey Select ! 👋',
-    `Voici ma commande n° ${orderNumber} :`,
-    '',
-    name,
-    contact,
-    '',
-    ...lines,
-    '',
-    `Total : ${fmtPrice(total)}€`,
-    '',
-    'Je joins mon bon de commande en PDF 📄',
-    "J'attends vos infos pour la suite ! 😊"
-  ].join('\n');
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+  document.getElementById('orderConfirmedModal').classList.add('open');
+  if (!sessionId) return;
 
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  // Évite de renvoyer deux fois l'email si le client recharge la page de confirmation
+  const doneKey = `jsOrderEmailed_${sessionId}`;
+  if (localStorage.getItem(doneKey)) return;
 
-  // Copie de la commande par email à Jersey Select (fonction serverless /api/send-order),
-  // envoyée en arrière-plan pour ne pas retarder l'ouverture de WhatsApp
-  const emailPromise = fetch('/api/send-order', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      orderNumber, name,
-      email: user.email,
-      phone: user.phone || '',
-      items: cartItems.map(i => ({
-        product: i.name, club: i.club, version: i.version,
-        size: i.size, flocage: i.flocage + (i.short ? ' · Short assorti inclus' : ''), price: i.price
-      })),
-      total, pdfBase64
-    })
-  }).then(r => {
-    if (r.ok) showToast('📧 Commande transmise par email à Jersey Select !', 'success');
-  }).catch(() => { /* email en échec : la commande passe quand même par WhatsApp */ });
+  let pending = null;
+  try { pending = JSON.parse(localStorage.getItem('jsPendingOrder') || 'null'); } catch (e) {}
+  if (!pending) return; // autre appareil / storage vidé : rien à envoyer depuis ce navigateur
 
-  if (waTab && !waTab.closed) {
-    waTab.location.href = url;
-  } else {
-    // Onglet bloqué malgré tout : navigation directe, en laissant 1,5 s
-    // à l'email pour partir avant de quitter la page
-    Promise.race([emailPromise, new Promise(r => setTimeout(r, 1500))])
-      .then(() => { window.location.href = url; });
+  (async () => {
+    let pdfBase64 = null;
+    try {
+      const doc = await buildOrderPDFFromItems(pending.name, pending.orderNumber, pending.items);
+      pdfBase64 = doc.output('datauristring').split(',')[1];
+    } catch (e) { /* PDF indisponible : on envoie quand même l'email */ }
+
+    try {
+      await fetch('/api/send-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderNumber: pending.orderNumber,
+          name: pending.name,
+          email: pending.email,
+          phone: pending.phone,
+          items: pending.items.map(i => ({
+            product: i.name, club: i.club, version: i.version,
+            size: i.size, flocage: i.flocage + (i.short ? ' · Short assorti inclus' : ''), price: i.price
+          })),
+          total: pending.total,
+          pdfBase64,
+          paid: true
+        })
+      });
+    } catch (e) { /* l'email de confirmation ne partira pas : le paiement Stripe reste valide */ }
+
+    localStorage.setItem(doneKey, '1');
+    localStorage.removeItem('jsPendingOrder');
+    cartItems = [];
+    saveCart();
+    updateCartUI();
+  })();
+}
+
+/* Variante de buildOrderPDF() qui prend les articles en paramètre plutôt que
+   de lire cartItems global (celui-ci est déjà vidé au moment de la confirmation). */
+async function buildOrderPDFFromItems(name, orderNumber, items) {
+  const savedCartItems = cartItems;
+  cartItems = items;
+  try {
+    return await buildOrderPDF(name, orderNumber);
+  } finally {
+    cartItems = savedCartItems;
   }
 }
 
@@ -3347,6 +3574,7 @@ updateAccountUI();
 updateCartUI();
 updateWishCount();
 document.querySelectorAll('.wa-link').forEach(a => { a.href = `https://wa.me/${WHATSAPP_NUMBER}`; });
+handlePostCheckoutRouting(); // retour Stripe (succès /commande-confirmee ou annulation /panier)
 </script>
 <!-- D3 + TopoJSON for world map -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
