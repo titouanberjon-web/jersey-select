@@ -544,6 +544,9 @@
     .carousel-slide img.hambourg-home-back {
       object-fit:contain; background:#fff;
     }
+    .carousel-slide img.lacorogne-home-back {
+      object-fit:contain; transform:scale(.92);
+    }
     .carousel-btn {
       position:absolute; top:50%; transform:translateY(-50%);
       background:rgba(0,0,0,.55); border:none; color:#fff;
@@ -2370,7 +2373,8 @@ function carouselInit(images) {
   // Construire les slides
   _carTotal = images.length;
   track.innerHTML = images.map(function(src, i) {
-    var imageClass = src.indexOf('hambourg-home-2627-back-upscaled.png') !== -1 ? ' class="hambourg-home-back"' : '';
+    var imageClass = src.indexOf('hambourg-home-2627-back-upscaled.png') !== -1 ? ' class="hambourg-home-back"' :
+      src.indexOf('lacorogne-home-2627-2.webp') !== -1 ? ' class="lacorogne-home-back"' : '';
     return '<div class="carousel-slide"><img' + imageClass + ' src="' + src + '" alt="Photo ' + (i+1) + '" loading="lazy"></div>';
   }).join('');
 
