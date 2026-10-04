@@ -2927,6 +2927,14 @@ function closeCustomModal() {
   document.getElementById('customModal').classList.remove('open');
 }
 
+function handleModalOverlayClick(event, modalId) {
+  if (event.target !== event.currentTarget) return;
+
+  if (modalId === 'customModal') closeCustomModal();
+  else if (modalId === 'accountModal') closeAccountModal();
+  else if (modalId === 'orderModal') closeOrderRecap();
+}
+
 /* ===== FAQ (accordéon) ===== */
 function toggleFaq(el) {
   const item = el.closest('.faq-item');
