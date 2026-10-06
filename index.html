@@ -528,6 +528,7 @@
     .modal-close { background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer; line-height:1; transition:color .2s; }
     .modal-close:hover { color:var(--text); }
     .modal-body { padding:1.5rem; }
+    .embedded-checkout { margin-top:1rem; min-height:460px; }
 
     /* ===== CUSTOM MODAL ===== */
     .custom-step { margin-bottom:1.5rem; }
@@ -1480,6 +1481,7 @@
         Clique sur le bouton ci-dessous pour régler ta commande en ligne, en toute sécurité. Tu recevras un email de confirmation juste après le paiement.
       </p>
 
+      <div id="embeddedCheckout" class="embedded-checkout" style="display:none;"></div>
       <button class="btn-whatsapp" id="btnPayerStripe" onclick="payerAvecStripe()">💳 Payer ma commande</button>
       <p class="order-recap-support">Une question avant de payer ? <a href="#" class="wa-link" target="_blank" rel="noopener">Contacte-nous sur WhatsApp</a></p>
     </div>
@@ -1490,14 +1492,13 @@
 <div class="modal-overlay" id="orderConfirmedModal">
   <div class="modal">
     <div class="modal-header">
-      <span class="modal-title">✅ Commande confirmée</span>
+      <span class="modal-title" id="orderConfirmedTitle">Vérification du paiement…</span>
       <button class="modal-close" onclick="closeOrderConfirmedModal()">✕</button>
     </div>
     <div class="modal-body" style="text-align:center;">
-      <p style="font-size:1.1rem;font-weight:600;margin:.5rem 0;">Merci pour ta commande !</p>
-      <p class="order-recap-instructions" style="margin:1rem 0;">
-        Tu vas recevoir un email de confirmation.<br>
-        Livraison estimée : 2 à 3 semaines.
+      <p id="orderConfirmedThanks" style="font-size:1.1rem;font-weight:600;margin:.5rem 0;">Nous vérifions ton paiement auprès de Stripe.</p>
+      <p class="order-recap-instructions" id="orderConfirmedDetails" style="margin:1rem 0;">
+        Merci de patienter quelques instants.
       </p>
       <button class="btn-whatsapp" onclick="closeOrderConfirmedModal()">Retour au site</button>
     </div>
@@ -1629,6 +1630,7 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- ===== JAVASCRIPT ===== -->
+<script src="https://js.stripe.com/v3/"></script>
 <!-- jsPDF pour la génération du bon de commande PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -2199,6 +2201,7 @@ let cartItems       = [];
 let currentProduct  = null;
 let currentVersion  = 'standard';
 let favorites       = new Set();
+let embeddedCheckout = null;
 
 /* Clubs par ligue */
 const clubsByLeague = {
@@ -3091,12 +3094,13 @@ function addToCart() {
 
   cartItems.push({
     uid: Date.now() + Math.random(),
+    productId: currentProduct.id,
     emoji: currentProduct.emoji,
     name:  currentProduct.name,
     club:  currentProduct.club,
     image: currentProduct.frontImage || null,
     version: versionLabel,
-    size, flocage, short: hasShort, price
+    size, flocage, short: hasShort, hasNumber, hasText, price
   });
 
   saveCart();
@@ -3116,14 +3120,20 @@ function saveCart() {
     fbDb.collection('users').doc(u.uid).set({ cart: cartItems }, { merge: true }).catch(() => {});
   }
 }
+function migrateCartItem(item) {
+  if (Number.isInteger(Number(item.productId)) && Number(item.productId) > 0) return item;
+  const matches = products.filter(p => p.club === item.club && p.name === item.name);
+  const product = matches.find(p => (p.type === 'vintage') === (item.version === 'Vintage')) || matches[0];
+  return product ? { ...item, productId: product.id } : item;
+}
 function loadCart() {
-  try { cartItems = JSON.parse(localStorage.getItem('jsCart')) || []; }
+  try { cartItems = (JSON.parse(localStorage.getItem('jsCart')) || []).map(migrateCartItem); }
   catch (e) { cartItems = []; }
 }
 async function mergeCartOnLogin(uid) {
   try {
     const doc = await fbDb.collection('users').doc(uid).get();
-    const cloudCart = (doc.exists && Array.isArray(doc.data().cart)) ? doc.data().cart : [];
+    const cloudCart = (doc.exists && Array.isArray(doc.data().cart)) ? doc.data().cart.map(migrateCartItem) : [];
     const localUids = new Set(cartItems.map(i => i.uid));
     let changed = false;
     cloudCart.forEach(item => {
@@ -3380,6 +3390,14 @@ function openOrderRecap() {
 }
 
 function closeOrderRecap() {
+  if (embeddedCheckout) {
+    embeddedCheckout.unmount();
+    embeddedCheckout = null;
+  }
+  const checkoutEl = document.getElementById('embeddedCheckout');
+  checkoutEl.innerHTML = '';
+  checkoutEl.style.display = 'none';
+  document.getElementById('btnPayerStripe').style.display = '';
   document.getElementById('orderModal').classList.remove('open');
 }
 
@@ -3534,9 +3552,7 @@ async function toggleOrderHistory() {
 }
 
 /* ===== PAIEMENT STRIPE ===== */
-/* Le panier + le nom du client sont gardés de côté le temps du paiement Stripe :
-   au retour sur /commande-confirmee (voir handlePostCheckoutRouting), on s'en sert
-   pour générer le bon de commande PDF et l'email, une fois la commande payée. */
+/* Le Checkout intégré garde le client sur Jersey Select pendant la saisie du paiement. */
 async function payerAvecStripe() {
   const user = getCurrentUser();
   if (!user) {
@@ -3554,15 +3570,14 @@ async function payerAvecStripe() {
 
   const orderNumber = generateOrderNumber();
   const total = cartItems.reduce((s, i) => s + i.price, 0);
-  saveOrderToHistory(user.uid, orderNumber, name, cartItems, total);
   localStorage.setItem('jsPendingOrder', JSON.stringify({
-    orderNumber, name, email: user.email, phone: user.phone || '', items: cartItems, total
+    orderNumber, uid: user.uid, name, email: user.email, phone: user.phone || '', items: cartItems, total
   }));
 
   const btn = document.getElementById('btnPayerStripe');
   const btnLabelOrig = btn.textContent;
   btn.disabled = true;
-  btn.textContent = 'Redirection vers le paiement…';
+  btn.textContent = 'Préparation du paiement…';
 
   try {
     const response = await fetch('/api/create-checkout-session', {
@@ -3570,9 +3585,8 @@ async function payerAvecStripe() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         items: cartItems.map(i => ({
-          name: i.name, club: i.club, version: i.version, size: i.size,
+          productId: i.productId, name: i.name, club: i.club, version: i.version, size: i.size,
           flocage: i.flocage + (i.short ? ' · Short assorti inclus' : ''),
-          price: i.price,
           image: i.image ? new URL(i.image, window.location.origin).href : undefined
         })),
         customer: { name, email: user.email, phone: user.phone || '' },
@@ -3584,11 +3598,31 @@ async function payerAvecStripe() {
       window.location.href = data.url;
       return;
     }
+    if (response.ok && data.clientSecret && data.publishableKey && window.Stripe) {
+      const checkoutEl = document.getElementById('embeddedCheckout');
+      checkoutEl.style.display = 'block';
+      btn.style.display = 'none';
+      const stripe = Stripe(data.publishableKey);
+      embeddedCheckout = await stripe.initEmbeddedCheckout({
+        fetchClientSecret: async () => data.clientSecret
+      });
+      embeddedCheckout.mount('#embeddedCheckout');
+      checkoutEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     showToast(data.error || 'Impossible de lancer le paiement.', 'error');
   } catch (e) {
+    if (embeddedCheckout) {
+      embeddedCheckout.destroy();
+      embeddedCheckout = null;
+    }
+    const checkoutEl = document.getElementById('embeddedCheckout');
+    checkoutEl.innerHTML = '';
+    checkoutEl.style.display = 'none';
     showToast('Erreur lors du lancement du paiement.', 'error');
   }
   btn.disabled = false;
+  btn.style.display = '';
   btn.textContent = btnLabelOrig;
 }
 
@@ -3610,17 +3644,58 @@ function handlePostCheckoutRouting() {
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get('session_id');
   document.getElementById('orderConfirmedModal').classList.add('open');
-  if (!sessionId) return;
+  const titleEl = document.getElementById('orderConfirmedTitle');
+  const thanksEl = document.getElementById('orderConfirmedThanks');
+  const detailsEl = document.getElementById('orderConfirmedDetails');
+  if (!sessionId) {
+    titleEl.textContent = 'Paiement non vérifié';
+    thanksEl.textContent = 'Aucune session de paiement n’a été fournie.';
+    detailsEl.textContent = 'Retourne au panier pour vérifier ta commande ou contacte-nous si tu as été débité.';
+    return;
+  }
 
   // Évite de renvoyer deux fois l'email si le client recharge la page de confirmation
   const doneKey = `jsOrderEmailed_${sessionId}`;
-  if (localStorage.getItem(doneKey)) return;
-
   let pending = null;
   try { pending = JSON.parse(localStorage.getItem('jsPendingOrder') || 'null'); } catch (e) {}
-  if (!pending) return; // autre appareil / storage vidé : rien à envoyer depuis ce navigateur
 
   (async () => {
+    try {
+      const verification = await fetch(`/api/verify-checkout-session?session_id=${encodeURIComponent(sessionId)}`);
+      const result = await verification.json();
+      if (!verification.ok || !result.paid) {
+        titleEl.textContent = 'Paiement non confirmé';
+        thanksEl.textContent = 'Stripe ne confirme pas encore le règlement.';
+        detailsEl.textContent = 'Ne repaie pas tout de suite. Si tu as été débité, contacte-nous pour vérifier la commande.';
+        return;
+      }
+    } catch (e) {
+      titleEl.textContent = 'Vérification impossible';
+      thanksEl.textContent = 'Nous n’avons pas pu vérifier le paiement auprès de Stripe.';
+      detailsEl.textContent = 'Actualise cette page dans quelques instants. Si tu as été débité, ne repaie pas et contacte-nous.';
+      return;
+    }
+
+    titleEl.textContent = '✅ Commande confirmée';
+    thanksEl.textContent = 'Merci pour ta commande !';
+    detailsEl.innerHTML = 'Tu vas recevoir un email de confirmation.<br>Livraison estimée : 2 à 3 semaines.';
+    if (localStorage.getItem(doneKey)) return;
+    if (!pending) {
+      detailsEl.textContent = 'Le paiement est confirmé, mais nous ne retrouvons pas le récapitulatif de cette commande. Contacte-nous pour le suivi.';
+      return;
+    }
+    if (result.orderReference !== pending.orderNumber || result.items.length !== pending.items.length) {
+      detailsEl.textContent = 'Le paiement est confirmé, mais le récapitulatif ne correspond pas à la session Stripe. Contacte-nous pour finaliser le suivi de ta commande.';
+      return;
+    }
+    pending.items = pending.items.map((item, index) => ({
+      ...item,
+      price: result.items[index].amountTotal / 100
+    }));
+    pending.total = result.amountTotal / 100;
+    localStorage.setItem('jsPendingOrder', JSON.stringify(pending));
+
+    if (pending.uid) saveOrderToHistory(pending.uid, pending.orderNumber, pending.name, pending.items, pending.total);
     let pdfBase64 = null;
     try {
       const doc = await buildOrderPDFFromItems(pending.name, pending.orderNumber, pending.items);
