@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Test de paiement Stripe — Jersey Select</title>
+  <style>
+    :root { color-scheme: dark; font-family: Arial, sans-serif; background:#080d18; color:#f4f6fb; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; box-sizing:border-box; }
+    main { width:min(100%,620px); box-sizing:border-box; padding:30px; border:1px solid #253250; border-radius:18px; background:#101827; }
+    h1 { margin:0 0 12px; font-size:1.55rem; }
+    p { line-height:1.55; color:#c4ccdc; }
+    .badge { display:inline-block; margin-bottom:16px; padding:7px 10px; border-radius:999px; background:#183b31; color:#21d889; font-weight:700; font-size:.8rem; }
+    button { margin-top:12px; border:0; border-radius:9px; padding:13px 18px; background:#13d883; color:#06130d; font-size:1rem; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:wait; }
+    #checkout { margin-top:20px; }
+    #status { min-height:1.5em; }
+    a { color:#8fc5ff; }
+    code { color:#fff; }
+  </style>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <main>
+    <span class="badge">MODE TEST — aucun débit réel</span>
+    <h1>Essai du paiement</h1>
+    <p>Cette page crée un paiement Stripe de <strong>0,01 € en mode test</strong>. Il ne s’agit pas d’une commande réelle : aucun maillot ne sera envoyé.</p>
+    <p>Carte de test Stripe : <code>4242 4242 4242 4242</code>, date future, CVC quelconque.</p>
+    <button id="start" type="button">Lancer le test à 0,01 €</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <div id="checkout"></div>
+    <p><a href="/">Retour à Jersey Select</a></p>
+  </main>
+  <script>
+    const startButton = document.getElementById('start');
+    const statusEl = document.getElementById('status');
+    const checkoutEl = document.getElementById('checkout');
+    let embeddedCheckout;
+
+    async function verifyReturn() {
+      const sessionId = new URLSearchParams(location.search).get('session_id');
+      if (!sessionId) return;
+      startButton.hidden = true;
+      statusEl.textContent = 'Vérification du paiement test…';
+      try {
+        const response = await fetch(`/api/test-checkout?session_id=${encodeURIComponent(sessionId)}`);
+        const result = await response.json();
+        statusEl.textContent = result.paid
+          ? 'Test réussi : paiement de 0,01 € confirmé en mode test. Aucun débit réel, aucune commande expédiée.'
+          : 'Le paiement test n’a pas été confirmé.';
+      } catch {
+        statusEl.textContent = 'Impossible de vérifier ce paiement test. Réessaie depuis la page.';
+      }
+    }
+
+    startButton.addEventListener('click', async () => {
+      startButton.disabled = true;
+      statusEl.textContent = 'Préparation du paiement test…';
+      try {
+        const response = await fetch('/api/test-checkout', { method: 'POST' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Erreur lors du démarrage du test.');
+        const stripe = Stripe(data.publishableKey);
+        embeddedCheckout = await stripe.initEmbeddedCheckout({ fetchClientSecret: async () => data.clientSecret });
+        embeddedCheckout.mount('#checkout');
+        startButton.hidden = true;
+        statusEl.textContent = 'Utilise une carte de test Stripe. Rien ne sera débité.';
+      } catch (error) {
+        statusEl.textContent = error.message;
+        startButton.disabled = false;
+      }
+    });
+
+    verifyReturn();
+  </script>
+</body>
+</html>
