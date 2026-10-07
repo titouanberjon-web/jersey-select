@@ -3654,8 +3654,6 @@ function handlePostCheckoutRouting() {
     return;
   }
 
-  // Évite de renvoyer deux fois l'email si le client recharge la page de confirmation
-  const doneKey = `jsOrderEmailed_${sessionId}`;
   let pending = null;
   try { pending = JSON.parse(localStorage.getItem('jsPendingOrder') || 'null'); } catch (e) {}
 
@@ -3678,8 +3676,7 @@ function handlePostCheckoutRouting() {
 
     titleEl.textContent = '✅ Commande confirmée';
     thanksEl.textContent = 'Merci pour ta commande !';
-    detailsEl.innerHTML = 'Tu vas recevoir un email de confirmation.<br>Livraison estimée : 2 à 3 semaines.';
-    if (localStorage.getItem(doneKey)) return;
+    detailsEl.innerHTML = 'Commande transmise et paiement confirmé.<br>Livraison estimée : 2 à 3 semaines.';
     if (!pending) {
       detailsEl.textContent = 'Le paiement est confirmé, mais nous ne retrouvons pas le récapitulatif de cette commande. Contacte-nous pour le suivi.';
       return;
@@ -3696,50 +3693,11 @@ function handlePostCheckoutRouting() {
     localStorage.setItem('jsPendingOrder', JSON.stringify(pending));
 
     if (pending.uid) saveOrderToHistory(pending.uid, pending.orderNumber, pending.name, pending.items, pending.total);
-    let pdfBase64 = null;
-    try {
-      const doc = await buildOrderPDFFromItems(pending.name, pending.orderNumber, pending.items);
-      pdfBase64 = doc.output('datauristring').split(',')[1];
-    } catch (e) { /* PDF indisponible : on envoie quand même l'email */ }
-
-    try {
-      await fetch('/api/send-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderNumber: pending.orderNumber,
-          name: pending.name,
-          email: pending.email,
-          phone: pending.phone,
-          items: pending.items.map(i => ({
-            product: i.name, club: i.club, version: i.version,
-            size: i.size, flocage: i.flocage + (i.short ? ' · Short assorti inclus' : ''), price: i.price
-          })),
-          total: pending.total,
-          pdfBase64,
-          paid: true
-        })
-      });
-    } catch (e) { /* l'email de confirmation ne partira pas : le paiement Stripe reste valide */ }
-
-    localStorage.setItem(doneKey, '1');
     localStorage.removeItem('jsPendingOrder');
     cartItems = [];
     saveCart();
     updateCartUI();
   })();
-}
-
-/* Variante de buildOrderPDF() qui prend les articles en paramètre plutôt que
-   de lire cartItems global (celui-ci est déjà vidé au moment de la confirmation). */
-async function buildOrderPDFFromItems(name, orderNumber, items) {
-  const savedCartItems = cartItems;
-  cartItems = items;
-  try {
-    return await buildOrderPDF(name, orderNumber);
-  } finally {
-    cartItems = savedCartItems;
-  }
 }
 
 /* ===== LEGAL MODALS ===== */

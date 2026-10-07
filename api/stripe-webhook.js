@@ -1,5 +1,5 @@
 // Fonction serverless Vercel : webhook Stripe.
-// Écoute checkout.session.completed pour confirmer qu'une commande a bien été payée.
+// Écoute les événements Checkout réussis pour confirmer le paiement et envoyer le bon.
 //
 // Variables d'environnement requises :
 //   STRIPE_SECRET_KEY      — clé secrète Stripe
@@ -7,24 +7,11 @@
 //
 // Configuration Stripe Dashboard : ajouter un endpoint pointant vers
 //   https://jersey-select.com/api/stripe-webhook
-// et sélectionner l'événement "checkout.session.completed".
+// et sélectionner "checkout.session.completed" (et, si moyens différés activés,
+// "checkout.session.async_payment_succeeded").
 //
-// TODO (v2 — pas encore fait) :
-//   Aujourd'hui, l'email de confirmation + le PDF sont envoyés depuis le NAVIGATEUR du client
-//   sur la page /commande-confirmee, une fois revenu de Stripe (voir index.html,
-//   handlePostCheckoutRouting()). Ça fonctionne pour la V1, mais ce n'est pas fiable à 100 % :
-//   si le client ferme l'onglet juste après le paiement, l'email ne part jamais alors que
-//   la commande EST payée.
-//   La version robuste serait de déplacer l'envoi de l'email ici, déclenché uniquement par
-//   Stripe (donc garanti même si le client ferme son navigateur) :
-//     1. Récupérer les line_items de la session (stripe.checkout.sessions.listLineItems).
-//     2. Générer le PDF côté serveur (jsPDF ne fonctionne qu'en navigateur : il faudrait une
-//        lib Node comme pdfkit ou pdf-lib, ou simplement envoyer un email HTML sans PDF).
-//     3. Appeler la même logique que /api/send-order.js (ou l'importer) pour l'envoi Resend.
-//     4. Marquer la commande comme "payée" quelque part (Firestore) pour éviter les doublons
-//        avec l'envoi déclenché côté client.
-
 const Stripe = require('stripe');
+const sendPaidOrderEmail = require('./_lib/send-paid-order-email');
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -57,16 +44,35 @@ async function handler(req, res) {
     return res.status(400).json({ error: `Signature invalide : ${err.message}` });
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    // Pour l'instant : on log simplement la confirmation de paiement.
-    // Voir le TODO en haut de fichier pour la suite (envoi email/PDF depuis le serveur).
-    console.log('✅ Paiement confirmé via Stripe', {
-      sessionId: session.id,
-      orderReference: session.metadata?.orderReference || null,
-      customerEmail: session.metadata?.customerEmail || session.customer_details?.email || null,
-      amountTotal: session.amount_total,
-    });
+  if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
+    const eventSession = event.data.object;
+    if (eventSession.metadata?.source !== 'jersey-select') {
+      return res.status(200).json({ received: true, ignored: true });
+    }
+
+    try {
+      const session = await stripe.checkout.sessions.retrieve(eventSession.id);
+      if (session.payment_status !== 'paid') {
+        return res.status(200).json({ received: true, paymentPending: true });
+      }
+
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+        limit: 100,
+        expand: ['data.price.product']
+      });
+      if (!lineItems.data.length) throw new Error('Aucun article dans la session Stripe payée');
+
+      const email = await sendPaidOrderEmail(session, lineItems.data);
+      console.log('Email de commande payé envoyé', {
+        sessionId: session.id,
+        orderReference: session.metadata?.orderReference || null,
+        emailId: email.id
+      });
+    } catch (error) {
+      console.error('Échec du traitement de commande payée:', error.message);
+      // Un 5xx demande à Stripe de réessayer l'événement.
+      return res.status(500).json({ error: 'Envoi du bon de commande échoué' });
+    }
   }
 
   return res.status(200).json({ received: true });
