@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
           quantity: 1,
           price_data: {
             currency: 'eur',
-            unit_amount: 1,
+            unit_amount: 50,
             product_data: {
               name: 'Article de test — aucun envoi',
               description: 'Paiement Stripe en mode test uniquement.'
@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
       const session = await config.stripe.checkout.sessions.retrieve(sessionId);
       const validTestPayment = session.metadata?.source === 'jersey-select-test'
         && session.payment_status === 'paid'
-        && session.amount_total === 1
+        && session.amount_total === 50
         && session.currency === 'eur';
       return res.status(200).json({ paid: validTestPayment, testMode: true });
     } catch (error) {

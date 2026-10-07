@@ -25,9 +25,9 @@
   <main>
     <span class="badge">MODE TEST — aucun débit réel</span>
     <h1>Essai du paiement</h1>
-    <p>Cette page crée un paiement Stripe de <strong>0,01 € en mode test</strong>. Il ne s’agit pas d’une commande réelle : aucun maillot ne sera envoyé.</p>
+    <p>Cette page crée un paiement Stripe de <strong>0,50 € en mode test</strong>. Stripe impose ce montant minimum. Il ne s’agit pas d’une commande réelle : aucun maillot ne sera envoyé.</p>
     <p>Carte de test Stripe : <code>4242 4242 4242 4242</code>, date future, CVC quelconque.</p>
-    <button id="start" type="button">Lancer le test à 0,01 €</button>
+    <button id="start" type="button">Lancer le test à 0,50 €</button>
     <p id="status" role="status" aria-live="polite"></p>
     <div id="checkout"></div>
     <p><a href="/">Retour à Jersey Select</a></p>
@@ -47,7 +47,7 @@
         const response = await fetch(`/api/test-checkout?session_id=${encodeURIComponent(sessionId)}`);
         const result = await response.json();
         statusEl.textContent = result.paid
-          ? 'Test réussi : paiement de 0,01 € confirmé en mode test. Aucun débit réel, aucune commande expédiée.'
+          ? 'Test réussi : paiement de 0,50 € confirmé en mode test. Aucun débit réel, aucune commande expédiée.'
           : 'Le paiement test n’a pas été confirmé.';
       } catch {
         statusEl.textContent = 'Impossible de vérifier ce paiement test. Réessaie depuis la page.';
