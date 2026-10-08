@@ -613,6 +613,7 @@
     .form-input:focus { outline:none; border-color:var(--green); }
     .password-input-wrap { position:relative; display:flex; align-items:center; margin-top:.25rem; }
     .password-input-wrap .form-input { margin-top:0; padding-right:2.8rem; }
+    .password-input-wrap input.password-is-visible { -webkit-text-security:none !important; }
     .password-visibility-toggle { position:absolute; right:.35rem; top:50%; transform:translateY(-50%); width:2.1rem; height:2.1rem; display:grid; place-items:center; border:0; border-radius:4px; background:transparent; color:var(--text-muted); cursor:pointer; }
     .password-visibility-toggle:hover, .password-visibility-toggle:focus-visible { color:var(--green); outline:1px solid var(--green); }
     .password-visibility-toggle svg { width:1.15rem; height:1.15rem; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
@@ -3337,6 +3338,8 @@ function togglePasswordVisibility(inputId, button) {
   const input = document.getElementById(inputId);
   const visible = input.type === 'password';
   input.type = visible ? 'text' : 'password';
+  input.classList.toggle('password-is-visible', visible);
+  input.style.webkitTextSecurity = visible ? 'none' : '';
   button.setAttribute('aria-pressed', String(visible));
   button.setAttribute('aria-label', visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
   button.innerHTML = visible
