@@ -1655,7 +1655,6 @@
 <script>
 /* ===== PRODUCT DATA ===== */
 const products = [
-  { id:999999, club:'Jersey Select', name:'Article temporaire de test — aucun envoi', season:'TEST PAIEMENT RÉEL', league:'Test paiement', type:'payment-test', emoji:'🧪', mainColor:'#6C5CE7', accentColor:'#FFFFFF', flocageColor:'#FFFFFF' },
   { id:1,  club:'Manchester United',      name:'Maillot Domicile', season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#DA291C', accentColor:'#FFFFFF', flocageColor:'#FFFFFF', frontImage:'images/mu-home-1.jpg', carouselImages:['images/mu-home-1.jpg','images/mu-home-9.jpg'] },
   { id:13, club:'Manchester United',      name:'Maillot Third',    season:'2026-27', league:'Premier League', type:'standard', emoji:'👕', mainColor:'#1C1C1C', accentColor:'#DA291C', flocageColor:'#FFFFFF', frontImage:'images/manutd-3rd-2627-1.webp', carouselImages:['images/manutd-3rd-2627-1.webp','images/manutd-3rd-2627-2.webp'] },
   { id:15, club:'FC Barcelone',            name:'Maillot Concept',   season:'2025-26', league:'Concept',       type:'standard', emoji:'👕', mainColor:'#004D98', accentColor:'#A50044', flocageColor:'#EDBB00', frontImage:'images/barca-concept-1.jpg', carouselImages:['images/barca-concept-1.jpg','images/barca-concept-2.jpg'] },
@@ -2525,8 +2524,6 @@ function renderProducts() {
   const isCurrent  = p => seasonYear(p.season) >= CURRENT_SEASON_START_YEAR;
   const nameRank   = n => { n = String(n || ''); if (/Domicile/.test(n)) return 0; if (/Extérieur/.test(n)) return 1; if (/Third/.test(n)) return 2; if (/Fourth/.test(n)) return 3; if (/Fifth/.test(n)) return 4; return 5; };
   filtered.sort((a, b) => {
-    if (a.type === 'payment-test') return -1;
-    if (b.type === 'payment-test') return 1;
     const gr = groupRank(a) - groupRank(b); if (gr) return gr;
     const cn = a.club.localeCompare(b.club, 'fr', { sensitivity: 'base' }); if (cn) return cn;
     const ac = isCurrent(a), bc = isCurrent(b); if (ac !== bc) return ac ? -1 : 1;
@@ -2540,24 +2537,6 @@ function renderProducts() {
   }
 
   grid.innerHTML = filtered.map(p => {
-    if (p.type === 'payment-test') {
-      return `
-<div class="product-card" onclick="addTestGoodieToCart()">
-  <div class="product-img" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f5f3ff,#ede9fe);">
-    <span aria-hidden="true" style="font-size:4rem;">🧪</span>
-    <span class="badge-rare" style="top:.75rem;left:.75rem;right:auto;">TEST TEMPORAIRE</span>
-    <div class="product-actions">
-      <button class="btn-customize" onclick="event.stopPropagation();addTestGoodieToCart()">Ajouter le test au panier</button>
-    </div>
-  </div>
-  <div class="product-info">
-    <div class="product-league-club">TEST DE PAIEMENT RÉEL</div>
-    <div class="product-name">${p.name}</div>
-    <div class="product-season">Aucun goodies physique ne sera envoyé</div>
-    <div class="product-price">0,50 €</div>
-  </div>
-</div>`;
-    }
     const isVintage = p.type === 'vintage';
     const isConcept = p.type === 'concept';
     const isFav = favorites.has(p.id);
@@ -3046,10 +3025,6 @@ function updatePreview() {
 /* ===== ADD TO CART ===== */
 function addToCart() {
   if (!currentProduct) return;
-  if (cartItems.some(item => Number(item.productId) === 999999)) {
-    showToast('Retire d’abord l’article de test avant d’ajouter un maillot.', 'error');
-    return;
-  }
   const size       = document.getElementById('sizeSelect').value;
   const hasShort   = document.getElementById('chkShort').checked;
   const hasNumber  = document.getElementById('chkNumber').checked;
@@ -3134,32 +3109,6 @@ function addToCart() {
   showToast('✅ Maillot ajouté au panier !', 'success');
 }
 
-function addTestGoodieToCart() {
-  if (cartItems.length) {
-    showToast('Pour tester le paiement de 0,50 €, vide d’abord ton panier.', 'error');
-    return;
-  }
-  cartItems.push({
-    uid: Date.now() + Math.random(),
-    productId: 999999,
-    emoji: '🧪',
-    name: 'Article temporaire de test — aucun envoi',
-    club: 'Jersey Select',
-    image: null,
-    version: 'Test',
-    size: 'N/A',
-    flocage: 'Paiement réel test',
-    short: false,
-    hasNumber: false,
-    hasText: false,
-    price: 0.5
-  });
-  saveCart();
-  updateCartUI();
-  openCart();
-  showToast('Article test à 0,50 € ajouté. Aucun article ne sera expédié.', 'success');
-}
-
 /* ===== CART ===== */
 /* Le panier reste toujours dispo hors-ligne (localStorage) ; s'il y a un compte
    connecté, il est aussi répliqué dans Firestore pour suivre l'utilisateur
@@ -3178,19 +3127,24 @@ function migrateCartItem(item) {
   return product ? { ...item, productId: product.id } : item;
 }
 function loadCart() {
-  try { cartItems = (JSON.parse(localStorage.getItem('jsCart')) || []).map(migrateCartItem); }
+  try {
+    const savedCart = JSON.parse(localStorage.getItem('jsCart')) || [];
+    cartItems = savedCart.filter(item => Number(item?.productId) !== 999999).map(migrateCartItem);
+    if (cartItems.length !== savedCart.length) localStorage.setItem('jsCart', JSON.stringify(cartItems));
+  }
   catch (e) { cartItems = []; }
 }
 async function mergeCartOnLogin(uid) {
   try {
     const doc = await fbDb.collection('users').doc(uid).get();
-    const cloudCart = (doc.exists && Array.isArray(doc.data().cart)) ? doc.data().cart.map(migrateCartItem) : [];
+    const savedCloudCart = (doc.exists && Array.isArray(doc.data().cart)) ? doc.data().cart : [];
+    const cloudCart = savedCloudCart.filter(item => Number(item?.productId) !== 999999).map(migrateCartItem);
     const localUids = new Set(cartItems.map(i => i.uid));
     let changed = false;
     cloudCart.forEach(item => {
       if (!localUids.has(item.uid)) { cartItems.push(item); changed = true; }
     });
-    if (changed || cloudCart.length !== cartItems.length) { saveCart(); }
+    if (changed || cloudCart.length !== cartItems.length || cloudCart.length !== savedCloudCart.length) { saveCart(); }
     updateCartUI();
   } catch (e) { /* hors-ligne : le panier local reste utilisable tel quel */ }
 }
