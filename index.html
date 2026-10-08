@@ -3525,7 +3525,8 @@ async function loginAccount() {
       catch (mfaError) { /* l’erreur détaillée est affichée dans l’étape SMS */ }
       return;
     }
-    showAccountMsg(errEl, mapFirebaseError(err));
+    const errorCode = typeof err.code === 'string' ? err.code : 'auth/unknown';
+    showAccountMsg(errEl, `${mapFirebaseError(err)} (code : ${errorCode})`);
   }
 }
 
