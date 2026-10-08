@@ -131,7 +131,7 @@ module.exports = async (req, res) => {
     if (!token) return res.status(401).json({ error: 'Reconnecte-toi pour continuer.' });
     const fb = getFirebaseAdmin();
     const authUser = await fb.auth().verifyIdToken(token, true);
-    if (!authUser.email || authUser.email_verified !== true || Date.now() / 1000 - authUser.auth_time > 300) {
+    if (!authUser.email || Date.now() / 1000 - authUser.auth_time > 300) {
       return res.status(401).json({ error: 'Reconnecte-toi avec ton mot de passe puis recommence.' });
     }
     const changes = normalizeChanges(req.body || {});

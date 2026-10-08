@@ -1421,8 +1421,6 @@
         <div id="accountSecurityEditor" style="display:none;margin-bottom:1rem;">
           <div class="account-logged-box" style="font-size:.85rem;">
             <div id="accountMfaStatus"></div>
-            <button class="btn-outline" id="verifyAccountEmailButton" style="display:none;width:100%;text-align:center;margin-top:.5rem;" onclick="sendAccountEmailVerification()">Envoyer un email de vérification</button>
-            <div id="accountEmailVerificationStatus" role="status" aria-live="polite" style="display:none;margin-top:.5rem;"></div>
           </div>
           <div class="account-field">
             <label for="securityCurrentPassword">Mot de passe actuel (obligatoire)</label>
@@ -3623,59 +3621,13 @@ async function toggleAccountSecurityEditor(open) {
     try { await fbAuth.currentUser.reload(); } catch (e) {}
     const fbUser = fbAuth.currentUser;
     setCurrentUser(await loadUserProfile(fbUser));
-    document.getElementById('accountMfaStatus').textContent = 'Les changements d’email ou de mot de passe sont protégés par ton mot de passe actuel et un code envoyé à ton adresse actuelle.';
-    document.getElementById('verifyAccountEmailButton').style.display = fbUser.emailVerified ? 'none' : 'block';
+    document.getElementById('accountMfaStatus').textContent = location.protocol === 'file:'
+      ? 'Tu consultes le fichier local : les codes de sécurité ne peuvent être envoyés que depuis la Preview ou le site en ligne.'
+      : 'Chaque changement est confirmé avec ton mot de passe actuel et un code envoyé à ton adresse actuelle.';
     showAccountMsg(document.getElementById('accountSecurityError'), '');
   }
   editor.style.display = open ? 'block' : 'none';
   button.style.display = open ? 'none' : 'block';
-}
-
-async function sendAccountEmailVerification() {
-  const fbUser = fbAuth.currentUser;
-  const button = document.getElementById('verifyAccountEmailButton');
-  const status = document.getElementById('accountEmailVerificationStatus');
-  if (!fbUser) {
-    status.textContent = 'Reconnecte-toi pour continuer.';
-    status.style.display = 'block';
-    status.style.color = '#ff7777';
-    return;
-  }
-  button.disabled = true;
-  button.textContent = 'Envoi en cours…';
-  try {
-    await fbUser.sendEmailVerification();
-    status.textContent = `Demande d’envoi acceptée par Firebase pour ${fbUser.email || 'ton adresse'}. Vérifie ta boîte de réception et les courriers indésirables.`;
-    status.style.display = 'block';
-    status.style.color = 'var(--green)';
-    startAccountVerificationResendCooldown(60);
-  } catch (error) {
-    status.textContent = `${mapFirebaseError(error)} (code : ${error.code || 'inconnu'})`;
-    status.style.display = 'block';
-    status.style.color = '#ff7777';
-    button.disabled = false;
-    button.textContent = 'Renvoyer l’email de vérification';
-  }
-}
-
-let accountVerificationResendInterval = null;
-function startAccountVerificationResendCooldown(seconds) {
-  const button = document.getElementById('verifyAccountEmailButton');
-  if (accountVerificationResendInterval) clearInterval(accountVerificationResendInterval);
-  let remaining = seconds;
-  button.disabled = true;
-  button.textContent = `Renvoyer dans ${remaining} s`;
-  accountVerificationResendInterval = setInterval(() => {
-    remaining -= 1;
-    if (remaining <= 0) {
-      clearInterval(accountVerificationResendInterval);
-      accountVerificationResendInterval = null;
-      button.disabled = false;
-      button.textContent = 'Renvoyer l’email de vérification';
-      return;
-    }
-    button.textContent = `Renvoyer dans ${remaining} s`;
-  }, 1000);
 }
 
 async function signInFreshForSensitiveAction(password, mode) {
@@ -3708,6 +3660,7 @@ async function saveAccountSecurity() {
   const confirmPassword = document.getElementById('securityConfirmPassword').value;
   showAccountMsg(errEl, '');
   if (!fbUser) return showAccountMsg(errEl, 'Reconnecte-toi pour continuer.');
+  if (location.protocol === 'file:') return showAccountMsg(errEl, 'Ouvre la Preview Vercel ou jersey-select.com pour demander le code. Le fichier local ne peut pas appeler le service de sécurité.');
   if (!currentPassword) return showAccountMsg(errEl, 'Entre ton mot de passe actuel.');
   if (!changeType) return showAccountMsg(errEl, 'Choisis si tu veux modifier ton adresse email ou ton mot de passe.');
   if (newEmail && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail) || newEmail === fbUser.email.toLowerCase())) {
@@ -3715,7 +3668,6 @@ async function saveAccountSecurity() {
   }
   if (newPassword && newPassword.length < 6) return showAccountMsg(errEl, 'Le nouveau mot de passe doit faire au moins 6 caractères.');
   if (newPassword !== confirmPassword) return showAccountMsg(errEl, 'Les deux nouveaux mots de passe ne correspondent pas.');
-  if (!fbUser.emailVerified) return showAccountMsg(errEl, 'Vérifie d’abord ton adresse email actuelle pour protéger le compte.');
   try {
     const credential = fbAuth.EmailAuthProvider.credential(fbUser.email, currentPassword);
     await fbUser.reauthenticateWithCredential(credential);
@@ -3804,7 +3756,8 @@ async function startSmsMfaEnrollment() {
   const password = document.getElementById('securityCurrentPassword').value;
   showAccountMsg(errEl, '');
   if (!fbUser) return showAccountMsg(errEl, 'Reconnecte-toi pour continuer.');
-  if (!fbUser.emailVerified) return showAccountMsg(errEl, 'Vérifie d’abord ton adresse email actuelle avec le bouton ci-dessus.');
+  try { await fbUser.reload(); } catch (error) { return showAccountMsg(errEl, mapFirebaseError(error)); }
+  if (!fbAuth.currentUser.emailVerified) return showAccountMsg(errEl, 'Pour activer la double authentification par SMS, vérifie d’abord ton adresse email.');
   if (!/^\+[1-9]\d{7,14}$/.test(phone)) return showAccountMsg(errEl, 'Entre ton numéro au format international, par exemple +33612345678.');
   if (!password) return showAccountMsg(errEl, 'Entre ton mot de passe actuel pour confirmer que tu es bien le titulaire du compte.');
   pendingEnrollmentPhone = phone;
