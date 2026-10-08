@@ -615,6 +615,8 @@
     .password-input-wrap .form-input { margin-top:0; padding-right:2.8rem; }
     .password-input-wrap input.password-is-visible { color:transparent !important; -webkit-text-fill-color:transparent !important; caret-color:transparent; }
     .password-reveal-value { position:absolute; left:.65rem; top:50%; transform:translateY(-50%); display:none; width:max-content; max-width:calc(100% - 3.2rem); overflow:hidden; white-space:pre; color:#fff !important; background:#101729; padding:0 .2rem; border-radius:3px; font-family:'Rajdhani',sans-serif; font-size:.95rem; line-height:1.35; pointer-events:none; }
+    .password-reveal-caret { display:inline-block; height:1.05em; margin-left:-1px; border-left:2px solid #f7ffb2; vertical-align:-.18em; animation:password-caret-blink 1s steps(2,start) infinite; }
+    @keyframes password-caret-blink { to { visibility:hidden; } }
     .password-visibility-toggle { position:absolute; z-index:2; right:.35rem; top:50%; transform:translateY(-50%); width:2.1rem; height:2.1rem; display:grid; place-items:center; border:0; border-radius:4px; background:transparent; color:var(--text-muted); cursor:pointer; }
     .password-visibility-toggle:hover, .password-visibility-toggle:focus-visible { color:var(--green); outline:1px solid var(--green); }
     .password-visibility-toggle svg { width:1.15rem; height:1.15rem; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
@@ -3348,9 +3350,20 @@ function togglePasswordVisibility(inputId, button) {
     reveal.className = 'password-reveal-value';
     reveal.setAttribute('aria-hidden', 'true');
     input.parentElement.insertBefore(reveal, button);
-    input.addEventListener('input', () => {
-      reveal.textContent = button.getAttribute('aria-pressed') === 'true' ? input.value : '';
-    });
+    const updateReveal = () => {
+      if (button.getAttribute('aria-pressed') !== 'true') return;
+      const value = input.value;
+      if (document.activeElement !== input || input.selectionStart === null) {
+        reveal.textContent = value;
+        return;
+      }
+      const caret = document.createElement('span');
+      caret.className = 'password-reveal-caret';
+      const position = input.selectionStart;
+      reveal.replaceChildren(document.createTextNode(value.slice(0, position)), caret, document.createTextNode(value.slice(position)));
+    };
+    ['input', 'keyup', 'click', 'select', 'focus', 'blur'].forEach((eventName) => input.addEventListener(eventName, updateReveal));
+    input._updatePasswordReveal = updateReveal;
   }
   reveal.textContent = visible ? input.value : '';
   reveal.style.display = visible ? 'block' : 'none';
@@ -3360,6 +3373,7 @@ function togglePasswordVisibility(inputId, button) {
   button.innerHTML = visible
     ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a16 16 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7c1.1 0 2.1-.2 3-.5"/></svg>'
     : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  if (visible) input._updatePasswordReveal?.();
 }
 
 /* Reste connecté(e) automatiquement sur cet appareil, et permet de se connecter
