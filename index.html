@@ -613,8 +613,9 @@
     .form-input:focus { outline:none; border-color:var(--green); }
     .password-input-wrap { position:relative; display:flex; align-items:center; margin-top:.25rem; }
     .password-input-wrap .form-input { margin-top:0; padding-right:2.8rem; }
-    .password-input-wrap input.password-is-visible { -webkit-text-security:none !important; }
-    .password-visibility-toggle { position:absolute; right:.35rem; top:50%; transform:translateY(-50%); width:2.1rem; height:2.1rem; display:grid; place-items:center; border:0; border-radius:4px; background:transparent; color:var(--text-muted); cursor:pointer; }
+    .password-input-wrap input.password-is-visible { color:transparent !important; -webkit-text-fill-color:transparent !important; caret-color:transparent; }
+    .password-reveal-value { position:absolute; left:.8rem; right:2.6rem; top:50%; transform:translateY(-50%); display:none; overflow:hidden; white-space:pre; color:var(--text); font-family:'Rajdhani',sans-serif; font-size:.95rem; line-height:1.2; pointer-events:none; }
+    .password-visibility-toggle { position:absolute; z-index:2; right:.35rem; top:50%; transform:translateY(-50%); width:2.1rem; height:2.1rem; display:grid; place-items:center; border:0; border-radius:4px; background:transparent; color:var(--text-muted); cursor:pointer; }
     .password-visibility-toggle:hover, .password-visibility-toggle:focus-visible { color:var(--green); outline:1px solid var(--green); }
     .password-visibility-toggle svg { width:1.15rem; height:1.15rem; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 
@@ -3336,10 +3337,20 @@ function mapFirebaseError(err) {
 
 function togglePasswordVisibility(inputId, button) {
   const input = document.getElementById(inputId);
-  const visible = input.type === 'password';
-  input.type = visible ? 'text' : 'password';
+  const visible = button.getAttribute('aria-pressed') !== 'true';
+  let reveal = input.parentElement.querySelector('.password-reveal-value');
+  if (!reveal) {
+    reveal = document.createElement('span');
+    reveal.className = 'password-reveal-value';
+    reveal.setAttribute('aria-hidden', 'true');
+    input.parentElement.insertBefore(reveal, button);
+    input.addEventListener('input', () => {
+      reveal.textContent = button.getAttribute('aria-pressed') === 'true' ? input.value : '';
+    });
+  }
+  reveal.textContent = visible ? input.value : '';
+  reveal.style.display = visible ? 'block' : 'none';
   input.classList.toggle('password-is-visible', visible);
-  input.style.webkitTextSecurity = visible ? 'none' : '';
   button.setAttribute('aria-pressed', String(visible));
   button.setAttribute('aria-label', visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
   button.innerHTML = visible
@@ -3718,9 +3729,11 @@ async function saveAccountSecurity() {
       ? 'Code confirmé. Clique le lien envoyé à ta nouvelle adresse pour terminer le changement.'
       : 'Code confirmé et mot de passe mis à jour. Reconnecte-toi avec ton nouveau mot de passe.', true);
     if (newPassword) {
+      document.getElementById('loginEmail').value = fbUser.email || '';
       await fbAuth.signOut();
       setCurrentUser(null);
-      showAccountMsg(errEl, 'Mot de passe mis à jour. Reconnecte-toi avec ton nouveau mot de passe.', true);
+      switchAccountTab('login');
+      showAccountMsg(document.getElementById('loginError'), 'Mot de passe modifié. Reconnecte-toi avec ton nouveau mot de passe.', true);
     }
   } catch (error) {
     showAccountMsg(errEl, error.message || mapFirebaseError(error));
