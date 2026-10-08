@@ -13,6 +13,17 @@ function money(cents) {
 
 function orderItem(lineItem) {
   const product = String(lineItem.description || 'Maillot Jersey Select');
+  if (lineItem.price?.product?.metadata?.item_type === 'temporary_payment_test') {
+    return {
+      product: 'Article temporaire de test — aucun envoi',
+      club: '',
+      version: 'Test de paiement réel',
+      size: 'Sans objet',
+      flocage: 'Aucun produit physique à expédier',
+      quantity: lineItem.quantity || 1,
+      amount: lineItem.amount_total
+    };
+  }
   const details = String(lineItem.price?.product?.description || '');
   const parts = details.split(' — ');
   const nameClub = product.split(' · ');

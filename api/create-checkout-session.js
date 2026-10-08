@@ -21,15 +21,35 @@ module.exports = async (req, res) => {
   if (!Array.isArray(items) || !items.length) {
     return res.status(400).json({ error: 'Panier vide' });
   }
+  if (items.some(item => Number(item?.productId) === 999999) && items.length !== 1) {
+    return res.status(400).json({ error: 'L’article de test doit être payé seul' });
+  }
 
   let line_items;
   try {
     line_items = items.map(item => {
       const version = String(item.version || '');
+      const productId = Number(item.productId);
+      if (productId === 999999) {
+        if (version !== 'Test' || item.size !== 'N/A' || item.flocage !== 'Paiement réel test') {
+          throw new Error('Article de test invalide');
+        }
+        return {
+          quantity: 1,
+          price_data: {
+            currency: 'eur',
+            unit_amount: 50,
+            product_data: {
+              name: 'Article temporaire de test — aucun envoi',
+              description: 'Test de paiement réel de 0,50 €. Aucun produit physique ne sera expédié.',
+              metadata: { item_type: 'temporary_payment_test' }
+            }
+          }
+        };
+      }
       if (!['Standard', 'Player', 'Manches longues Standard', 'Manches longues Player', 'Vintage'].includes(version)) {
         throw new Error('Version invalide');
       }
-      const productId = Number(item.productId);
       if (!Number.isInteger(productId) || productId <= 0 || VINTAGE_PRODUCT_IDS.has(productId) !== (version === 'Vintage')) {
         throw new Error('Produit invalide');
       }
