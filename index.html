@@ -1412,7 +1412,7 @@
           <button class="btn-primary" style="width:100%;text-align:center;display:block;margin:.75rem 0;" onclick="saveAccountProfile()">Enregistrer</button>
           <button class="btn-outline" style="width:100%;text-align:center;display:block;" onclick="toggleAccountProfileEditor(false)">Annuler</button>
         </div>
-        <button class="btn-outline" id="accountSecurityButton" style="width:100%;text-align:center;display:block;margin-bottom:.75rem;" onclick="toggleAccountSecurityEditor(true)">Sécurité : email et mot de passe</button>
+        <button class="btn-outline" id="accountSecurityButton" style="width:100%;text-align:center;display:block;margin-bottom:.75rem;" onclick="toggleAccountSecurityEditor(true)">Sécurité du compte</button>
         <div id="accountSecurityEditor" style="display:none;margin-bottom:1rem;">
           <div class="account-logged-box" style="font-size:.85rem;">
             <div id="accountMfaStatus"></div>
@@ -1423,16 +1423,26 @@
             <input type="password" class="form-input" id="securityCurrentPassword" autocomplete="current-password" maxlength="100">
           </div>
           <div class="account-field">
-            <label for="securityNewEmail">Nouvelle adresse email (facultatif)</label>
+            <label for="securityChangeType">Que veux-tu modifier ?</label>
+            <select class="form-input" id="securityChangeType" onchange="updateSecurityChangeType()">
+              <option value="">Choisis une seule modification</option>
+              <option value="email">Mon adresse email</option>
+              <option value="password">Mon mot de passe</option>
+            </select>
+          </div>
+          <div class="account-field" id="securityNewEmailField" style="display:none;">
+            <label for="securityNewEmail">Nouvelle adresse email</label>
             <input type="email" class="form-input" id="securityNewEmail" autocomplete="email" maxlength="100">
           </div>
-          <div class="account-field">
-            <label for="securityNewPassword">Nouveau mot de passe (facultatif, 6 caractères min.)</label>
-            <input type="password" class="form-input" id="securityNewPassword" autocomplete="new-password" maxlength="100">
-          </div>
-          <div class="account-field">
-            <label for="securityConfirmPassword">Confirmer le nouveau mot de passe</label>
-            <input type="password" class="form-input" id="securityConfirmPassword" autocomplete="new-password" maxlength="100">
+          <div id="securityNewPasswordFields" style="display:none;">
+            <div class="account-field">
+              <label for="securityNewPassword">Nouveau mot de passe (6 caractères min.)</label>
+              <input type="password" class="form-input" id="securityNewPassword" autocomplete="new-password" maxlength="100">
+            </div>
+            <div class="account-field">
+              <label for="securityConfirmPassword">Confirmer le nouveau mot de passe</label>
+              <input type="password" class="form-input" id="securityConfirmPassword" autocomplete="new-password" maxlength="100">
+            </div>
           </div>
           <div class="account-field" id="securityEmailCodeBox" style="display:none;">
             <label for="securityEmailCode">Code reçu sur ton adresse actuelle</label>
@@ -3365,6 +3375,7 @@ let pendingEnrollmentPhone = '';
 let enrollmentVerificationId = null;
 let accountRecaptchaVerifier = null;
 let accountSecurityCodeRequested = false;
+let accountSecurityChangeType = '';
 
 function makeAccountRecaptcha() {
   if (accountRecaptchaVerifier) {
@@ -3562,6 +3573,31 @@ function toggleAccountProfileEditor(open) {
   button.style.display = open ? 'none' : 'block';
 }
 
+function updateSecurityChangeType() {
+  const select = document.getElementById('securityChangeType');
+  const nextType = select.value;
+  if (accountSecurityChangeType && nextType !== accountSecurityChangeType) {
+    accountSecurityCodeRequested = false;
+    document.getElementById('securityEmailCodeBox').style.display = 'none';
+    document.getElementById('securityEmailCode').value = '';
+    document.getElementById('accountSecuritySubmit').textContent = 'Recevoir un code de confirmation';
+  }
+  accountSecurityChangeType = nextType;
+  document.getElementById('securityNewEmailField').style.display = nextType === 'email' ? 'block' : 'none';
+  document.getElementById('securityNewPasswordFields').style.display = nextType === 'password' ? 'block' : 'none';
+  if (nextType === 'email') {
+    document.getElementById('securityNewPassword').value = '';
+    document.getElementById('securityConfirmPassword').value = '';
+  } else if (nextType === 'password') {
+    document.getElementById('securityNewEmail').value = '';
+  } else {
+    document.getElementById('securityNewEmail').value = '';
+    document.getElementById('securityNewPassword').value = '';
+    document.getElementById('securityConfirmPassword').value = '';
+  }
+  showAccountMsg(document.getElementById('accountSecurityError'), '');
+}
+
 async function toggleAccountSecurityEditor(open) {
   const editor = document.getElementById('accountSecurityEditor');
   const button = document.getElementById('accountSecurityButton');
@@ -3613,13 +3649,14 @@ async function saveAccountSecurity() {
   const fbUser = fbAuth.currentUser;
   const errEl = document.getElementById('accountSecurityError');
   const currentPassword = document.getElementById('securityCurrentPassword').value;
-  const newEmail = document.getElementById('securityNewEmail').value.trim().toLowerCase();
-  const newPassword = document.getElementById('securityNewPassword').value;
+  const changeType = document.getElementById('securityChangeType').value;
+  const newEmail = changeType === 'email' ? document.getElementById('securityNewEmail').value.trim().toLowerCase() : '';
+  const newPassword = changeType === 'password' ? document.getElementById('securityNewPassword').value : '';
   const confirmPassword = document.getElementById('securityConfirmPassword').value;
   showAccountMsg(errEl, '');
   if (!fbUser) return showAccountMsg(errEl, 'Reconnecte-toi pour continuer.');
   if (!currentPassword) return showAccountMsg(errEl, 'Entre ton mot de passe actuel.');
-  if (!newEmail && !newPassword) return showAccountMsg(errEl, 'Entre un nouvel email et/ou un nouveau mot de passe.');
+  if (!changeType) return showAccountMsg(errEl, 'Choisis si tu veux modifier ton adresse email ou ton mot de passe.');
   if (newEmail && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail) || newEmail === fbUser.email.toLowerCase())) {
     return showAccountMsg(errEl, 'Entre une nouvelle adresse email valide et différente de l’actuelle.');
   }
@@ -3666,6 +3703,9 @@ async function saveAccountSecurity() {
       document.getElementById(id).value = '';
     });
     document.getElementById('securityNewEmail').value = '';
+    document.getElementById('securityChangeType').value = '';
+    accountSecurityChangeType = '';
+    updateSecurityChangeType();
     showAccountMsg(errEl, newEmail
       ? 'Code confirmé. Clique le lien envoyé à ta nouvelle adresse pour terminer le changement.'
       : 'Code confirmé et mot de passe mis à jour. Reconnecte-toi avec ton nouveau mot de passe.', true);
