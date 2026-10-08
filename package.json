@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Site Jersey Select (front statique) + fonctions serverless Vercel (commande, email, paiement Stripe).",
   "dependencies": {
+    "firebase-admin": "^13.0.0",
     "stripe": "^17.0.0"
   }
 }

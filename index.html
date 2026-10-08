@@ -1394,6 +1394,55 @@
           <div id="accountInfoEmail"></div>
           <div id="accountInfoPhone"></div>
         </div>
+        <button class="btn-outline" id="editAccountProfileButton" style="width:100%;text-align:center;display:block;margin-bottom:.75rem;" onclick="toggleAccountProfileEditor(true)">Modifier mes informations</button>
+        <div id="accountProfileEditor" style="display:none;margin-bottom:1rem;">
+          <div class="account-field">
+            <label for="profileFirstname">Prénom</label>
+            <input type="text" class="form-input" id="profileFirstname" maxlength="30" autocomplete="given-name">
+          </div>
+          <div class="account-field">
+            <label for="profileLastname">Nom</label>
+            <input type="text" class="form-input" id="profileLastname" maxlength="30" autocomplete="family-name">
+          </div>
+          <div class="account-field">
+            <label for="profilePhone">Téléphone</label>
+            <input type="tel" class="form-input" id="profilePhone" maxlength="20" autocomplete="tel">
+          </div>
+          <div class="error-msg" id="accountProfileError"></div>
+          <button class="btn-primary" style="width:100%;text-align:center;display:block;margin:.75rem 0;" onclick="saveAccountProfile()">Enregistrer</button>
+          <button class="btn-outline" style="width:100%;text-align:center;display:block;" onclick="toggleAccountProfileEditor(false)">Annuler</button>
+        </div>
+        <button class="btn-outline" id="accountSecurityButton" style="width:100%;text-align:center;display:block;margin-bottom:.75rem;" onclick="toggleAccountSecurityEditor(true)">Sécurité : email et mot de passe</button>
+        <div id="accountSecurityEditor" style="display:none;margin-bottom:1rem;">
+          <div class="account-logged-box" style="font-size:.85rem;">
+            <div id="accountMfaStatus"></div>
+            <button class="btn-outline" id="verifyAccountEmailButton" style="display:none;width:100%;text-align:center;margin-top:.5rem;" onclick="sendAccountEmailVerification()">Envoyer un email de vérification</button>
+          </div>
+          <div class="account-field">
+            <label for="securityCurrentPassword">Mot de passe actuel (obligatoire)</label>
+            <input type="password" class="form-input" id="securityCurrentPassword" autocomplete="current-password" maxlength="100">
+          </div>
+          <div class="account-field">
+            <label for="securityNewEmail">Nouvelle adresse email (facultatif)</label>
+            <input type="email" class="form-input" id="securityNewEmail" autocomplete="email" maxlength="100">
+          </div>
+          <div class="account-field">
+            <label for="securityNewPassword">Nouveau mot de passe (facultatif, 6 caractères min.)</label>
+            <input type="password" class="form-input" id="securityNewPassword" autocomplete="new-password" maxlength="100">
+          </div>
+          <div class="account-field">
+            <label for="securityConfirmPassword">Confirmer le nouveau mot de passe</label>
+            <input type="password" class="form-input" id="securityConfirmPassword" autocomplete="new-password" maxlength="100">
+          </div>
+          <div class="account-field" id="securityEmailCodeBox" style="display:none;">
+            <label for="securityEmailCode">Code reçu sur ton adresse actuelle</label>
+            <input type="text" class="form-input" id="securityEmailCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+          </div>
+          <div class="error-msg" id="accountSecurityError"></div>
+          <button class="btn-primary" id="accountSecuritySubmit" style="width:100%;text-align:center;display:block;margin:.75rem 0;" onclick="saveAccountSecurity()">Recevoir un code de confirmation</button>
+          <p style="font-size:.8rem;color:var(--text-muted);">Le code sera envoyé à ton adresse actuelle. Le changement d’adresse devra ensuite être confirmé depuis la nouvelle boîte mail.</p>
+          <button class="btn-outline" style="width:100%;text-align:center;display:block;margin-top:.75rem;" onclick="toggleAccountSecurityEditor(false)">Fermer</button>
+        </div>
         <button class="btn-outline" style="width:100%;text-align:center;display:block;margin-bottom:.75rem;" onclick="toggleOrderHistory()">📦 Mes commandes</button>
         <div id="orderHistoryList" style="display:none;margin-bottom:.75rem;"></div>
         <button class="btn-logout" onclick="logoutAccount()">Se déconnecter</button>
@@ -1448,6 +1497,18 @@
           <button class="btn-primary" style="width:100%;text-align:center;display:block;margin-top:.75rem;" onclick="registerAccount()">Créer mon compte</button>
         </div>
       </div>
+      <div id="accountMfaChallenge" style="display:none;margin-top:1rem;">
+        <div class="account-logged-box" id="mfaChallengeMessage">Vérifie ton identité avec le code SMS.</div>
+        <div class="account-field">
+          <label for="accountMfaCode">Code reçu par SMS</label>
+          <input type="text" class="form-input" id="accountMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8">
+        </div>
+        <div class="error-msg" id="accountMfaError"></div>
+        <button class="btn-primary" style="width:100%;text-align:center;display:block;" onclick="completeSmsMfaChallenge()">Confirmer le code</button>
+        <button class="btn-outline" style="width:100%;text-align:center;display:block;margin-top:.5rem;" onclick="resendSmsFactorChallenge()">Renvoyer le code</button>
+        <button class="btn-outline" style="width:100%;text-align:center;display:block;margin-top:.5rem;" onclick="cancelSmsFactorChallenge()">Annuler</button>
+      </div>
+      <div id="accountRecaptchaContainer"></div>
 
     </div>
   </div>
@@ -3246,6 +3307,13 @@ function mapFirebaseError(err) {
     case 'auth/invalid-credential':   return 'Email ou mot de passe incorrect.';
     case 'auth/too-many-requests':    return 'Trop de tentatives. Réessaie dans quelques minutes.';
     case 'auth/network-request-failed': return 'Problème de connexion internet.';
+    case 'auth/operation-not-allowed': return 'Le SMS à double authentification n’est pas activé dans Firebase. Il faut activer Identity Platform et le MFA SMS dans la console Firebase.';
+    case 'auth/invalid-phone-number': return 'Numéro invalide. Utilise le format international, par exemple +33612345678.';
+    case 'auth/quota-exceeded': return 'La limite d’envoi de SMS est atteinte. Réessaie plus tard.';
+    case 'auth/captcha-check-failed': return 'La vérification anti-robot a échoué. Réessaie.';
+    case 'auth/invalid-verification-code': return 'Le code SMS est incorrect.';
+    case 'auth/code-expired': return 'Ce code SMS a expiré. Redemande un code.';
+    case 'auth/requires-recent-login': return 'Reconnecte-toi puis réessaie pour confirmer ton identité.';
     default: return 'Une erreur est survenue. Réessaie.';
   }
 }
@@ -3289,6 +3357,124 @@ function switchAccountTab(tab) {
   document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
 }
 
+let pendingMfaResolver = null;
+let pendingMfaVerificationId = null;
+let pendingMfaMode = '';
+let pendingSecurityAction = null;
+let pendingEnrollmentPhone = '';
+let enrollmentVerificationId = null;
+let accountRecaptchaVerifier = null;
+let accountSecurityCodeRequested = false;
+
+function makeAccountRecaptcha() {
+  if (accountRecaptchaVerifier) {
+    try { accountRecaptchaVerifier.clear(); } catch (e) {}
+    accountRecaptchaVerifier = null;
+  }
+  accountRecaptchaVerifier = new fbAuth.RecaptchaVerifier(
+    'accountRecaptchaContainer', { size: 'invisible' }, fbAuth
+  );
+  return accountRecaptchaVerifier;
+}
+
+async function sendSmsFactorChallenge(resolver, mode) {
+  const errorEl = document.getElementById(mode === 'login' ? 'accountMfaError' : 'accountSecurityError');
+  const hint = resolver.hints.find(factor => factor.factorId === fbAuth.PhoneMultiFactorGenerator.FACTOR_ID);
+  if (!hint) {
+    const message = 'Aucun facteur SMS compatible n’est associé à ce compte. Contacte le support pour récupérer l’accès.';
+    showAccountMsg(errorEl, message);
+    throw new Error(message);
+  }
+  pendingMfaResolver = resolver;
+  pendingMfaMode = mode;
+  pendingMfaVerificationId = null;
+  document.getElementById('accountMfaChallenge').style.display = 'block';
+  if (mode === 'login') {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'none';
+    document.querySelector('#accountAuthView .account-tabs').style.display = 'none';
+    document.getElementById('mfaChallengeMessage').textContent = `Nous envoyons un code au ${hint.phoneNumber || 'téléphone enregistré'}…`;
+  } else {
+    document.getElementById('mfaChallengeMessage').textContent = `Nous envoyons un code au ${hint.phoneNumber || 'téléphone enregistré'}…`;
+    showAccountMsg(errorEl, 'Vérification en deux étapes…', true);
+  }
+  try {
+    const verifier = makeAccountRecaptcha();
+    const provider = new fbAuth.PhoneAuthProvider(fbAuth);
+    pendingMfaVerificationId = await provider.verifyPhoneNumber({
+      multiFactorHint: hint,
+      session: resolver.session
+    }, verifier);
+    if (mode === 'login') {
+      document.getElementById('mfaChallengeMessage').textContent = `Code envoyé au ${hint.phoneNumber || 'téléphone enregistré'}.`;
+    } else {
+      showAccountMsg(errorEl, `Code envoyé au ${hint.phoneNumber || 'téléphone enregistré'}.`, true);
+    }
+  } catch (error) {
+    if (mode === 'login') {
+      showAccountMsg(document.getElementById('accountMfaError'), mapFirebaseError(error));
+    } else {
+      showAccountMsg(errorEl, mapFirebaseError(error));
+    }
+    throw error;
+  }
+}
+
+async function finishFreshMfaAuthentication(resolver, mode) {
+  await sendSmsFactorChallenge(resolver, mode);
+}
+
+async function resendSmsFactorChallenge() {
+  if (!pendingMfaResolver || !pendingMfaMode) return;
+  try { await sendSmsFactorChallenge(pendingMfaResolver, pendingMfaMode); }
+  catch (error) { /* l’erreur est déjà affichée */ }
+}
+
+function cancelSmsFactorChallenge() {
+  const mode = pendingMfaMode;
+  pendingMfaResolver = null;
+  pendingMfaVerificationId = null;
+  pendingMfaMode = '';
+  pendingSecurityAction = null;
+  document.getElementById('accountMfaChallenge').style.display = 'none';
+  document.getElementById('accountMfaCode').value = '';
+  if (mode === 'login') {
+    document.querySelector('#accountAuthView .account-tabs').style.display = 'flex';
+    switchAccountTab('login');
+  }
+}
+
+async function completeSmsMfaChallenge() {
+  const errorEl = document.getElementById('accountMfaError');
+  const code = document.getElementById('accountMfaCode').value.trim();
+  showAccountMsg(errorEl, '');
+  if (!pendingMfaResolver || !pendingMfaVerificationId) return showAccountMsg(errorEl, 'Demande un nouveau code SMS.');
+  if (!/^\d{4,8}$/.test(code)) return showAccountMsg(errorEl, 'Entre le code reçu par SMS.');
+  try {
+    const credential = fbAuth.PhoneAuthProvider.credential(pendingMfaVerificationId, code);
+    const assertion = fbAuth.PhoneMultiFactorGenerator.assertion(credential);
+    const result = await pendingMfaResolver.resolveSignIn(assertion);
+    const mode = pendingMfaMode;
+    pendingMfaResolver = null;
+    pendingMfaVerificationId = null;
+    pendingMfaMode = '';
+    document.getElementById('accountMfaChallenge').style.display = 'none';
+    document.querySelector('#accountAuthView .account-tabs').style.display = 'flex';
+    if (mode === 'security' && pendingSecurityAction) {
+      await applyAccountSecurityChanges(result.user, pendingSecurityAction);
+    } else if (mode === 'enrollment' && pendingEnrollmentPhone) {
+      await requestSmsFactorEnrollment(result.user, pendingEnrollmentPhone);
+    } else {
+      const profile = await loadUserProfile(result.user);
+      setCurrentUser(profile);
+      closeAccountModal();
+      showToast(`✅ Content de te revoir, ${profile.firstname} !`, 'success');
+    }
+  } catch (error) {
+    showAccountMsg(errorEl, mapFirebaseError(error));
+  }
+}
+
 function registerAccount() {
   const firstname = document.getElementById('regFirstname').value.trim();
   const lastname  = document.getElementById('regLastname').value.trim();
@@ -3316,7 +3502,7 @@ function registerAccount() {
     .catch(err => showAccountMsg(errEl, mapFirebaseError(err)));
 }
 
-function loginAccount() {
+async function loginAccount() {
   const email    = document.getElementById('loginEmail').value.trim().toLowerCase();
   const password = document.getElementById('loginPassword').value;
   const errEl    = document.getElementById('loginError');
@@ -3326,15 +3512,21 @@ function loginAccount() {
 
   showAccountMsg(errEl, 'Connexion…', true);
 
-  fbAuth.signInWithEmailAndPassword(email, password)
-    .then(cred => loadUserProfile(cred.user))
-    .then(profile => {
-      showAccountMsg(errEl, '');
-      setCurrentUser(profile);
-      closeAccountModal();
-      showToast(`✅ Content de te revoir, ${profile.firstname} !`, 'success');
-    })
-    .catch(err => showAccountMsg(errEl, mapFirebaseError(err)));
+  try {
+    const cred = await fbAuth.signInWithEmailAndPassword(email, password);
+    const profile = await loadUserProfile(cred.user);
+    showAccountMsg(errEl, '');
+    setCurrentUser(profile);
+    closeAccountModal();
+    showToast(`✅ Content de te revoir, ${profile.firstname} !`, 'success');
+  } catch (err) {
+    if (err.code === 'auth/multi-factor-auth-required' && err.resolver) {
+      try { await finishFreshMfaAuthentication(err.resolver, 'login'); }
+      catch (mfaError) { /* l’erreur détaillée est affichée dans l’étape SMS */ }
+      return;
+    }
+    showAccountMsg(errEl, mapFirebaseError(err));
+  }
 }
 
 function logoutAccount() {
@@ -3352,6 +3544,243 @@ function updateAccountUI() {
     document.getElementById('accountInfoName').textContent  = `${user.firstname} ${user.lastname}`;
     document.getElementById('accountInfoEmail').textContent = user.email;
     document.getElementById('accountInfoPhone').textContent = user.phone || '';
+  }
+}
+
+function toggleAccountProfileEditor(open) {
+  const editor = document.getElementById('accountProfileEditor');
+  const button = document.getElementById('editAccountProfileButton');
+  const user = getCurrentUser();
+  if (open && user) {
+    document.getElementById('profileFirstname').value = user.firstname || '';
+    document.getElementById('profileLastname').value = user.lastname || '';
+    document.getElementById('profilePhone').value = user.phone || '';
+    showAccountMsg(document.getElementById('accountProfileError'), '');
+  }
+  editor.style.display = open ? 'block' : 'none';
+  button.style.display = open ? 'none' : 'block';
+}
+
+async function toggleAccountSecurityEditor(open) {
+  const editor = document.getElementById('accountSecurityEditor');
+  const button = document.getElementById('accountSecurityButton');
+  if (open && fbAuth.currentUser) {
+    try { await fbAuth.currentUser.reload(); } catch (e) {}
+    const fbUser = fbAuth.currentUser;
+    setCurrentUser(await loadUserProfile(fbUser));
+    document.getElementById('accountMfaStatus').textContent = 'Les changements d’email ou de mot de passe sont protégés par ton mot de passe actuel et un code envoyé à ton adresse actuelle.';
+    document.getElementById('verifyAccountEmailButton').style.display = fbUser.emailVerified ? 'none' : 'block';
+    showAccountMsg(document.getElementById('accountSecurityError'), '');
+  }
+  editor.style.display = open ? 'block' : 'none';
+  button.style.display = open ? 'none' : 'block';
+}
+
+async function sendAccountEmailVerification() {
+  const fbUser = fbAuth.currentUser;
+  const errEl = document.getElementById('accountSecurityError');
+  if (!fbUser) return showAccountMsg(errEl, 'Reconnecte-toi pour continuer.');
+  try {
+    await fbUser.sendEmailVerification();
+    showAccountMsg(errEl, 'Email de vérification envoyé. Confirme-le puis reconnecte-toi avant d’activer le SMS.', true);
+  } catch (error) {
+    showAccountMsg(errEl, mapFirebaseError(error));
+  }
+}
+
+async function signInFreshForSensitiveAction(password, mode) {
+  const fbUser = fbAuth.currentUser;
+  if (!fbUser?.email) throw new Error('Reconnecte-toi avec ton email et ton mot de passe.');
+  try {
+    const credential = await fbAuth.signInWithEmailAndPassword(fbUser.email, password);
+    if (mode === 'security') {
+      const factors = fbAuth.multiFactor(credential.user).enrolledFactors;
+      if (!factors.length) throw new Error('Active d’abord la double authentification par SMS.');
+      throw new Error('Firebase n’a pas demandé de code SMS. Aucune modification sensible n’a été appliquée. Vérifie que le MFA SMS est activé dans Firebase.');
+    }
+    await requestSmsFactorEnrollment(credential.user, pendingEnrollmentPhone);
+  } catch (error) {
+    if (error.code === 'auth/multi-factor-auth-required' && error.resolver) {
+      await finishFreshMfaAuthentication(error.resolver, mode);
+      return;
+    }
+    throw error;
+  }
+}
+
+async function saveAccountSecurity() {
+  const fbUser = fbAuth.currentUser;
+  const errEl = document.getElementById('accountSecurityError');
+  const currentPassword = document.getElementById('securityCurrentPassword').value;
+  const newEmail = document.getElementById('securityNewEmail').value.trim().toLowerCase();
+  const newPassword = document.getElementById('securityNewPassword').value;
+  const confirmPassword = document.getElementById('securityConfirmPassword').value;
+  showAccountMsg(errEl, '');
+  if (!fbUser) return showAccountMsg(errEl, 'Reconnecte-toi pour continuer.');
+  if (!currentPassword) return showAccountMsg(errEl, 'Entre ton mot de passe actuel.');
+  if (!newEmail && !newPassword) return showAccountMsg(errEl, 'Entre un nouvel email et/ou un nouveau mot de passe.');
+  if (newEmail && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail) || newEmail === fbUser.email.toLowerCase())) {
+    return showAccountMsg(errEl, 'Entre une nouvelle adresse email valide et différente de l’actuelle.');
+  }
+  if (newPassword && newPassword.length < 6) return showAccountMsg(errEl, 'Le nouveau mot de passe doit faire au moins 6 caractères.');
+  if (newPassword !== confirmPassword) return showAccountMsg(errEl, 'Les deux nouveaux mots de passe ne correspondent pas.');
+  if (!fbUser.emailVerified) return showAccountMsg(errEl, 'Vérifie d’abord ton adresse email actuelle pour protéger le compte.');
+  try {
+    const credential = fbAuth.EmailAuthProvider.credential(fbUser.email, currentPassword);
+    await fbUser.reauthenticateWithCredential(credential);
+    if (!accountSecurityCodeRequested) {
+      showAccountMsg(errEl, 'Envoi du code de confirmation…', true);
+      const token = await fbUser.getIdToken(true);
+      const response = await fetch('/api/account-security', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'request', newEmail, newPassword })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Impossible d’envoyer le code.');
+      accountSecurityCodeRequested = true;
+      document.getElementById('securityEmailCodeBox').style.display = 'block';
+      document.getElementById('accountSecuritySubmit').textContent = 'Confirmer le code et enregistrer';
+      showAccountMsg(errEl, `Code envoyé à ${fbUser.email}. Il expire dans 10 minutes.`, true);
+      return;
+    }
+
+    const code = document.getElementById('securityEmailCode').value.trim();
+    if (!/^\d{6}$/.test(code)) return showAccountMsg(errEl, 'Saisis le code à 6 chiffres reçu par email.');
+    showAccountMsg(errEl, 'Vérification du code…', true);
+    const token = await fbUser.getIdToken(true);
+    const response = await fetch('/api/account-security', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ action: 'verify', code, newEmail, newPassword })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || 'Le code est invalide ou expiré.');
+
+    if (newEmail) await fbAuth.currentUser.verifyBeforeUpdateEmail(newEmail);
+    accountSecurityCodeRequested = false;
+    document.getElementById('securityEmailCodeBox').style.display = 'none';
+    document.getElementById('securityEmailCode').value = '';
+    ['securityCurrentPassword','securityNewPassword','securityConfirmPassword'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('securityNewEmail').value = '';
+    showAccountMsg(errEl, newEmail
+      ? 'Code confirmé. Clique le lien envoyé à ta nouvelle adresse pour terminer le changement.'
+      : 'Code confirmé et mot de passe mis à jour. Reconnecte-toi avec ton nouveau mot de passe.', true);
+    if (newPassword) {
+      await fbAuth.signOut();
+      setCurrentUser(null);
+      showAccountMsg(errEl, 'Mot de passe mis à jour. Reconnecte-toi avec ton nouveau mot de passe.', true);
+    }
+  } catch (error) {
+    showAccountMsg(errEl, error.message || mapFirebaseError(error));
+  }
+}
+
+async function applyAccountSecurityChanges(fbUser, changes) {
+  const errEl = document.getElementById('accountSecurityError');
+  try {
+    if (changes.newEmail) {
+      await fbUser.verifyBeforeUpdateEmail(changes.newEmail);
+    }
+    if (changes.newPassword) {
+      await fbUser.updatePassword(changes.newPassword);
+    }
+    pendingSecurityAction = null;
+    ['securityCurrentPassword','securityNewPassword','securityConfirmPassword'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('securityNewEmail').value = '';
+    showAccountMsg(errEl, changes.newEmail
+      ? 'Code SMS validé. Clique le lien reçu sur ta nouvelle adresse pour finaliser le changement. Ton email actuel reste actif jusque-là.'
+      : 'Code SMS validé et mot de passe mis à jour.', true);
+    await fbUser.reload();
+    setCurrentUser(await loadUserProfile(fbAuth.currentUser));
+  } catch (error) {
+    pendingSecurityAction = null;
+    showAccountMsg(errEl, mapFirebaseError(error));
+  }
+}
+
+async function startSmsMfaEnrollment() {
+  const fbUser = fbAuth.currentUser;
+  const errEl = document.getElementById('accountSecurityError');
+  const phone = document.getElementById('mfaPhoneNumber').value.trim().replace(/[\s().-]/g, '');
+  const password = document.getElementById('securityCurrentPassword').value;
+  showAccountMsg(errEl, '');
+  if (!fbUser) return showAccountMsg(errEl, 'Reconnecte-toi pour continuer.');
+  if (!fbUser.emailVerified) return showAccountMsg(errEl, 'Vérifie d’abord ton adresse email actuelle avec le bouton ci-dessus.');
+  if (!/^\+[1-9]\d{7,14}$/.test(phone)) return showAccountMsg(errEl, 'Entre ton numéro au format international, par exemple +33612345678.');
+  if (!password) return showAccountMsg(errEl, 'Entre ton mot de passe actuel pour confirmer que tu es bien le titulaire du compte.');
+  pendingEnrollmentPhone = phone;
+  showAccountMsg(errEl, 'Vérification du compte…', true);
+  try {
+    await signInFreshForSensitiveAction(password, 'enrollment');
+  } catch (error) {
+    showAccountMsg(errEl, mapFirebaseError(error));
+  }
+}
+
+async function requestSmsFactorEnrollment(fbUser, phone) {
+  const errEl = document.getElementById('accountSecurityError');
+  try {
+    const session = await fbAuth.multiFactor(fbUser).getSession();
+    const verifier = makeAccountRecaptcha();
+    const provider = new fbAuth.PhoneAuthProvider(fbAuth);
+    enrollmentVerificationId = await provider.verifyPhoneNumber({ phoneNumber: phone, session }, verifier);
+    document.getElementById('mfaEnrollmentCodeBox').style.display = 'block';
+    showAccountMsg(errEl, 'Code SMS envoyé. Saisis-le ci-dessous pour activer la double authentification.', true);
+  } catch (error) {
+    showAccountMsg(errEl, mapFirebaseError(error));
+  }
+}
+
+async function finishSmsMfaEnrollment() {
+  const fbUser = fbAuth.currentUser;
+  const errEl = document.getElementById('accountSecurityError');
+  const code = document.getElementById('mfaEnrollmentCode').value.trim();
+  if (!fbUser || !enrollmentVerificationId) return showAccountMsg(errEl, 'Demande d’abord un code SMS.');
+  if (!/^\d{4,8}$/.test(code)) return showAccountMsg(errEl, 'Entre le code reçu par SMS.');
+  try {
+    const credential = fbAuth.PhoneAuthProvider.credential(enrollmentVerificationId, code);
+    const assertion = fbAuth.PhoneMultiFactorGenerator.assertion(credential);
+    await fbAuth.multiFactor(fbUser).enroll(assertion, 'Téléphone SMS');
+    enrollmentVerificationId = null;
+    pendingEnrollmentPhone = '';
+    document.getElementById('mfaEnrollmentCodeBox').style.display = 'none';
+    document.getElementById('securityCurrentPassword').value = '';
+    await toggleAccountSecurityEditor(true);
+    showAccountMsg(errEl, 'Double authentification activée. Les modifications d’email ou de mot de passe demanderont désormais ton mot de passe et un code SMS.', true);
+  } catch (error) {
+    showAccountMsg(errEl, mapFirebaseError(error));
+  }
+}
+
+async function saveAccountProfile() {
+  const user = getCurrentUser();
+  const fbUser = fbAuth.currentUser;
+  const firstname = document.getElementById('profileFirstname').value.trim();
+  const lastname = document.getElementById('profileLastname').value.trim();
+  const phone = document.getElementById('profilePhone').value.trim();
+  const errEl = document.getElementById('accountProfileError');
+  showAccountMsg(errEl, '');
+
+  if (!user || !fbUser) return showAccountMsg(errEl, 'Reconnecte-toi pour modifier ton profil.');
+  if (!firstname || !lastname) return showAccountMsg(errEl, 'Merci de renseigner ton prénom et ton nom.');
+  if (firstname.length > 30 || lastname.length > 30 || phone.length > 20) {
+    return showAccountMsg(errEl, 'Vérifie la longueur des informations saisies.');
+  }
+
+  showAccountMsg(errEl, 'Enregistrement…', true);
+  try {
+    await fbUser.updateProfile({ displayName: `${firstname} ${lastname}` });
+    await fbDb.collection('users').doc(fbUser.uid).set({ firstname, lastname, phone }, { merge: true });
+    setCurrentUser({ ...user, firstname, lastname, phone });
+    toggleAccountProfileEditor(false);
+    showToast('✅ Tes informations ont été mises à jour.', 'success');
+  } catch (err) {
+    showAccountMsg(errEl, mapFirebaseError(err));
   }
 }
 
