@@ -3019,7 +3019,11 @@ function handleModalOverlayClick(event, modalId) {
   if (event.target !== event.currentTarget) return;
 
   if (modalId === 'customModal') closeCustomModal();
-  else if (modalId === 'accountModal') closeAccountModal();
+  else if (modalId === 'accountModal') {
+    // Ne ferme pas l’éditeur de sécurité sur un clic extérieur accidentel.
+    if (document.getElementById('accountSecurityEditor')?.style.display === 'block') return;
+    closeAccountModal();
+  }
   else if (modalId === 'orderModal') closeOrderRecap();
 }
 
