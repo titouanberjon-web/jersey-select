@@ -613,10 +613,11 @@
     .form-input:focus { outline:none; border-color:var(--green); }
     .password-input-wrap { position:relative; display:flex; align-items:center; margin-top:.25rem; }
     .password-input-wrap .form-input { margin-top:0; padding-right:2.8rem; }
+    .password-input-wrap input { cursor:default; }
     .password-input-wrap input.password-is-visible { color:transparent !important; -webkit-text-fill-color:transparent !important; caret-color:transparent; }
     .password-reveal-value { position:absolute; left:.65rem; top:50%; transform:translateY(-50%); display:none; width:max-content; max-width:calc(100% - 3.2rem); overflow:hidden; white-space:pre; color:#fff !important; background:#101729; padding:0 .2rem; border-radius:3px; font-family:'Rajdhani',sans-serif; font-size:.95rem; line-height:1.35; pointer-events:none; }
-    .password-reveal-caret { display:inline-block; height:1.05em; margin-left:-1px; border-left:2px solid #f7ffb2; vertical-align:-.18em; animation:password-caret-blink 1s steps(2,start) infinite; }
-    @keyframes password-caret-blink { to { visibility:hidden; } }
+    .password-reveal-caret { display:inline-block; height:1em; margin-left:-1px; border-left:1px solid var(--green); vertical-align:-.16em; animation:password-caret-blink 1s step-end infinite; }
+    @keyframes password-caret-blink { 50% { opacity:0; } }
     .password-visibility-toggle { position:absolute; z-index:2; right:.35rem; top:50%; transform:translateY(-50%); width:2.1rem; height:2.1rem; display:grid; place-items:center; border:0; border-radius:4px; background:transparent; color:var(--text-muted); cursor:pointer; }
     .password-visibility-toggle:hover, .password-visibility-toggle:focus-visible { color:var(--green); outline:1px solid var(--green); }
     .password-visibility-toggle svg { width:1.15rem; height:1.15rem; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
