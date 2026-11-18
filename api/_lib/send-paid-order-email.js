@@ -72,6 +72,7 @@ module.exports = async function sendPaidOrderEmail(session, lineItems) {
     ? `<p><strong>Adresse de livraison :</strong><br>${addressLines.map(esc).join('<br>')}</p>`
     : '<p><strong>Adresse de livraison :</strong> non fournie par Stripe</p>';
   const total = session.amount_total;
+  const shippingCost = session.shipping_cost?.amount_total ?? session.total_details?.amount_shipping ?? 0;
   const paidAt = new Date((session.created || Math.floor(Date.now() / 1000)) * 1000)
     .toLocaleString('fr-FR', { timeZone: 'Europe/Paris' });
 
@@ -98,6 +99,7 @@ module.exports = async function sendPaidOrderEmail(session, lineItems) {
             <th style="padding:9px 10px;text-align:right">Montant</th>
           </tr></thead><tbody>${rows}</tbody>
         </table>
+        <p style="text-align:right">Frais de port : ${shippingCost ? `${money(shippingCost)} €` : 'offerts'}</p>
         <p style="font-size:18px;text-align:right"><strong>Total payé : ${money(total)} €</strong></p>
         <p style="color:#6b7280;font-size:12px">Ce bon est envoyé automatiquement après confirmation du paiement par Stripe.</p>
       </div>

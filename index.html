@@ -123,6 +123,12 @@
     .nav-quick-icon { display:inline-flex; flex:0 0 auto; color:var(--green); line-height:1; }
     .nav-quick-icon svg { width:1.25rem; height:1.25rem; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
     .nav-quick-info strong { color:#fff; font-weight:700; }
+    .nav-quick-promo strong, .mobile-hero-promo span { color:var(--green); }
+    /* Le bandeau promo reste visible : on masque d'abord les infos secondaires quand la place manque */
+    .nav-center-note .nav-quick-info:not(.nav-quick-promo) { border-left:1px solid rgba(0,230,118,.28); padding-left:1.2rem; }
+    @media(max-width:1800px) { .nav-quick-hide-lg { display:none; } }
+    @media(max-width:1440px) { .nav-quick-hide-md { display:none; } }
+    @media(max-width:1250px) { .nav-quick-hide-sm { display:none; } }
 
     /* ===== TOP LEAGUE RIBBON ===== */
     .league-ribbon {
@@ -694,6 +700,10 @@
     .cart-footer { padding:1.5rem; border-top:1px solid var(--border); }
     .cart-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; }
     .cart-total-amount { color:var(--green); font-size:1.6rem; }
+    .cart-summary-line { display:flex; justify-content:space-between; font-size:.9rem; color:var(--text-muted); margin-bottom:.4rem; }
+    .cart-summary-line.promo { color:var(--green); }
+    .cart-promo-hint { font-size:.8rem; color:var(--text-muted); text-align:center; margin-bottom:.9rem; line-height:1.5; }
+    .price-free { text-decoration:line-through; opacity:.55; margin-right:.35rem; }
     .btn-order {
       width:100%; background:var(--green); color:#000;
       font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.1em;
@@ -861,10 +871,11 @@
     </span>
   </a>
   <div class="nav-center-note" aria-label="Informations de service">
-    <span class="nav-quick-info"><span class="nav-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></span><strong>Traitée sous 1 semaine</strong></span>
-    <span class="nav-quick-info"><span class="nav-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/></svg></span><strong>Livraison 2–3 semaines</strong></span>
-    <span class="nav-quick-info"><span class="nav-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span><strong>Service client réactif</strong></span>
-    <span class="nav-quick-info"><span class="nav-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg></span><strong>Retours 14 jours</strong></span>
+    <span class="nav-quick-info nav-quick-promo"><span class="nav-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8h18v4H3zM5 12v9h14v-9M12 8v13"/><path d="M12 8c-2-3-6-3-6-.5S12 8 12 8zM12 8c2-3 6-3 6-.5S12 8 12 8z"/></svg></span><strong>4 achetés = 5e offert · Livraison offerte dès 3</strong></span>
+    <span class="nav-quick-info nav-quick-hide-md"><span class="nav-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></span><strong>Traitée sous 1 semaine</strong></span>
+    <span class="nav-quick-info nav-quick-hide-sm"><span class="nav-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/></svg></span><strong>Livraison 2–3 semaines</strong></span>
+    <span class="nav-quick-info nav-quick-hide-lg"><span class="nav-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span><strong>Service client réactif</strong></span>
+    <span class="nav-quick-info nav-quick-hide-lg"><span class="nav-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/></svg></span><strong>Retours 14 jours</strong></span>
   </div>
   <div class="nav-actions">
     <button class="cart-btn" id="accountBtn" onclick="openAccountModal()">
@@ -903,6 +914,7 @@
   <div class="hero-background-art" aria-hidden="true"></div>
   <div class="mobile-hero-visual" aria-label="Maillots de football mis en avant">
     <div class="mobile-hero-trust" aria-label="Informations de service">
+      <div class="mobile-hero-trust-item mobile-hero-promo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18v4H3zM5 12v9h14v-9M12 8v13"/><path d="M12 8c-2-3-6-3-6-.5S12 8 12 8zM12 8c2-3 6-3 6-.5S12 8 12 8z"/></svg><span>5e maillot offert · Port offert dès 3</span></div>
       <div class="mobile-hero-trust-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg><span>Traitée sous 1 semaine</span></div>
       <div class="mobile-hero-trust-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/></svg><span>Livraison 2–3 semaines</span></div>
       <div class="mobile-hero-trust-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg><span>Service client réactif</span></div>
@@ -980,6 +992,13 @@
       <div>
         <div class="trust-title">Livraison estimée : 2 à 3 semaines</div>
         <div class="trust-desc">Après la commande</div>
+      </div>
+    </div>
+    <div class="trust-item">
+      <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="1"/><path d="M12 8v13M3 12h18"/><path d="M12 8c-2-3-6-3-6-.5S12 8 12 8zM12 8c2-3 6-3 6-.5S12 8 12 8z"/></svg>
+      <div>
+        <div class="trust-title">4 maillots achetés, le 5e offert</div>
+        <div class="trust-desc">Livraison offerte dès 3 maillots</div>
       </div>
     </div>
     <div class="trust-item">
@@ -1243,6 +1262,13 @@
       </div>
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Combien coûtent les frais de port ?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">Les frais de port sont de 4,90 € pour une commande de 1 ou 2 maillots, et offerts dès 3 maillots. En plus, pour 4 maillots achetés, le 5e est offert : le moins cher de chaque lot de 5 vous est automatiquement offert dans le panier et au paiement.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
           <span>Puis-je personnaliser mon maillot ?</span>
           <span class="faq-arrow">▼</span>
         </div>
@@ -1358,6 +1384,10 @@
     <div class="cart-empty">Votre panier est vide.</div>
   </div>
   <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-summary-line"><span>Sous-total</span><span id="cartSubtotal">0 €</span></div>
+    <div class="cart-summary-line promo" id="cartDiscountLine" style="display:none;"><span>🎁 5e maillot offert</span><span id="cartDiscount">0 €</span></div>
+    <div class="cart-summary-line"><span>Frais de port</span><span id="cartShipping">0 €</span></div>
+    <div class="cart-promo-hint" id="cartPromoHint"></div>
     <div class="cart-total">
       <span>Total</span>
       <span class="cart-total-amount" id="cartTotal">0 €</span>
@@ -1474,6 +1504,10 @@
       </div>
 
       <div class="price-summary">
+        <div class="price-line"><span>Sous-total</span><span id="orderRecapSubtotal">0 €</span></div>
+        <div class="price-line" id="orderRecapDiscountLine" style="display:none;color:var(--green);"><span>🎁 5e maillot offert</span><span id="orderRecapDiscount">0 €</span></div>
+        <div class="price-line"><span>Frais de port</span><span id="orderRecapShipping">0 €</span></div>
+        <hr class="price-divider">
         <div class="price-total"><span>Total</span><span class="amount" id="orderRecapTotal">0 €</span></div>
       </div>
 
@@ -1615,6 +1649,7 @@
         <div class="price-line" id="lineText"   style="display:none;"><span>+ Texte flocage</span><span>+2,50 €</span></div>
         <hr class="price-divider">
         <div class="price-total"><span>Total</span><span class="amount" id="priceTotal">20 €</span></div>
+        <div class="cart-promo-hint" style="margin:.6rem 0 0;">🚚 Livraison 4,90 €, offerte dès 3 maillots · 🎁 4 achetés, le 5e offert</div>
       </div>
 
       <div class="error-msg" id="globalError" style="display:block;margin-bottom:.75rem;"></div>
@@ -2228,6 +2263,53 @@ const FLOCAGE_PRICE = 2.5;
 const SHORT_PRICE = 10;
 function calcTotal(type, version, hasNumber, hasText, hasShort) {
   return getBasePrice(type, version) + (hasNumber ? FLOCAGE_PRICE : 0) + (hasText ? FLOCAGE_PRICE : 0) + (hasShort ? SHORT_PRICE : 0);
+}
+/* Règles du panier (à garder synchronisées avec api/_lib/pricing.js) :
+   - frais de port de 4,90 € sous 3 maillots, offerts dès 3 ;
+   - 4 maillots achetés, le 5e offert : le moins cher de chaque lot de 5. */
+const SHIPPING_FEE = 4.9;
+const FREE_SHIPPING_MIN_ITEMS = 3;
+const PROMO_GROUP_SIZE = 5;
+function computeCartPricing(items) {
+  const cents = items.map(i => Math.round(i.price * 100));
+  const freeCount = Math.floor(items.length / PROMO_GROUP_SIZE);
+  const freeIndexes = new Set(cents
+    .map((amount, index) => ({ amount, index }))
+    .sort((a, b) => a.amount - b.amount || a.index - b.index)
+    .slice(0, freeCount)
+    .map(e => e.index));
+  const subtotal = cents.reduce((s, c) => s + c, 0);
+  const discount = cents.reduce((s, c, idx) => s + (freeIndexes.has(idx) ? c : 0), 0);
+  const shipping = items.length > 0 && items.length < FREE_SHIPPING_MIN_ITEMS ? Math.round(SHIPPING_FEE * 100) : 0;
+  return {
+    freeIndexes,
+    subtotal: subtotal / 100,
+    discount: discount / 100,
+    shipping: shipping / 100,
+    total: (subtotal - discount + shipping) / 100
+  };
+}
+function cartItemPriceHtml(item, isFree) {
+  return isFree
+    ? `<span class="price-free">${fmtPrice(item.price)} €</span>Offert`
+    : `${fmtPrice(item.price)} €`;
+}
+function promoHintText(count) {
+  if (count < FREE_SHIPPING_MIN_ITEMS) {
+    const n = FREE_SHIPPING_MIN_ITEMS - count;
+    return `🚚 Plus que ${n} maillot${n > 1 ? 's' : ''} pour la livraison offerte`;
+  }
+  const n = PROMO_GROUP_SIZE - (count % PROMO_GROUP_SIZE);
+  return n === PROMO_GROUP_SIZE
+    ? '🚚 Livraison offerte · 🎁 Maillot offert inclus'
+    : `🚚 Livraison offerte · 🎁 Plus que ${n} maillot${n > 1 ? 's' : ''} pour en avoir un offert`;
+}
+function fillPricingSummary(prefix, pricing) {
+  document.getElementById(prefix + 'Subtotal').textContent = fmtPrice(pricing.subtotal) + ' €';
+  document.getElementById(prefix + 'DiscountLine').style.display = pricing.discount ? '' : 'none';
+  document.getElementById(prefix + 'Discount').textContent = '−' + fmtPrice(pricing.discount) + ' €';
+  document.getElementById(prefix + 'Shipping').textContent = pricing.shipping ? fmtPrice(pricing.shipping) + ' €' : 'Offerts';
+  document.getElementById(prefix + 'Total').textContent = fmtPrice(pricing.total) + ' €';
 }
 /* Prix en format FR : entier -> "15", décimal -> "17,50" (sans le €) */
 function fmtPrice(n) {
@@ -3160,7 +3242,8 @@ function updateCartUI() {
   }
 
   footerEl.style.display = 'block';
-  itemsEl.innerHTML = cartItems.map(item => `
+  const pricing = computeCartPricing(cartItems);
+  itemsEl.innerHTML = cartItems.map((item, idx) => `
 <div class="cart-item">
   <span class="cart-item-emoji">${item.emoji}</span>
   <div class="cart-item-info">
@@ -3170,13 +3253,13 @@ function updateCartUI() {
       Taille : ${item.size}<br>
       Flocage : ${item.flocage}${item.short ? '<br>🩳 Short assorti inclus' : ''}
     </div>
-    <div class="cart-item-price">${fmtPrice(item.price)} €</div>
+    <div class="cart-item-price">${cartItemPriceHtml(item, pricing.freeIndexes.has(idx))}</div>
   </div>
   <button class="cart-item-remove" onclick="removeCartItem(${item.uid})">✕</button>
 </div>`).join('');
 
-  const total = cartItems.reduce((s, i) => s + i.price, 0);
-  document.getElementById('cartTotal').textContent = fmtPrice(total) + ' €';
+  fillPricingSummary('cart', pricing);
+  document.getElementById('cartPromoHint').textContent = promoHintText(cartItems.length);
 }
 
 function removeCartItem(uid) {
@@ -3374,7 +3457,8 @@ function openOrderRecap() {
   document.getElementById('orderNameError').style.display = 'none';
 
   const itemsEl = document.getElementById('orderRecapItems');
-  itemsEl.innerHTML = cartItems.map(item => `
+  const pricing = computeCartPricing(cartItems);
+  itemsEl.innerHTML = cartItems.map((item, idx) => `
 <div class="order-recap-item">
   <div class="order-recap-item-info">
     <div class="order-recap-item-name">${item.name} · ${item.club}</div>
@@ -3384,11 +3468,10 @@ function openOrderRecap() {
       Flocage : ${item.flocage}${item.short ? '<br>🩳 Short assorti inclus' : ''}
     </div>
   </div>
-  <div class="order-recap-item-price">${fmtPrice(item.price)} €</div>
+  <div class="order-recap-item-price">${cartItemPriceHtml(item, pricing.freeIndexes.has(idx))}</div>
 </div>`).join('');
 
-  const total = cartItems.reduce((s, i) => s + i.price, 0);
-  document.getElementById('orderRecapTotal').textContent = fmtPrice(total) + ' €';
+  fillPricingSummary('orderRecap', pricing);
 
   closeCart();
   document.getElementById('orderModal').classList.add('open');
@@ -3474,7 +3557,8 @@ async function buildOrderPDF(name, orderNumber) {
   y += 10;
 
   // Articles
-  for (const item of cartItems) {
+  const pricing = computeCartPricing(cartItems);
+  for (const [idx, item] of cartItems.entries()) {
     const imgInfo = await loadImageData(item.image);
     const imgW = 34;
     const imgH = imgInfo ? Math.min(imgW * imgInfo.ratio, 44) : 0;
@@ -3499,13 +3583,25 @@ async function buildOrderPDF(name, orderNumber) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(0, 160, 80);
-    doc.text(`${fmtPrice(item.price)} €`, W - 18, y + 10, { align: 'right' });
+    doc.text(pricing.freeIndexes.has(idx) ? 'OFFERT' : `${fmtPrice(item.price)} €`, W - 18, y + 10, { align: 'right' });
     y += rowH + 4;
   }
 
   // Total
-  const total = cartItems.reduce((s, i) => s + i.price, 0);
-  if (y + 20 > 285) { doc.addPage(); y = 20; }
+  const total = pricing.total;
+  if (y + 34 > 285) { doc.addPage(); y = 20; }
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(90, 90, 90);
+  if (pricing.discount) {
+    doc.text('5e maillot offert', 20, y + 4);
+    doc.text(`-${fmtPrice(pricing.discount)} €`, W - 20, y + 4, { align: 'right' });
+    y += 6;
+  }
+  doc.text('Frais de port', 20, y + 4);
+  doc.text(pricing.shipping ? `${fmtPrice(pricing.shipping)} €` : 'Offerts', W - 20, y + 4, { align: 'right' });
+  y += 8;
+  doc.setFont('helvetica', 'bold');
   doc.setFillColor(10, 14, 26);
   doc.roundedRect(14, y, W - 28, 14, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
@@ -3574,7 +3670,7 @@ async function payerAvecStripe() {
   document.getElementById('orderNameError').style.display = 'none';
 
   const orderNumber = generateOrderNumber();
-  const total = cartItems.reduce((s, i) => s + i.price, 0);
+  const total = computeCartPricing(cartItems).total;
   localStorage.setItem('jsPendingOrder', JSON.stringify({
     orderNumber, uid: user.uid, name, email: user.email, phone: user.phone || '', items: cartItems, total
   }));
