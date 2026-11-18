@@ -4,7 +4,7 @@
 //   STRIPE_PUBLISHABLE_KEY — clé publique Stripe, requise pour Checkout intégré.
 
 const Stripe = require('stripe');
-const { computePricing } = require('./_lib/pricing');
+const { computePricing, MAX_QUANTITY_PER_LINE } = require('./_lib/pricing');
 const VINTAGE_PRODUCT_IDS = new Set([101, 201, 505, 506, 507, 508, 509, 510, 511, 513, 514, 515, 516, 517]);
 
 module.exports = async (req, res) => {
@@ -22,9 +22,9 @@ module.exports = async (req, res) => {
   if (!Array.isArray(items) || !items.length) {
     return res.status(400).json({ error: 'Panier vide' });
   }
-  let line_items;
+  let cartLines;
   try {
-    line_items = items.map(item => {
+    cartLines = items.map((item, cartIndex) => {
       const version = String(item.version || '');
       const productId = Number(item.productId);
       if (!['Standard', 'Player', 'Manches longues Standard', 'Manches longues Player', 'Vintage'].includes(version)) {
@@ -40,6 +40,10 @@ module.exports = async (req, res) => {
       if (!['S', 'M', 'L', 'XL', 'XXL'].includes(size)) {
         throw new Error('Taille invalide');
       }
+      const quantity = item.quantity === undefined ? 1 : Number(item.quantity);
+      if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY_PER_LINE) {
+        throw new Error('Quantité invalide');
+      }
       const flocageText = flocage.replace(/(?: · )?Short assorti inclus$/, '');
       const flocageParts = flocageText === 'Sans flocage' ? [] : flocageText.split(' · ').filter(Boolean);
       const hasNumber = flocageParts.some(part => /^N°\d{1,2}$/.test(part));
@@ -53,6 +57,7 @@ module.exports = async (req, res) => {
         description: [version, `Taille ${size}`, flocage]
           .filter(Boolean).join(' — ') || undefined,
         metadata: {
+          cartIndex: String(cartIndex),
           club,
           version,
           size,
@@ -66,26 +71,39 @@ module.exports = async (req, res) => {
         }
       }
 
-      return {
-        quantity: 1,
-        price_data: {
-          currency: 'eur',
-          unit_amount: unitAmount,
-          product_data: productData
-        }
-      };
+      return { quantity, unitAmount, productData };
     });
   } catch (e) {
     return res.status(400).json({ error: 'Article de panier invalide' });
   }
 
-  // Promo « 4 achetés, le 5e offert » + frais de port sous 3 maillots.
-  const pricing = computePricing(line_items.map(item => item.price_data.unit_amount));
-  pricing.freeIndexes.forEach(index => {
-    const productData = line_items[index].price_data.product_data;
-    line_items[index].price_data.unit_amount = 0;
-    productData.name = `🎁 Offert — ${productData.name}`.slice(0, 250);
-    productData.metadata.promo = '5e maillot offert';
+  // Promo « 4 achetés, le 5e offert » + frais de port sous 3 maillots, quantités comprises.
+  // Une ligne du panier dont une partie est offerte devient deux lignes Stripe :
+  // les maillots payés, puis les maillots offerts à 0 €.
+  const pricing = computePricing(cartLines.map(line => ({ amount: line.unitAmount, quantity: line.quantity })));
+  const line_items = [];
+  cartLines.forEach((line, index) => {
+    const freeQuantity = pricing.freeQuantities[index];
+    if (line.quantity > freeQuantity) {
+      line_items.push({
+        quantity: line.quantity - freeQuantity,
+        price_data: { currency: 'eur', unit_amount: line.unitAmount, product_data: line.productData }
+      });
+    }
+    if (freeQuantity > 0) {
+      line_items.push({
+        quantity: freeQuantity,
+        price_data: {
+          currency: 'eur',
+          unit_amount: 0,
+          product_data: {
+            ...line.productData,
+            name: `🎁 Offert — ${line.productData.name}`.slice(0, 250),
+            metadata: { ...line.productData.metadata, promo: '5e maillot offert' }
+          }
+        }
+      });
+    }
   });
   const shipping_options = [{
     shipping_rate_data: {

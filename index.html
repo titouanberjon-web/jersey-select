@@ -704,6 +704,18 @@
     .cart-summary-line.promo { color:var(--green); }
     .cart-promo-hint { font-size:.8rem; color:var(--text-muted); text-align:center; margin-bottom:.9rem; line-height:1.5; }
     .price-free { text-decoration:line-through; opacity:.55; margin-right:.35rem; }
+    .qty-control { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .qty-control button { background:var(--bg); border:none; color:inherit; width:2.1rem; height:2.1rem; font-size:1.1rem; cursor:pointer; transition:background .2s; }
+    .qty-control button:hover:not(:disabled) { background:var(--border); }
+    .qty-control button:disabled { opacity:.35; cursor:default; }
+    .qty-control .qty-value { min-width:2.2rem; text-align:center; font-weight:600; }
+    .qty-control.small button { width:1.7rem; height:1.7rem; font-size:.95rem; }
+    .qty-control.small .qty-value { min-width:1.8rem; font-size:.9rem; }
+    .qty-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .qty-row-label { font-weight:600; }
+    .cart-item-bottom { display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-top:.4rem; flex-wrap:wrap; }
+    .cart-item-bottom .cart-item-price { margin-top:0; }
+    .cart-item-unit { font-size:.75rem; color:var(--text-muted); }
     .btn-order {
       width:100%; background:var(--green); color:#000;
       font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.1em;
@@ -1647,11 +1659,20 @@
         <div class="price-line" id="lineShort" style="display:none;"><span>+ Short assorti</span><span>+10 €</span></div>
         <div class="price-line" id="lineNumber" style="display:none;"><span>+ Numéro</span><span>+2,50 €</span></div>
         <div class="price-line" id="lineText"   style="display:none;"><span>+ Texte flocage</span><span>+2,50 €</span></div>
+        <div class="price-line" id="lineQty"    style="display:none;"><span id="lineQtyLabel">× 2 maillots</span><span></span></div>
         <hr class="price-divider">
         <div class="price-total"><span>Total</span><span class="amount" id="priceTotal">20 €</span></div>
         <div class="cart-promo-hint" style="margin:.6rem 0 0;">🚚 Livraison 4,90 €, offerte dès 3 maillots · 🎁 4 achetés, le 5e offert</div>
       </div>
 
+      <div class="qty-row">
+        <span class="qty-row-label">Quantité</span>
+        <div class="qty-control" aria-label="Quantité">
+          <button type="button" id="qtyMinus" onclick="changeModalQty(-1)" aria-label="Retirer un maillot">−</button>
+          <span class="qty-value" id="qtyValue">1</span>
+          <button type="button" id="qtyPlus" onclick="changeModalQty(1)" aria-label="Ajouter un maillot">+</button>
+        </div>
+      </div>
       <div class="error-msg" id="globalError" style="display:block;margin-bottom:.75rem;"></div>
       <button class="btn-primary" style="width:100%;text-align:center;display:block;font-size:1.1rem;" onclick="addToCart()">
         Ajouter au panier
@@ -2270,29 +2291,52 @@ function calcTotal(type, version, hasNumber, hasText, hasShort) {
 const SHIPPING_FEE = 4.9;
 const FREE_SHIPPING_MIN_ITEMS = 3;
 const PROMO_GROUP_SIZE = 5;
+const MAX_QTY = 10; // par ligne du panier (même limite côté serveur)
+function itemQty(item) {
+  const q = Number(item && item.qty);
+  return Number.isInteger(q) && q >= 1 ? Math.min(q, MAX_QTY) : 1;
+}
+function cartUnitCount(items) {
+  return items.reduce((n, i) => n + itemQty(i), 0);
+}
+/* Les quantités comptent : une ligne « 3 × maillot » vaut 3 maillots pour les deux offres.
+   freeQuantities[i] = nombre de maillots offerts sur la ligne i. */
 function computeCartPricing(items) {
-  const cents = items.map(i => Math.round(i.price * 100));
-  const freeCount = Math.floor(items.length / PROMO_GROUP_SIZE);
-  const freeIndexes = new Set(cents
-    .map((amount, index) => ({ amount, index }))
+  const units = [];
+  items.forEach((item, index) => {
+    const amount = Math.round(item.price * 100);
+    for (let n = 0; n < itemQty(item); n++) units.push({ amount, index });
+  });
+  const count = units.length;
+  const freeCount = Math.floor(count / PROMO_GROUP_SIZE);
+  const freeQuantities = items.map(() => 0);
+  units.slice()
     .sort((a, b) => a.amount - b.amount || a.index - b.index)
     .slice(0, freeCount)
-    .map(e => e.index));
-  const subtotal = cents.reduce((s, c) => s + c, 0);
-  const discount = cents.reduce((s, c, idx) => s + (freeIndexes.has(idx) ? c : 0), 0);
-  const shipping = items.length > 0 && items.length < FREE_SHIPPING_MIN_ITEMS ? Math.round(SHIPPING_FEE * 100) : 0;
+    .forEach(u => { freeQuantities[u.index] += 1; });
+  const subtotal = units.reduce((s, u) => s + u.amount, 0);
+  const discount = items.reduce((s, item, idx) => s + Math.round(item.price * 100) * freeQuantities[idx], 0);
+  const shipping = count > 0 && count < FREE_SHIPPING_MIN_ITEMS ? Math.round(SHIPPING_FEE * 100) : 0;
   return {
-    freeIndexes,
+    count,
+    freeQuantities,
     subtotal: subtotal / 100,
     discount: discount / 100,
     shipping: shipping / 100,
     total: (subtotal - discount + shipping) / 100
   };
 }
-function cartItemPriceHtml(item, isFree) {
-  return isFree
-    ? `<span class="price-free">${fmtPrice(item.price)} €</span>Offert`
-    : `${fmtPrice(item.price)} €`;
+function cartItemPriceHtml(item, freeQty) {
+  const qty = itemQty(item);
+  const full = Math.round(item.price * 100) * qty / 100;
+  if (!freeQty) return `${fmtPrice(full)} €`;
+  if (freeQty >= qty) return `<span class="price-free">${fmtPrice(full)} €</span>Offert`;
+  const paid = Math.round(item.price * 100) * (qty - freeQty) / 100;
+  return `<span class="price-free">${fmtPrice(full)} €</span>${fmtPrice(paid)} € <span class="cart-item-unit">(${freeQty} offert${freeQty > 1 ? 's' : ''})</span>`;
+}
+function cartItemQtyLabel(item) {
+  const qty = itemQty(item);
+  return qty > 1 ? `Quantité : ${qty} × ${fmtPrice(item.price)} €` : '';
 }
 function promoHintText(count) {
   if (count < FREE_SHIPPING_MIN_ITEMS) {
@@ -2313,6 +2357,7 @@ function fillPricingSummary(prefix, pricing) {
 }
 /* Prix en format FR : entier -> "15", décimal -> "17,50" (sans le €) */
 function fmtPrice(n) {
+  n = Math.round(n * 100) / 100;
   return Number.isInteger(n) ? String(n) : n.toFixed(2).replace('.', ',');
 }
 
@@ -3000,6 +3045,7 @@ function openCustomModal(productId) {
   ['numberField','textField'].forEach(id => document.getElementById(id).classList.remove('visible'));
   ['sizeError','numberError','textError'].forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('globalError').textContent = '';
+  modalQty = 1;
 
   updatePrice();
   _previewColors = null;
@@ -3068,6 +3114,12 @@ function toggleTextField() {
   }
 }
 
+let modalQty = 1;
+function changeModalQty(delta) {
+  modalQty = Math.max(1, Math.min(MAX_QTY, modalQty + delta));
+  updatePrice();
+}
+
 function updatePrice() {
   if (!currentProduct) return;
   const hasNumber = document.getElementById('chkNumber').checked;
@@ -3076,7 +3128,12 @@ function updatePrice() {
   const base  = getBasePrice(currentProduct.type, currentVersion);
   const total = calcTotal(currentProduct.type, currentVersion, hasNumber, hasText, hasShort);
   document.getElementById('priceBase').textContent   = fmtPrice(base)  + ' €';
-  document.getElementById('priceTotal').textContent  = fmtPrice(total) + ' €';
+  document.getElementById('priceTotal').textContent  = fmtPrice(total * modalQty) + ' €';
+  document.getElementById('qtyValue').textContent = modalQty;
+  document.getElementById('qtyMinus').disabled = modalQty <= 1;
+  document.getElementById('qtyPlus').disabled = modalQty >= MAX_QTY;
+  document.getElementById('lineQty').style.display = modalQty > 1 ? 'flex' : 'none';
+  document.getElementById('lineQtyLabel').textContent = `× ${modalQty} maillots (${fmtPrice(total)} € l'unité)`;
   document.getElementById('lineShort').style.display  = hasShort  ? 'flex' : 'none';
   document.getElementById('lineNumber').style.display = hasNumber ? 'flex' : 'none';
   document.getElementById('lineText').style.display   = hasText   ? 'flex' : 'none';
@@ -3174,21 +3231,36 @@ function addToCart() {
     : currentVersion === 'longplayer' ? 'Manches longues Player'
     : 'Standard';
 
-  cartItems.push({
-    uid: Date.now() + Math.random(),
-    productId: currentProduct.id,
-    emoji: currentProduct.emoji,
-    name:  currentProduct.name,
-    club:  currentProduct.club,
-    image: currentProduct.frontImage || null,
-    version: versionLabel,
-    size, flocage, short: hasShort, hasNumber, hasText, price
-  });
+  // Même maillot avec les mêmes options déjà dans le panier : on augmente sa quantité.
+  const qty = modalQty;
+  const same = cartItems.find(i => i.productId === currentProduct.id && i.version === versionLabel
+    && i.size === size && i.flocage === flocage && Boolean(i.short) === hasShort && i.price === price);
+  let added = qty;
+  if (same) {
+    const before = itemQty(same);
+    same.qty = Math.min(MAX_QTY, before + qty);
+    added = same.qty - before;
+    if (!added) {
+      document.getElementById('globalError').textContent = `Maximum ${MAX_QTY} exemplaires du même maillot par commande.`;
+      return;
+    }
+  } else {
+    cartItems.push({
+      uid: Date.now() + Math.random(),
+      productId: currentProduct.id,
+      emoji: currentProduct.emoji,
+      name:  currentProduct.name,
+      club:  currentProduct.club,
+      image: currentProduct.frontImage || null,
+      version: versionLabel,
+      size, flocage, short: hasShort, hasNumber, hasText, price, qty
+    });
+  }
 
   saveCart();
   updateCartUI();
   closeCustomModal();
-  showToast('✅ Maillot ajouté au panier !', 'success');
+  showToast(added > 1 ? `✅ ${added} maillots ajoutés au panier !` : '✅ Maillot ajouté au panier !', 'success');
 }
 
 /* ===== CART ===== */
@@ -3231,7 +3303,7 @@ async function mergeCartOnLogin(uid) {
   } catch (e) { /* hors-ligne : le panier local reste utilisable tel quel */ }
 }
 function updateCartUI() {
-  document.getElementById('cartCount').textContent = cartItems.length;
+  document.getElementById('cartCount').textContent = cartUnitCount(cartItems);
   const itemsEl  = document.getElementById('cartItems');
   const footerEl = document.getElementById('cartFooter');
 
@@ -3253,13 +3325,29 @@ function updateCartUI() {
       Taille : ${item.size}<br>
       Flocage : ${item.flocage}${item.short ? '<br>🩳 Short assorti inclus' : ''}
     </div>
-    <div class="cart-item-price">${cartItemPriceHtml(item, pricing.freeIndexes.has(idx))}</div>
+    <div class="cart-item-bottom">
+      <div class="qty-control small" aria-label="Quantité">
+        <button type="button" onclick="changeCartQty(${item.uid}, -1)" aria-label="Retirer un maillot"${itemQty(item) <= 1 ? ' disabled' : ''}>−</button>
+        <span class="qty-value">${itemQty(item)}</span>
+        <button type="button" onclick="changeCartQty(${item.uid}, 1)" aria-label="Ajouter un maillot"${itemQty(item) >= MAX_QTY ? ' disabled' : ''}>+</button>
+      </div>
+      <div class="cart-item-price">${cartItemPriceHtml(item, pricing.freeQuantities[idx])}</div>
+    </div>
+    ${itemQty(item) > 1 ? `<div class="cart-item-unit">${fmtPrice(item.price)} € l'unité</div>` : ''}
   </div>
-  <button class="cart-item-remove" onclick="removeCartItem(${item.uid})">✕</button>
+  <button class="cart-item-remove" onclick="removeCartItem(${item.uid})" title="Retirer">✕</button>
 </div>`).join('');
 
   fillPricingSummary('cart', pricing);
-  document.getElementById('cartPromoHint').textContent = promoHintText(cartItems.length);
+  document.getElementById('cartPromoHint').textContent = promoHintText(pricing.count);
+}
+
+function changeCartQty(uid, delta) {
+  const item = cartItems.find(i => i.uid === uid);
+  if (!item) return;
+  item.qty = Math.max(1, Math.min(MAX_QTY, itemQty(item) + delta));
+  saveCart();
+  updateCartUI();
 }
 
 function removeCartItem(uid) {
@@ -3465,10 +3553,10 @@ function openOrderRecap() {
     <div class="order-recap-item-details">
       Version : ${item.version}<br>
       Taille : ${item.size}<br>
-      Flocage : ${item.flocage}${item.short ? '<br>🩳 Short assorti inclus' : ''}
+      Flocage : ${item.flocage}${item.short ? '<br>🩳 Short assorti inclus' : ''}${itemQty(item) > 1 ? '<br>' + cartItemQtyLabel(item) : ''}
     </div>
   </div>
-  <div class="order-recap-item-price">${cartItemPriceHtml(item, pricing.freeIndexes.has(idx))}</div>
+  <div class="order-recap-item-price">${cartItemPriceHtml(item, pricing.freeQuantities[idx])}</div>
 </div>`).join('');
 
   fillPricingSummary('orderRecap', pricing);
@@ -3573,7 +3661,7 @@ async function buildOrderPDF(name, orderNumber) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(20, 20, 20);
-    doc.text(`${item.name} · ${item.club}`, tx, y + 10);
+    doc.text(`${itemQty(item) > 1 ? itemQty(item) + ' × ' : ''}${item.name} · ${item.club}`, tx, y + 10);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(90, 90, 90);
@@ -3583,7 +3671,12 @@ async function buildOrderPDF(name, orderNumber) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(0, 160, 80);
-    doc.text(pricing.freeIndexes.has(idx) ? 'OFFERT' : `${fmtPrice(item.price)} €`, W - 18, y + 10, { align: 'right' });
+    const pdfQty = itemQty(item), pdfFree = pricing.freeQuantities[idx];
+    doc.text(pdfFree >= pdfQty ? 'OFFERT' : `${fmtPrice(Math.round(item.price * 100) * (pdfQty - pdfFree) / 100)} €`, W - 18, y + 10, { align: 'right' });
+    if (pdfFree && pdfFree < pdfQty) {
+      doc.setFontSize(9);
+      doc.text(`dont ${pdfFree} offert${pdfFree > 1 ? 's' : ''}`, W - 18, y + 16, { align: 'right' });
+    }
     y += rowH + 4;
   }
 
@@ -3637,7 +3730,7 @@ async function toggleOrderHistory() {
     el.innerHTML = snap.docs.map(d => {
       const o = d.data();
       const dateStr = (o.date && o.date.toDate) ? o.date.toDate().toLocaleDateString('fr-FR') : '';
-      const itemsSummary = (o.items || []).map(i => `${escHtml(i.name)} · ${escHtml(i.club)}`).join('<br>');
+      const itemsSummary = (o.items || []).map(i => `${itemQty(i) > 1 ? itemQty(i) + ' × ' : ''}${escHtml(i.name)} · ${escHtml(i.club)}`).join('<br>');
       return `
 <div class="cart-item">
   <div class="cart-item-info">
@@ -3687,6 +3780,7 @@ async function payerAvecStripe() {
       body: JSON.stringify({
         items: cartItems.map(i => ({
           productId: i.productId, name: i.name, club: i.club, version: i.version, size: i.size,
+          quantity: itemQty(i),
           flocage: i.flocage + (i.short ? ' · Short assorti inclus' : ''),
           image: i.image ? new URL(i.image, window.location.origin).href : undefined
         })),
@@ -3782,13 +3876,22 @@ function handlePostCheckoutRouting() {
       detailsEl.textContent = 'Le paiement est confirmé, mais nous ne retrouvons pas le récapitulatif de cette commande. Contacte-nous pour le suivi.';
       return;
     }
-    if (result.orderReference !== pending.orderNumber || result.items.length !== pending.items.length) {
+    // Une ligne du panier peut donner deux lignes Stripe (maillots payés + offerts) :
+    // on les regroupe par ligne du panier grâce à cartIndex.
+    const linePaid = pending.items.map(() => 0);
+    const lineQty = pending.items.map(() => 0);
+    let linesOk = result.items.every(it => Number.isInteger(it.cartIndex) && it.cartIndex >= 0 && it.cartIndex < pending.items.length);
+    if (linesOk) {
+      result.items.forEach(it => { linePaid[it.cartIndex] += it.amountTotal; lineQty[it.cartIndex] += it.quantity; });
+      linesOk = pending.items.every((item, index) => lineQty[index] === itemQty(item));
+    }
+    if (result.orderReference !== pending.orderNumber || !linesOk) {
       detailsEl.textContent = 'Le paiement est confirmé, mais le récapitulatif ne correspond pas à la session Stripe. Contacte-nous pour finaliser le suivi de ta commande.';
       return;
     }
     pending.items = pending.items.map((item, index) => ({
       ...item,
-      price: result.items[index].amountTotal / 100
+      price: linePaid[index] / itemQty(item) / 100
     }));
     pending.total = result.amountTotal / 100;
     localStorage.setItem('jsPendingOrder', JSON.stringify(pending));
@@ -3925,7 +4028,7 @@ handlePostCheckoutRouting(); // retour Stripe (succès /commande-confirmee ou an
 // On expose explicitement les fonctions du module principal pour que chaque
 // bouton reste réellement interactif après le chargement de la page.
 Object.assign(window, {
-  addToCart, carouselMove, closeAccountModal, closeCart, closeCustomModal,
+  addToCart, carouselMove, changeCartQty, changeModalQty, closeAccountModal, closeCart, closeCustomModal,
   closeOrderConfirmedModal, closeOrderRecap, closeWishlist, filterByClub,
   filterByLeague, focusLeagueFilters, handleModalOverlayClick, loginAccount,
   logoutAccount, openAccountModal, openCart, openCustomModal, openOrderRecap,

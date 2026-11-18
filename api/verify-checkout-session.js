@@ -19,13 +19,20 @@ module.exports = async (req, res) => {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     const paid = session.metadata?.source === 'jersey-select' && session.payment_status === 'paid';
     const lineItems = paid
-      ? await stripe.checkout.sessions.listLineItems(sessionId, { limit: 100 })
+      ? await stripe.checkout.sessions.listLineItems(sessionId, { limit: 100, expand: ['data.price.product'] })
       : { data: [] };
     return res.status(200).json({
       paid,
       orderReference: session.metadata?.orderReference || null,
       amountTotal: paid ? session.amount_total : null,
-      items: lineItems.data.map(item => ({ amountTotal: item.amount_total, quantity: item.quantity }))
+      items: lineItems.data.map(item => {
+        const cartIndex = Number(item.price?.product?.metadata?.cartIndex);
+        return {
+          amountTotal: item.amount_total,
+          quantity: item.quantity,
+          cartIndex: Number.isInteger(cartIndex) ? cartIndex : null
+        };
+      })
     });
   } catch (error) {
     console.error('Erreur de vérification Stripe:', error.message);
