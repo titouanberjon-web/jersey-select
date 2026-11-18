@@ -4,6 +4,7 @@
 //   STRIPE_PUBLISHABLE_KEY — clé publique Stripe, requise pour Checkout intégré.
 
 const Stripe = require('stripe');
+const { computePricing } = require('./_lib/pricing');
 const VINTAGE_PRODUCT_IDS = new Set([101, 201, 505, 506, 507, 508, 509, 510, 511, 513, 514, 515, 516, 517]);
 
 module.exports = async (req, res) => {
@@ -78,6 +79,22 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Article de panier invalide' });
   }
 
+  // Promo « 4 achetés, le 5e offert » + frais de port sous 3 maillots.
+  const pricing = computePricing(line_items.map(item => item.price_data.unit_amount));
+  pricing.freeIndexes.forEach(index => {
+    const productData = line_items[index].price_data.product_data;
+    line_items[index].price_data.unit_amount = 0;
+    productData.name = `🎁 Offert — ${productData.name}`.slice(0, 250);
+    productData.metadata.promo = '5e maillot offert';
+  });
+  const shipping_options = [{
+    shipping_rate_data: {
+      type: 'fixed_amount',
+      display_name: pricing.shipping ? 'Livraison' : 'Livraison offerte (dès 3 maillots)',
+      fixed_amount: { amount: pricing.shipping, currency: 'eur' }
+    }
+  }];
+
   try {
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || '';
     const secretMode = process.env.STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test';
@@ -93,6 +110,7 @@ module.exports = async (req, res) => {
       customer_email: customer?.email || undefined,
       phone_number_collection: { enabled: true },
       shipping_address_collection: { allowed_countries: ['FR', 'BE', 'CH', 'LU'] },
+      shipping_options,
       ...(useEmbeddedCheckout
         ? { ui_mode: 'embedded', return_url: 'https://jersey-select.com/commande-confirmee?session_id={CHECKOUT_SESSION_ID}' }
         : { success_url: 'https://jersey-select.com/commande-confirmee?session_id={CHECKOUT_SESSION_ID}', cancel_url: 'https://jersey-select.com/panier' }),
