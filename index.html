@@ -703,6 +703,29 @@
     .cart-summary-line { display:flex; justify-content:space-between; font-size:.9rem; color:var(--text-muted); margin-bottom:.4rem; }
     .cart-summary-line.promo { color:var(--green); }
     .cart-promo-hint { font-size:.8rem; color:var(--text-muted); text-align:center; margin-bottom:.9rem; line-height:1.5; }
+    /* Barre de progression vers les offres */
+    .offer-progress { margin:0 0 1rem; padding:.85rem .9rem .75rem; background:var(--surface2); border:1px solid var(--border); border-radius:10px; }
+    .offer-progress-text { font-size:.9rem; font-weight:600; text-align:center; margin-bottom:.65rem; line-height:1.35; }
+    .offer-progress-text strong { color:var(--green); }
+    .offer-progress-track { position:relative; height:8px; background:var(--border); border-radius:99px; margin:0 .6rem; }
+    .offer-progress-fill { position:absolute; left:0; top:0; bottom:0; background:var(--green); border-radius:99px; transition:width .35s ease; }
+    .offer-progress-mark { position:absolute; top:50%; transform:translate(-50%,-50%); width:22px; height:22px; border-radius:50%; background:var(--surface); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:.7rem; transition:border-color .3s, background .3s; }
+    .offer-progress-mark.reached { border-color:var(--green); background:rgba(0,230,118,.15); }
+    .offer-progress-labels { position:relative; height:1.1rem; margin:.45rem .6rem 0; font-size:.7rem; color:var(--text-muted); }
+    .offer-progress-labels span { position:absolute; transform:translateX(-50%); white-space:nowrap; }
+    .offer-progress-labels span:last-child { transform:translateX(-85%); }
+    /* Guide des tailles */
+    .size-guide { margin-top:.6rem; }
+    .size-guide summary { cursor:pointer; font-size:.9rem; color:var(--blue-light); font-weight:600; list-style:none; display:inline-flex; align-items:center; gap:.35rem; }
+    .size-guide summary::-webkit-details-marker { display:none; }
+    .size-guide summary::after { content:'▾'; transition:transform .2s; }
+    .size-guide[open] summary::after { transform:rotate(180deg); }
+    .size-guide-body { margin-top:.6rem; }
+    .size-guide-table { width:100%; border-collapse:collapse; font-size:.85rem; text-align:center; }
+    .size-guide-table th, .size-guide-table td { padding:.45rem .3rem; border-bottom:1px solid var(--border); }
+    .size-guide-table th { font-family:'Bebas Neue',sans-serif; letter-spacing:.05em; font-weight:400; color:var(--text-muted); font-size:.85rem; }
+    .size-guide-table td:first-child { font-weight:700; color:var(--green); }
+    .size-guide-note { font-size:.78rem; color:var(--text-muted); line-height:1.5; margin-top:.55rem; }
     .price-free { text-decoration:line-through; opacity:.55; margin-right:.35rem; }
     .qty-control { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
     .qty-control button { background:var(--bg); border:none; color:inherit; width:2.1rem; height:2.1rem; font-size:1.1rem; cursor:pointer; transition:background .2s; }
@@ -1396,10 +1419,10 @@
     <div class="cart-empty">Votre panier est vide.</div>
   </div>
   <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="offer-progress" id="cartOfferProgress" aria-live="polite"></div>
     <div class="cart-summary-line"><span>Sous-total</span><span id="cartSubtotal">0 €</span></div>
     <div class="cart-summary-line promo" id="cartDiscountLine" style="display:none;"><span>🎁 5e maillot offert</span><span id="cartDiscount">0 €</span></div>
     <div class="cart-summary-line"><span>Frais de port</span><span id="cartShipping">0 €</span></div>
-    <div class="cart-promo-hint" id="cartPromoHint"></div>
     <div class="cart-total">
       <span>Total</span>
       <span class="cart-total-amount" id="cartTotal">0 €</span>
@@ -1601,6 +1624,26 @@
           <option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option>
         </select>
         <div class="error-msg" id="sizeError">Veuillez choisir une taille.</div>
+        <details class="size-guide">
+          <summary>📏 Guide des tailles</summary>
+          <div class="size-guide-body">
+            <table class="size-guide-table">
+              <thead><tr><th>Taille</th><th>Tour de poitrine</th><th>Tour de taille</th><th>Tour de hanches</th></tr></thead>
+              <tbody>
+                <tr><td>S</td><td>87–92 cm</td><td>75–80 cm</td><td>86–91 cm</td></tr>
+                <tr><td>M</td><td>93–100 cm</td><td>81–88 cm</td><td>92–99 cm</td></tr>
+                <tr><td>L</td><td>101–108 cm</td><td>89–96 cm</td><td>100–107 cm</td></tr>
+                <tr><td>XL</td><td>109–118 cm</td><td>97–106 cm</td><td>108–116 cm</td></tr>
+                <tr><td>XXL</td><td>119–130 cm</td><td>107–119 cm</td><td>117–125 cm</td></tr>
+              </tbody>
+            </table>
+            <div class="size-guide-note">
+              Nos maillots suivent les tailles officielles des équipementiers (Adidas, Nike, Puma…). Mesures du corps, prises à même la peau : poitrine au niveau le plus large, taille au niveau du nombril, hanches au plus large.<br>
+              La version <strong>Player</strong> est plus ajustée : prenez une taille au-dessus si vous aimez porter large.
+              Entre deux tailles, prenez la plus grande.
+            </div>
+          </div>
+        </details>
       </div>
 
       <!-- Étape 3 : Flocage -->
@@ -2338,15 +2381,44 @@ function cartItemQtyLabel(item) {
   const qty = itemQty(item);
   return qty > 1 ? `Quantité : ${qty} × ${fmtPrice(item.price)} €` : '';
 }
-function promoHintText(count) {
-  if (count < FREE_SHIPPING_MIN_ITEMS) {
-    const n = FREE_SHIPPING_MIN_ITEMS - count;
-    return `🚚 Plus que ${n} maillot${n > 1 ? 's' : ''} pour la livraison offerte`;
+/* Barre de progression du panier : jalons à 3 maillots (livraison offerte) puis 5 (5e offert).
+   Au-delà de 5, la barre repart vers le prochain maillot offert (10, 15…). */
+function offerProgressHtml(count) {
+  const plural = n => `${n} maillot${n > 1 ? 's' : ''}`;
+  let text, max, marks;
+  if (count < PROMO_GROUP_SIZE) {
+    max = PROMO_GROUP_SIZE;
+    marks = [
+      { at: FREE_SHIPPING_MIN_ITEMS, icon: '🚚', label: 'Livraison offerte' },
+      { at: PROMO_GROUP_SIZE, icon: '🎁', label: '5e offert' }
+    ];
+    if (count < FREE_SHIPPING_MIN_ITEMS) {
+      const n = FREE_SHIPPING_MIN_ITEMS - count;
+      text = `Plus ${n === 1 ? "qu'" : 'que '}<strong>${plural(n)}</strong> pour la livraison offerte 🚚`;
+    } else {
+      const n = PROMO_GROUP_SIZE - count;
+      text = `🚚 Livraison offerte ! Plus ${n === 1 ? "qu'" : 'que '}<strong>${plural(n)}</strong> pour avoir le 5e offert 🎁`;
+    }
+  } else {
+    const base = count - (count % PROMO_GROUP_SIZE);
+    const next = count === base ? base : base + PROMO_GROUP_SIZE;
+    const n = next - count;
+    const gifts = Math.floor(count / PROMO_GROUP_SIZE);
+    max = PROMO_GROUP_SIZE;
+    count = count - base;
+    marks = [{ at: PROMO_GROUP_SIZE, icon: '🎁', label: `${next}e offert` }];
+    text = count === 0
+      ? `🎉 Livraison offerte et <strong>${gifts} maillot${gifts > 1 ? 's' : ''} offert${gifts > 1 ? 's' : ''}</strong> !`
+      : `🎉 ${gifts} offert${gifts > 1 ? 's' : ''} · plus ${n === 1 ? "qu'" : 'que '}<strong>${plural(n)}</strong> pour un autre 🎁`;
+    if (count === 0) count = max;
   }
-  const n = PROMO_GROUP_SIZE - (count % PROMO_GROUP_SIZE);
-  return n === PROMO_GROUP_SIZE
-    ? '🚚 Livraison offerte · 🎁 Maillot offert inclus'
-    : `🚚 Livraison offerte · 🎁 Plus que ${n} maillot${n > 1 ? 's' : ''} pour en avoir un offert`;
+  const pct = v => (Math.min(v, max) / max) * 100;
+  return `<div class="offer-progress-text">${text}</div>
+<div class="offer-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${Math.min(count, max)}">
+  <div class="offer-progress-fill" style="width:${pct(count)}%"></div>
+  ${marks.map(m => `<span class="offer-progress-mark${count >= m.at ? ' reached' : ''}" style="left:${pct(m.at)}%">${m.icon}</span>`).join('')}
+</div>
+<div class="offer-progress-labels">${marks.map(m => `<span style="left:${pct(m.at)}%">${m.label}</span>`).join('')}</div>`;
 }
 function fillPricingSummary(prefix, pricing) {
   document.getElementById(prefix + 'Subtotal').textContent = fmtPrice(pricing.subtotal) + ' €';
@@ -3339,7 +3411,7 @@ function updateCartUI() {
 </div>`).join('');
 
   fillPricingSummary('cart', pricing);
-  document.getElementById('cartPromoHint').textContent = promoHintText(pricing.count);
+  document.getElementById('cartOfferProgress').innerHTML = offerProgressHtml(pricing.count);
 }
 
 function changeCartQty(uid, delta) {
