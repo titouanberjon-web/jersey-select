@@ -52,7 +52,7 @@ module.exports = async function sendPaidOrderEmail(session, lineItems) {
   const items = lineItems.map(orderItem);
   const rows = items.map(item => `
     <tr>
-      <td style="padding:9px 10px;border-bottom:1px solid #e5e7eb">${esc(item.product)}${item.club ? ` · ${esc(item.club)}` : ''}</td>
+      <td style="padding:9px 10px;border-bottom:1px solid #e5e7eb">${item.quantity > 1 ? `<strong>${item.quantity} ×</strong> ` : ''}${esc(item.product)}${item.club ? ` · ${esc(item.club)}` : ''}</td>
       <td style="padding:9px 10px;border-bottom:1px solid #e5e7eb">${esc(item.version)}</td>
       <td style="padding:9px 10px;border-bottom:1px solid #e5e7eb">${esc(item.size)}</td>
       <td style="padding:9px 10px;border-bottom:1px solid #e5e7eb">${esc(item.flocage)}</td>
