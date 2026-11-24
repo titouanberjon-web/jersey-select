@@ -1,6 +1,13 @@
 {
+  "cleanUrls": true,
   "rewrites": [
     { "source": "/commande-confirmee", "destination": "/index.html" },
     { "source": "/panier", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(images|logos)/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }]
+    }
   ]
 }
