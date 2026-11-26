@@ -3,6 +3,7 @@
 // tout au moment de la création de la session de paiement.
 
 class PromoError extends Error {}
+const UNKNOWN_CODE = 'Ce code promo n\'existe pas ou n\'est plus valable.';
 
 function normalizeCode(raw) {
   return String(raw || '').trim().toUpperCase().slice(0, 50);
@@ -25,7 +26,7 @@ async function findPromotionCode(stripe, rawCode, baseAmount, rawEmail) {
   const promo = data[0];
   const coupon = promo && (promo.coupon || promo.promotion?.coupon);
   if (!promo || !coupon || typeof coupon !== 'object' || !coupon.valid) {
-    throw new PromoError('Ce code promo n\'existe pas ou n\'est plus valable.');
+    throw new PromoError(UNKNOWN_CODE);
   }
   if (promo.expires_at && promo.expires_at * 1000 < Date.now()) {
     throw new PromoError('Ce code promo a expiré.');
@@ -46,14 +47,15 @@ async function findPromotionCode(stripe, rawCode, baseAmount, rawEmail) {
   const email = String(rawEmail || '').trim().toLowerCase();
   const reservedCustomer = typeof promo.customer === 'string' ? promo.customer : promo.customer?.id;
   const firstOrderOnly = Boolean(promo.restrictions?.first_time_transaction);
-  if ((reservedCustomer || firstOrderOnly) && !email) {
-    throw new PromoError('Connecte-toi à ton compte pour utiliser ce code promo.');
-  }
+  // Code réservé à un client : pour tous les autres, on fait comme s'il n'existait pas.
   if (reservedCustomer) {
-    const owner = await stripe.customers.retrieve(reservedCustomer);
-    if (owner.deleted || String(owner.email || '').trim().toLowerCase() !== email) {
-      throw new PromoError('Ce code promo est réservé à un autre client.');
+    const owner = email ? await stripe.customers.retrieve(reservedCustomer) : null;
+    if (!owner || owner.deleted || String(owner.email || '').trim().toLowerCase() !== email) {
+      throw new PromoError(UNKNOWN_CODE);
     }
+  }
+  if (firstOrderOnly && !email) {
+    throw new PromoError('Connecte-toi à ton compte pour utiliser ce code promo.');
   }
   if (firstOrderOnly && await hasPaidOrderBefore(stripe, email)) {
     throw new PromoError('Ce code promo est réservé à la première commande.');
