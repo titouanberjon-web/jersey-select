@@ -5,6 +5,7 @@
 
 const Stripe = require('stripe');
 const { computePricing, MAX_QUANTITY_PER_LINE } = require('./_lib/pricing');
+const { findPromotionCode, PromoError } = require('./_lib/promo');
 const VINTAGE_PRODUCT_IDS = new Set([101, 201, 505, 506, 507, 508, 509, 510, 511, 513, 514, 515, 516, 517]);
 
 module.exports = async (req, res) => {
@@ -17,7 +18,7 @@ module.exports = async (req, res) => {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const { items, customer, orderReference } = req.body || {};
+  const { items, customer, orderReference, promoCode } = req.body || {};
 
   if (!Array.isArray(items) || !items.length) {
     return res.status(400).json({ error: 'Panier vide' });
@@ -113,6 +114,19 @@ module.exports = async (req, res) => {
     }
   }];
 
+  // Code promo saisi dans le panier : revérifié ici, puis appliqué par Stripe
+  // sur les maillots (pas sur les frais de port).
+  let promotion = null;
+  if (promoCode) {
+    try {
+      promotion = await findPromotionCode(stripe, promoCode, pricing.subtotal - pricing.discount);
+    } catch (error) {
+      if (error instanceof PromoError) return res.status(400).json({ error: error.message, promoInvalid: true });
+      console.error('Erreur vérification code promo:', error);
+      return res.status(500).json({ error: 'Impossible de vérifier le code promo pour le moment.' });
+    }
+  }
+
   try {
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || '';
     const secretMode = process.env.STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test';
@@ -129,9 +143,7 @@ module.exports = async (req, res) => {
       phone_number_collection: { enabled: true },
       shipping_address_collection: { allowed_countries: ['FR', 'BE', 'CH', 'LU'] },
       shipping_options,
-      // Codes promo créés dans le Dashboard Stripe (Produits → Coupons) : Stripe valide
-      // lui-même code, expiration, nombre d'utilisations et montant minimum.
-      allow_promotion_codes: true,
+      ...(promotion ? { discounts: [{ promotion_code: promotion.id }] } : {}),
       ...(useEmbeddedCheckout
         ? { ui_mode: 'embedded', return_url: 'https://jersey-select.com/commande-confirmee?session_id={CHECKOUT_SESSION_ID}' }
         : { success_url: 'https://jersey-select.com/commande-confirmee?session_id={CHECKOUT_SESSION_ID}', cancel_url: 'https://jersey-select.com/panier' }),
@@ -140,7 +152,8 @@ module.exports = async (req, res) => {
         orderReference: orderReference || '',
         customerName: customer?.name || '',
         customerEmail: customer?.email || '',
-        customerPhone: customer?.phone || ''
+        customerPhone: customer?.phone || '',
+        promoCode: promotion ? promotion.code : ''
       }
     });
 
@@ -149,6 +162,9 @@ module.exports = async (req, res) => {
       : { url: session.url });
   } catch (error) {
     console.error('Erreur Stripe Checkout:', error);
+    if (promotion && error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({ error: 'Ce code promo ne peut pas être appliqué à cette commande.', promoInvalid: true });
+    }
     return res.status(500).json({ error: 'Erreur lors de la création du paiement' });
   }
 };

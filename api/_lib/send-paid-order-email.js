@@ -77,6 +77,7 @@ module.exports = async function sendPaidOrderEmail(session, lineItems) {
   const promoCodes = (session.total_details?.breakdown?.discounts || [])
     .map(d => d.discount?.promotion_code?.code || d.discount?.coupon?.name)
     .filter(Boolean);
+  if (!promoCodes.length && metadata.promoCode) promoCodes.push(metadata.promoCode);
   const discountLine = discountAmount
     ? `<p style="text-align:right;color:#047857">Code promo${promoCodes.length ? ` ${esc(promoCodes.join(', '))}` : ''} : −${money(discountAmount)} €</p>`
     : '';

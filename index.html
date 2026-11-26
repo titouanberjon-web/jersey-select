@@ -700,7 +700,25 @@
     .cart-footer { padding:1.5rem; border-top:1px solid var(--border); }
     .cart-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; }
     .cart-total-amount { color:var(--green); font-size:1.6rem; }
-    .cart-promo-hint { font-size:.78rem; color:var(--text-muted); text-align:center; margin:.6rem 0 .2rem; }
+    .cart-promo { margin-bottom:.8rem; }
+    .cart-promo-form { display:flex; gap:.5rem; }
+    .cart-promo-form input {
+      flex:1; min-width:0; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+      border-radius:6px; padding:.55rem .75rem; font-family:'Rajdhani',sans-serif; font-size:.95rem; text-transform:uppercase;
+    }
+    .cart-promo-form input:focus { outline:none; border-color:var(--green); }
+    .cart-promo-form button {
+      background:transparent; border:1px solid var(--green); color:var(--green); border-radius:6px; padding:0 .9rem;
+      font-family:'Bebas Neue',sans-serif; font-size:.95rem; letter-spacing:.05em; cursor:pointer;
+    }
+    .cart-promo-form button:disabled { opacity:.5; cursor:default; }
+    .cart-promo-msg { font-size:.78rem; margin-top:.35rem; color:var(--text-muted); }
+    .cart-promo-msg.error { color:#ff6b6b; }
+    .cart-promo-applied {
+      display:flex; justify-content:space-between; align-items:center; gap:.5rem;
+      border:1px dashed var(--green); border-radius:6px; padding:.45rem .75rem; font-size:.88rem; color:var(--green);
+    }
+    .cart-promo-applied button { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:.82rem; text-decoration:underline; }
     .cart-summary-line { display:flex; justify-content:space-between; font-size:.9rem; color:var(--text-muted); margin-bottom:.4rem; }
     .cart-summary-line.promo { color:var(--green); }
     .cart-promo-hint { font-size:.8rem; color:var(--text-muted); text-align:center; margin-bottom:.9rem; line-height:1.5; }
@@ -1421,14 +1439,15 @@
   </div>
   <div class="cart-footer" id="cartFooter" style="display:none;">
     <div class="offer-progress" id="cartOfferProgress" aria-live="polite"></div>
+    <div class="cart-promo" id="cartPromoBox"></div>
     <div class="cart-summary-line"><span>Sous-total</span><span id="cartSubtotal">0 €</span></div>
     <div class="cart-summary-line promo" id="cartDiscountLine" style="display:none;"><span>🎁 5e maillot offert</span><span id="cartDiscount">0 €</span></div>
+    <div class="cart-summary-line promo" id="cartPromoLine" style="display:none;"><span id="cartPromoLabel">Code promo</span><span id="cartPromo">0 €</span></div>
     <div class="cart-summary-line"><span>Frais de port</span><span id="cartShipping">0 €</span></div>
     <div class="cart-total">
       <span>Total</span>
       <span class="cart-total-amount" id="cartTotal">0 €</span>
     </div>
-    <p class="cart-promo-hint">Un code promo ? Tu pourras le saisir à l'étape du paiement.</p>
     <button class="btn-order" onclick="openOrderRecap()">Valider mon bon de commande</button>
   </div>
 </div>
@@ -1543,6 +1562,7 @@
       <div class="price-summary">
         <div class="price-line"><span>Sous-total</span><span id="orderRecapSubtotal">0 €</span></div>
         <div class="price-line" id="orderRecapDiscountLine" style="display:none;color:var(--green);"><span>🎁 5e maillot offert</span><span id="orderRecapDiscount">0 €</span></div>
+        <div class="price-line" id="orderRecapPromoLine" style="display:none;color:var(--green);"><span id="orderRecapPromoLabel">Code promo</span><span id="orderRecapPromo">0 €</span></div>
         <div class="price-line"><span>Frais de port</span><span id="orderRecapShipping">0 €</span></div>
         <hr class="price-divider">
         <div class="price-total"><span>Total</span><span class="amount" id="orderRecapTotal">0 €</span></div>
@@ -2299,6 +2319,11 @@ let searchTerm      = '';
 // Méta-ligues : le menu déroulant liste des sous-ligues (champ subLeague) au lieu des clubs
 const META_LEAGUES  = ['Reste du monde', '2ème Division'];
 let cartItems       = [];
+/* Code promo du panier : validé par /api/validate-promo (codes gérés dans Stripe),
+   puis revérifié et appliqué par Stripe au paiement. */
+let appliedPromo = null;
+try { appliedPromo = JSON.parse(localStorage.getItem('jsPromo')) || null; } catch (e) {}
+let promoMessage = '';
 let currentProduct  = null;
 let currentVersion  = 'standard';
 let favorites       = new Set();
@@ -2362,13 +2387,23 @@ function computeCartPricing(items) {
   const subtotal = units.reduce((s, u) => s + u.amount, 0);
   const discount = items.reduce((s, item, idx) => s + Math.round(item.price * 100) * freeQuantities[idx], 0);
   const shipping = count > 0 && count < FREE_SHIPPING_MIN_ITEMS ? Math.round(SHIPPING_FEE * 100) : 0;
+  const base = subtotal - discount;
+  let promo = 0;
+  const promoBelowMin = Boolean(appliedPromo && appliedPromo.minAmount && base < appliedPromo.minAmount);
+  if (appliedPromo && !promoBelowMin) {
+    promo = appliedPromo.percentOff
+      ? Math.round(base * appliedPromo.percentOff / 100)
+      : Math.min(appliedPromo.amountOff, base);
+  }
   return {
     count,
     freeQuantities,
     subtotal: subtotal / 100,
     discount: discount / 100,
+    promo: promo / 100,
+    promoBelowMin,
     shipping: shipping / 100,
-    total: (subtotal - discount + shipping) / 100
+    total: (base - promo + shipping) / 100
   };
 }
 function cartItemPriceHtml(item, freeQty) {
@@ -2426,8 +2461,66 @@ function fillPricingSummary(prefix, pricing) {
   document.getElementById(prefix + 'Subtotal').textContent = fmtPrice(pricing.subtotal) + ' €';
   document.getElementById(prefix + 'DiscountLine').style.display = pricing.discount ? '' : 'none';
   document.getElementById(prefix + 'Discount').textContent = '−' + fmtPrice(pricing.discount) + ' €';
+  document.getElementById(prefix + 'PromoLine').style.display = pricing.promo ? '' : 'none';
+  document.getElementById(prefix + 'PromoLabel').textContent = appliedPromo ? 'Code ' + appliedPromo.code : 'Code promo';
+  document.getElementById(prefix + 'Promo').textContent = '−' + fmtPrice(pricing.promo) + ' €';
   document.getElementById(prefix + 'Shipping').textContent = pricing.shipping ? fmtPrice(pricing.shipping) + ' €' : 'Offerts';
   document.getElementById(prefix + 'Total').textContent = fmtPrice(pricing.total) + ' €';
+}
+function setPromo(promo) {
+  appliedPromo = promo;
+  try {
+    if (promo) localStorage.setItem('jsPromo', JSON.stringify(promo));
+    else localStorage.removeItem('jsPromo');
+  } catch (e) {}
+}
+function renderPromoBox(pricing) {
+  const box = document.getElementById('cartPromoBox');
+  if (appliedPromo) {
+    const value = appliedPromo.percentOff ? `−${appliedPromo.percentOff} %` : `−${fmtPrice(appliedPromo.amountOff / 100)} €`;
+    const note = pricing.promoBelowMin
+      ? `<div class="cart-promo-msg error">Code valable dès ${fmtPrice(appliedPromo.minAmount / 100)} € de maillots.</div>`
+      : '';
+    box.innerHTML = `<div class="cart-promo-applied"><span>🏷️ ${escHtml(appliedPromo.code)} (${value})</span><button type="button" onclick="removePromo()">Retirer</button></div>${note}`;
+    return;
+  }
+  box.innerHTML = `
+<form class="cart-promo-form" onsubmit="applyPromo(event)">
+  <input id="cartPromoInput" placeholder="Code promo" maxlength="50" autocomplete="off" aria-label="Code promo">
+  <button type="submit" id="cartPromoBtn">Appliquer</button>
+</form>${promoMessage ? `<div class="cart-promo-msg error">${escHtml(promoMessage)}</div>` : ''}`;
+}
+async function applyPromo(event) {
+  event.preventDefault();
+  const code = document.getElementById('cartPromoInput').value.trim();
+  if (!code) return;
+  const btn = document.getElementById('cartPromoBtn');
+  btn.disabled = true;
+  btn.textContent = '…';
+  const pricing = computeCartPricing(cartItems);
+  try {
+    const response = await fetch('/api/validate-promo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, amount: Math.round((pricing.subtotal - pricing.discount) * 100) })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      setPromo(data);
+      promoMessage = '';
+      showToast(`🏷️ Code ${data.code} appliqué !`, 'success');
+    } else {
+      promoMessage = data.error || 'Code promo invalide.';
+    }
+  } catch (e) {
+    promoMessage = 'Impossible de vérifier le code. Réessaie dans un instant.';
+  }
+  updateCartUI();
+}
+function removePromo() {
+  setPromo(null);
+  promoMessage = '';
+  updateCartUI();
 }
 /* Prix en format FR : entier -> "15", décimal -> "17,50" (sans le €) */
 function fmtPrice(n) {
@@ -3413,6 +3506,7 @@ function updateCartUI() {
 </div>`).join('');
 
   fillPricingSummary('cart', pricing);
+  renderPromoBox(pricing);
   document.getElementById('cartOfferProgress').innerHTML = offerProgressHtml(pricing.count);
 }
 
@@ -3859,7 +3953,8 @@ async function payerAvecStripe() {
           image: i.image ? new URL(i.image, window.location.origin).href : undefined
         })),
         customer: { name, email: user.email, phone: user.phone || '' },
-        orderReference: orderNumber
+        orderReference: orderNumber,
+        promoCode: appliedPromo && !computeCartPricing(cartItems).promoBelowMin ? appliedPromo.code : undefined
       })
     });
     const data = await response.json();
@@ -3878,6 +3973,12 @@ async function payerAvecStripe() {
       embeddedCheckout.mount('#embeddedCheckout');
       checkoutEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
+    }
+    if (data.promoInvalid) {
+      setPromo(null);
+      promoMessage = data.error || '';
+      updateCartUI();
+      fillPricingSummary('orderRecap', computeCartPricing(cartItems));
     }
     showToast(data.error || 'Impossible de lancer le paiement.', 'error');
   } catch (e) {
@@ -3973,6 +4074,7 @@ function handlePostCheckoutRouting() {
     if (pending.uid) saveOrderToHistory(pending.uid, pending.orderNumber, pending.name, pending.items, pending.total);
     localStorage.removeItem('jsPendingOrder');
     cartItems = [];
+    setPromo(null);
     saveCart();
     updateCartUI();
   })();
