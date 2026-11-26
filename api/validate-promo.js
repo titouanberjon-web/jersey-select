@@ -13,10 +13,10 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Paiement non configuré' });
   }
 
-  const { code, amount } = req.body || {};
+  const { code, amount, email } = req.body || {};
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const promo = await findPromotionCode(stripe, code, Number(amount));
+    const promo = await findPromotionCode(stripe, code, Number(amount), email);
     return res.status(200).json({
       code: promo.code,
       percentOff: promo.percentOff,

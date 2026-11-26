@@ -2502,7 +2502,7 @@ async function applyPromo(event) {
     const response = await fetch('/api/validate-promo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, amount: Math.round((pricing.subtotal - pricing.discount) * 100) })
+      body: JSON.stringify({ code, amount: Math.round((pricing.subtotal - pricing.discount) * 100), email: getCurrentUser()?.email || '' })
     });
     const data = await response.json().catch(() => ({}));
     if (response.ok) {

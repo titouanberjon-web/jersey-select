@@ -8,8 +8,16 @@ function normalizeCode(raw) {
   return String(raw || '').trim().toUpperCase().slice(0, 50);
 }
 
+// Les acheteurs du site n'ont pas de compte client Stripe : Stripe ne peut donc pas savoir seul
+// si c'est leur première commande. On cherche les paiements déjà faits avec cet email.
+async function hasPaidOrderBefore(stripe, email) {
+  const { data } = await stripe.checkout.sessions.list({ customer_details: { email }, limit: 100 });
+  return data.some(session => session.payment_status === 'paid' && session.metadata?.source === 'jersey-select');
+}
+
 // baseAmount : montant des maillots en centimes, après le « 5e offert » et hors frais de port.
-async function findPromotionCode(stripe, rawCode, baseAmount) {
+// email : email du compte client connecté (nécessaire pour les codes réservés).
+async function findPromotionCode(stripe, rawCode, baseAmount, rawEmail) {
   const code = normalizeCode(rawCode);
   if (!code) throw new PromoError('Entre un code promo.');
 
@@ -35,9 +43,26 @@ async function findPromotionCode(stripe, rawCode, baseAmount) {
     throw new PromoError(`Ce code promo est valable dès ${min} € d'achat.`);
   }
 
+  const email = String(rawEmail || '').trim().toLowerCase();
+  const reservedCustomer = typeof promo.customer === 'string' ? promo.customer : promo.customer?.id;
+  const firstOrderOnly = Boolean(promo.restrictions?.first_time_transaction);
+  if ((reservedCustomer || firstOrderOnly) && !email) {
+    throw new PromoError('Connecte-toi à ton compte pour utiliser ce code promo.');
+  }
+  if (reservedCustomer) {
+    const owner = await stripe.customers.retrieve(reservedCustomer);
+    if (owner.deleted || String(owner.email || '').trim().toLowerCase() !== email) {
+      throw new PromoError('Ce code promo est réservé à un autre client.');
+    }
+  }
+  if (firstOrderOnly && await hasPaidOrderBefore(stripe, email)) {
+    throw new PromoError('Ce code promo est réservé à la première commande.');
+  }
+
   return {
     id: promo.id,
-    code: promo.code,
+    code: promo.code.toUpperCase(),
+    customerId: reservedCustomer || null,
     percentOff: coupon.percent_off || 0,
     amountOff: coupon.amount_off || 0,
     minAmount

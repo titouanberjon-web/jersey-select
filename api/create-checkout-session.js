@@ -119,7 +119,7 @@ module.exports = async (req, res) => {
   let promotion = null;
   if (promoCode) {
     try {
-      promotion = await findPromotionCode(stripe, promoCode, pricing.subtotal - pricing.discount);
+      promotion = await findPromotionCode(stripe, promoCode, pricing.subtotal - pricing.discount, customer?.email);
     } catch (error) {
       if (error instanceof PromoError) return res.status(400).json({ error: error.message, promoInvalid: true });
       console.error('Erreur vérification code promo:', error);
@@ -139,7 +139,10 @@ module.exports = async (req, res) => {
       mode: 'payment',
       payment_method_types: ['card'],
       line_items,
-      customer_email: customer?.email || undefined,
+      // Code réservé à un client : Stripe exige que la session soit rattachée à ce client.
+      ...(promotion?.customerId
+        ? { customer: promotion.customerId }
+        : { customer_email: customer?.email || undefined }),
       phone_number_collection: { enabled: true },
       shipping_address_collection: { allowed_countries: ['FR', 'BE', 'CH', 'LU'] },
       shipping_options,
