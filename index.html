@@ -700,6 +700,7 @@
     .cart-footer { padding:1.5rem; border-top:1px solid var(--border); }
     .cart-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; font-family:'Bebas Neue',sans-serif; font-size:1.3rem; }
     .cart-total-amount { color:var(--green); font-size:1.6rem; }
+    .cart-promo-hint { font-size:.78rem; color:var(--text-muted); text-align:center; margin:.6rem 0 .2rem; }
     .cart-summary-line { display:flex; justify-content:space-between; font-size:.9rem; color:var(--text-muted); margin-bottom:.4rem; }
     .cart-summary-line.promo { color:var(--green); }
     .cart-promo-hint { font-size:.8rem; color:var(--text-muted); text-align:center; margin-bottom:.9rem; line-height:1.5; }
@@ -1427,6 +1428,7 @@
       <span>Total</span>
       <span class="cart-total-amount" id="cartTotal">0 €</span>
     </div>
+    <p class="cart-promo-hint">Un code promo ? Tu pourras le saisir à l'étape du paiement.</p>
     <button class="btn-order" onclick="openOrderRecap()">Valider mon bon de commande</button>
   </div>
 </div>

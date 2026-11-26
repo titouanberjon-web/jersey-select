@@ -129,6 +129,9 @@ module.exports = async (req, res) => {
       phone_number_collection: { enabled: true },
       shipping_address_collection: { allowed_countries: ['FR', 'BE', 'CH', 'LU'] },
       shipping_options,
+      // Codes promo créés dans le Dashboard Stripe (Produits → Coupons) : Stripe valide
+      // lui-même code, expiration, nombre d'utilisations et montant minimum.
+      allow_promotion_codes: true,
       ...(useEmbeddedCheckout
         ? { ui_mode: 'embedded', return_url: 'https://jersey-select.com/commande-confirmee?session_id={CHECKOUT_SESSION_ID}' }
         : { success_url: 'https://jersey-select.com/commande-confirmee?session_id={CHECKOUT_SESSION_ID}', cancel_url: 'https://jersey-select.com/panier' }),

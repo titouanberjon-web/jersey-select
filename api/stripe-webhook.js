@@ -51,7 +51,9 @@ async function handler(req, res) {
     }
 
     try {
-      const session = await stripe.checkout.sessions.retrieve(eventSession.id);
+      const session = await stripe.checkout.sessions.retrieve(eventSession.id, {
+        expand: ['total_details.breakdown.discounts.discount.promotion_code']
+      });
       if (session.payment_status !== 'paid') {
         return res.status(200).json({ received: true, paymentPending: true });
       }

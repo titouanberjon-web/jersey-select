@@ -21,7 +21,7 @@ function orderItem(lineItem) {
       size: 'Sans objet',
       flocage: 'Aucun produit physique à expédier',
       quantity: lineItem.quantity || 1,
-      amount: lineItem.amount_total
+      amount: lineItem.amount_subtotal ?? lineItem.amount_total
     };
   }
   const details = String(lineItem.price?.product?.description || '');
@@ -34,7 +34,7 @@ function orderItem(lineItem) {
     size: (parts.find(part => /^Taille\s/i.test(part)) || '').replace(/^Taille\s*/i, ''),
     flocage: parts.slice(2).join(' — ') || 'Sans flocage',
     quantity: lineItem.quantity || 1,
-    amount: lineItem.amount_total
+    amount: lineItem.amount_subtotal ?? lineItem.amount_total
   };
 }
 
@@ -73,6 +73,13 @@ module.exports = async function sendPaidOrderEmail(session, lineItems) {
     : '<p><strong>Adresse de livraison :</strong> non fournie par Stripe</p>';
   const total = session.amount_total;
   const shippingCost = session.shipping_cost?.amount_total ?? session.total_details?.amount_shipping ?? 0;
+  const discountAmount = session.total_details?.amount_discount || 0;
+  const promoCodes = (session.total_details?.breakdown?.discounts || [])
+    .map(d => d.discount?.promotion_code?.code || d.discount?.coupon?.name)
+    .filter(Boolean);
+  const discountLine = discountAmount
+    ? `<p style="text-align:right;color:#047857">Code promo${promoCodes.length ? ` ${esc(promoCodes.join(', '))}` : ''} : −${money(discountAmount)} €</p>`
+    : '';
   const paidAt = new Date((session.created || Math.floor(Date.now() / 1000)) * 1000)
     .toLocaleString('fr-FR', { timeZone: 'Europe/Paris' });
 
@@ -99,6 +106,7 @@ module.exports = async function sendPaidOrderEmail(session, lineItems) {
             <th style="padding:9px 10px;text-align:right">Montant</th>
           </tr></thead><tbody>${rows}</tbody>
         </table>
+        ${discountLine}
         <p style="text-align:right">Frais de port : ${shippingCost ? `${money(shippingCost)} €` : 'offerts'}</p>
         <p style="font-size:18px;text-align:right"><strong>Total payé : ${money(total)} €</strong></p>
         <p style="color:#6b7280;font-size:12px">Ce bon est envoyé automatiquement après confirmation du paiement par Stripe.</p>
