@@ -718,6 +718,7 @@
       display:flex; justify-content:space-between; align-items:center; gap:.5rem;
       border:1px dashed var(--green); border-radius:6px; padding:.45rem .75rem; font-size:.88rem; color:var(--green);
     }
+    .cart-promo-applied + .cart-promo-applied, .cart-promo-applied + .cart-promo-msg + .cart-promo-applied, .cart-promo-applied ~ .cart-promo-form { margin-top:.4rem; }
     .cart-promo-applied button { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:.82rem; text-decoration:underline; }
     .cart-summary-line { display:flex; justify-content:space-between; font-size:.9rem; color:var(--text-muted); margin-bottom:.4rem; }
     .cart-summary-line.promo { color:var(--green); }
@@ -2365,10 +2366,16 @@ let searchTerm      = '';
 // Méta-ligues : le menu déroulant liste des sous-ligues (champ subLeague) au lieu des clubs
 const META_LEAGUES  = ['Reste du monde', '2ème Division'];
 let cartItems       = [];
-/* Code promo du panier : validé par /api/validate-promo (codes gérés dans Stripe),
-   puis revérifié et appliqué par Stripe au paiement. */
-let appliedPromo = null;
-try { appliedPromo = JSON.parse(localStorage.getItem('jsPromo')) || null; } catch (e) {}
+/* Codes promo du panier (cumulables, 3 max) : chacun validé par /api/validate-promo
+   (codes gérés dans Stripe), puis revérifiés et appliqués par le serveur au paiement. */
+const MAX_PROMO_CODES = 3;
+let appliedPromos = [];
+try {
+  appliedPromos = JSON.parse(localStorage.getItem('jsPromos')) || [];
+  const legacy = JSON.parse(localStorage.getItem('jsPromo'));
+  if (legacy && !appliedPromos.length) appliedPromos = [legacy];
+  localStorage.removeItem('jsPromo');
+} catch (e) { appliedPromos = []; }
 let promoMessage = '';
 let currentProduct  = null;
 let currentVersion  = 'standard';
@@ -2434,20 +2441,18 @@ function computeCartPricing(items) {
   const discount = items.reduce((s, item, idx) => s + Math.round(item.price * 100) * freeQuantities[idx], 0);
   const shipping = count > 0 && count < FREE_SHIPPING_MIN_ITEMS ? Math.round(SHIPPING_FEE * 100) : 0;
   const base = subtotal - discount;
-  let promo = 0;
-  const promoBelowMin = Boolean(appliedPromo && appliedPromo.minAmount && base < appliedPromo.minAmount);
-  if (appliedPromo && !promoBelowMin) {
-    promo = appliedPromo.percentOff
-      ? Math.round(base * appliedPromo.percentOff / 100)
-      : Math.min(appliedPromo.amountOff, base);
-  }
+  // Même calcul que combinedDiscount() côté serveur : pourcentages additionnés, puis montants fixes.
+  const activePromos = appliedPromos.filter(p => !p.minAmount || base >= p.minAmount);
+  const percent = activePromos.reduce((sum, p) => sum + (p.percentOff || 0), 0);
+  const fixed = activePromos.reduce((sum, p) => sum + (p.amountOff || 0), 0);
+  const promo = activePromos.length ? Math.min(base, Math.round(base * percent / 100) + fixed) : 0;
   return {
     count,
     freeQuantities,
     subtotal: subtotal / 100,
     discount: discount / 100,
     promo: promo / 100,
-    promoBelowMin,
+    activePromoCodes: activePromos.map(p => p.code),
     shipping: shipping / 100,
     total: (base - promo + shipping) / 100
   };
@@ -2508,33 +2513,37 @@ function fillPricingSummary(prefix, pricing) {
   document.getElementById(prefix + 'DiscountLine').style.display = pricing.discount ? '' : 'none';
   document.getElementById(prefix + 'Discount').textContent = '−' + fmtPrice(pricing.discount) + ' €';
   document.getElementById(prefix + 'PromoLine').style.display = pricing.promo ? '' : 'none';
-  document.getElementById(prefix + 'PromoLabel').textContent = appliedPromo ? 'Code ' + appliedPromo.code : 'Code promo';
+  document.getElementById(prefix + 'PromoLabel').textContent = pricing.activePromoCodes.length > 1
+    ? 'Codes ' + pricing.activePromoCodes.join(' + ')
+    : 'Code ' + (pricing.activePromoCodes[0] || 'promo');
   document.getElementById(prefix + 'Promo').textContent = '−' + fmtPrice(pricing.promo) + ' €';
   document.getElementById(prefix + 'Shipping').textContent = pricing.shipping ? fmtPrice(pricing.shipping) + ' €' : 'Offerts';
   document.getElementById(prefix + 'Total').textContent = fmtPrice(pricing.total) + ' €';
 }
-function setPromo(promo) {
-  appliedPromo = promo;
-  try {
-    if (promo) localStorage.setItem('jsPromo', JSON.stringify(promo));
-    else localStorage.removeItem('jsPromo');
-  } catch (e) {}
+function savePromos() {
+  try { localStorage.setItem('jsPromos', JSON.stringify(appliedPromos)); } catch (e) {}
+}
+function clearPromos() {
+  appliedPromos = [];
+  savePromos();
 }
 function renderPromoBox(pricing) {
   const box = document.getElementById('cartPromoBox');
-  if (appliedPromo) {
-    const value = appliedPromo.percentOff ? `−${appliedPromo.percentOff} %` : `−${fmtPrice(appliedPromo.amountOff / 100)} €`;
-    const note = pricing.promoBelowMin
-      ? `<div class="cart-promo-msg error">Code valable dès ${fmtPrice(appliedPromo.minAmount / 100)} € de maillots.</div>`
+  const chips = appliedPromos.map((p, i) => {
+    const value = p.percentOff ? `−${p.percentOff} %` : `−${fmtPrice(p.amountOff / 100)} €`;
+    const inactive = !pricing.activePromoCodes.includes(p.code);
+    const note = inactive
+      ? `<div class="cart-promo-msg error">${escHtml(p.code)} : valable dès ${fmtPrice(p.minAmount / 100)} € de maillots.</div>`
       : '';
-    box.innerHTML = `<div class="cart-promo-applied"><span>🏷️ ${escHtml(appliedPromo.code)} (${value})</span><button type="button" onclick="removePromo()">Retirer</button></div>${note}`;
-    return;
-  }
-  box.innerHTML = `
+    return `<div class="cart-promo-applied"><span>🏷️ ${escHtml(p.code)} (${value})</span><button type="button" onclick="removePromo(${i})">Retirer</button></div>${note}`;
+  }).join('');
+  const form = appliedPromos.length < MAX_PROMO_CODES ? `
 <form class="cart-promo-form" onsubmit="applyPromo(event)">
-  <input id="cartPromoInput" placeholder="Code promo" maxlength="50" autocomplete="off" aria-label="Code promo">
+  <input id="cartPromoInput" placeholder="${appliedPromos.length ? 'Ajouter un autre code' : 'Code promo'}" maxlength="50" autocomplete="off" aria-label="Code promo">
   <button type="submit" id="cartPromoBtn">Appliquer</button>
-</form>${promoMessage ? `<div class="cart-promo-msg error">${escHtml(promoMessage)}</div>` : ''}`;
+</form>` : '';
+  const msg = promoMessage ? `<div class="cart-promo-msg error">${escHtml(promoMessage)}</div>` : '';
+  box.innerHTML = chips + form + msg;
 }
 async function applyPromo(event) {
   event.preventDefault();
@@ -2542,6 +2551,11 @@ async function applyPromo(event) {
   if (!code) return;
   if (!getCurrentUser()) {
     promoMessage = 'Connecte-toi à ton compte pour utiliser un code promo.';
+    updateCartUI();
+    return;
+  }
+  if (appliedPromos.some(p => p.code === code.toUpperCase())) {
+    promoMessage = 'Ce code est déjà appliqué.';
     updateCartUI();
     return;
   }
@@ -2557,7 +2571,8 @@ async function applyPromo(event) {
     });
     const data = await response.json().catch(() => ({}));
     if (response.ok) {
-      setPromo(data);
+      appliedPromos.push(data);
+      savePromos();
       promoMessage = '';
       showToast(`🏷️ Code ${data.code} appliqué !`, 'success');
     } else {
@@ -2568,8 +2583,9 @@ async function applyPromo(event) {
   }
   updateCartUI();
 }
-function removePromo() {
-  setPromo(null);
+function removePromo(index) {
+  appliedPromos.splice(index, 1);
+  savePromos();
   promoMessage = '';
   updateCartUI();
 }
@@ -4043,7 +4059,7 @@ async function payerAvecStripe() {
         })),
         customer: { name, email: user.email, phone: user.phone || '' },
         orderReference: orderNumber,
-        promoCode: appliedPromo && !computeCartPricing(cartItems).promoBelowMin ? appliedPromo.code : undefined
+        promoCodes: computeCartPricing(cartItems).activePromoCodes
       })
     });
     const data = await response.json();
@@ -4064,7 +4080,8 @@ async function payerAvecStripe() {
       return;
     }
     if (data.promoInvalid) {
-      setPromo(null);
+      appliedPromos = data.invalidCode ? appliedPromos.filter(p => p.code !== data.invalidCode) : [];
+      savePromos();
       promoMessage = data.error || '';
       updateCartUI();
       fillPricingSummary('orderRecap', computeCartPricing(cartItems));
@@ -4163,7 +4180,7 @@ function handlePostCheckoutRouting() {
     if (pending.uid) saveOrderToHistory(pending.uid, pending.orderNumber, pending.name, pending.items, pending.total);
     localStorage.removeItem('jsPendingOrder');
     cartItems = [];
-    setPromo(null);
+    clearPromos();
     saveCart();
     updateCartUI();
   })();

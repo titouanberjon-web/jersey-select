@@ -5,7 +5,7 @@
 
 const Stripe = require('stripe');
 const { computePricing, MAX_QUANTITY_PER_LINE } = require('./_lib/pricing');
-const { findPromotionCode, PromoError } = require('./_lib/promo');
+const { findPromotionCode, combinedDiscount, stackedMetadataKey, PromoError, MAX_CODES_PER_ORDER } = require('./_lib/promo');
 const VINTAGE_PRODUCT_IDS = new Set([101, 201, 505, 506, 507, 508, 509, 510, 511, 513, 514, 515, 516, 517]);
 
 module.exports = async (req, res) => {
@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
   }
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const { items, customer, orderReference, promoCode } = req.body || {};
+  const { items, customer, orderReference, promoCode, promoCodes } = req.body || {};
 
   if (!Array.isArray(items) || !items.length) {
     return res.status(400).json({ error: 'Panier vide' });
@@ -114,16 +114,56 @@ module.exports = async (req, res) => {
     }
   }];
 
-  // Code promo saisi dans le panier : revérifié ici, puis appliqué par Stripe
-  // sur les maillots (pas sur les frais de port).
-  let promotion = null;
-  if (promoCode) {
+  // Codes promo saisis dans le panier : revérifiés ici, puis appliqués sur les maillots
+  // (pas sur les frais de port).
+  const requestedCodes = [...new Set(
+    (Array.isArray(promoCodes) ? promoCodes : [promoCode])
+      .map(code => String(code || '').trim().toUpperCase())
+      .filter(Boolean)
+  )];
+  if (requestedCodes.length > MAX_CODES_PER_ORDER) {
+    return res.status(400).json({ error: `${MAX_CODES_PER_ORDER} codes promo maximum par commande.` });
+  }
+  const baseAmount = pricing.subtotal - pricing.discount;
+  const promotions = [];
+  for (const code of requestedCodes) {
     try {
-      promotion = await findPromotionCode(stripe, promoCode, pricing.subtotal - pricing.discount, customer?.email);
+      promotions.push(await findPromotionCode(stripe, code, baseAmount, customer?.email));
     } catch (error) {
-      if (error instanceof PromoError) return res.status(400).json({ error: error.message, promoInvalid: true });
+      if (error instanceof PromoError) {
+        return res.status(400).json({ error: `${code} : ${error.message}`, promoInvalid: true, invalidCode: code });
+      }
       console.error('Erreur vérification code promo:', error);
       return res.status(500).json({ error: 'Impossible de vérifier le code promo pour le moment.' });
+    }
+  }
+  const reservedCustomerId = promotions.find(p => p.customerId)?.customerId || null;
+
+  // Un seul code : Stripe l'applique et compte lui-même son utilisation.
+  // Plusieurs codes : réduction unique créée pour cette commande (Stripe n'en accepte qu'une).
+  let discounts;
+  const paymentMetadata = {};
+  if (promotions.length === 1) {
+    discounts = [{ promotion_code: promotions[0].id }];
+  } else if (promotions.length > 1) {
+    const amountOff = combinedDiscount(promotions, baseAmount);
+    if (amountOff > 0) {
+      let coupon;
+      try {
+        coupon = await stripe.coupons.create({
+          amount_off: amountOff,
+          currency: 'eur',
+          duration: 'once',
+          max_redemptions: 1,
+          name: `Codes ${promotions.map(p => p.code).join(' + ')}`.slice(0, 40),
+          metadata: { source: 'jersey-select', promoCodes: promotions.map(p => p.code).join(',') }
+        });
+      } catch (error) {
+        console.error('Erreur création réduction cumulée:', error);
+        return res.status(500).json({ error: 'Impossible d\'appliquer les codes promo pour le moment.' });
+      }
+      discounts = [{ coupon: coupon.id }];
+      promotions.forEach(p => { paymentMetadata[stackedMetadataKey(p.code)] = '1'; });
     }
   }
 
@@ -140,13 +180,14 @@ module.exports = async (req, res) => {
       payment_method_types: ['card'],
       line_items,
       // Code réservé à un client : Stripe exige que la session soit rattachée à ce client.
-      ...(promotion?.customerId
-        ? { customer: promotion.customerId }
+      ...(reservedCustomerId
+        ? { customer: reservedCustomerId }
         : { customer_email: customer?.email || undefined }),
       phone_number_collection: { enabled: true },
       shipping_address_collection: { allowed_countries: ['FR', 'BE', 'CH', 'LU'] },
       shipping_options,
-      ...(promotion ? { discounts: [{ promotion_code: promotion.id }] } : {}),
+      ...(discounts ? { discounts } : {}),
+      ...(Object.keys(paymentMetadata).length ? { payment_intent_data: { metadata: paymentMetadata } } : {}),
       ...(useEmbeddedCheckout
         ? { ui_mode: 'embedded', return_url: 'https://jersey-select.com/commande-confirmee?session_id={CHECKOUT_SESSION_ID}' }
         : { success_url: 'https://jersey-select.com/commande-confirmee?session_id={CHECKOUT_SESSION_ID}', cancel_url: 'https://jersey-select.com/panier' }),
@@ -156,7 +197,7 @@ module.exports = async (req, res) => {
         customerName: customer?.name || '',
         customerEmail: customer?.email || '',
         customerPhone: customer?.phone || '',
-        promoCode: promotion ? promotion.code : ''
+        promoCode: promotions.map(p => p.code).join(' + ')
       }
     });
 
@@ -165,7 +206,7 @@ module.exports = async (req, res) => {
       : { url: session.url });
   } catch (error) {
     console.error('Erreur Stripe Checkout:', error);
-    if (promotion && error.type === 'StripeInvalidRequestError') {
+    if (promotions.length && error.type === 'StripeInvalidRequestError') {
       return res.status(400).json({ error: 'Ce code promo ne peut pas être appliqué à cette commande.', promoInvalid: true });
     }
     return res.status(500).json({ error: 'Erreur lors de la création du paiement' });

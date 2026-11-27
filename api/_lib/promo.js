@@ -9,6 +9,30 @@ function normalizeCode(raw) {
   return String(raw || '').trim().toUpperCase().slice(0, 50);
 }
 
+const MAX_CODES_PER_ORDER = 3;
+
+// Stripe n'accepte qu'un code par paiement : quand le client en cumule plusieurs, le site
+// applique une réduction unique créée pour la commande, et marque chaque code utilisé dans
+// les métadonnées du paiement. Stripe ne compte alors pas ces utilisations : on les compte ici.
+function stackedMetadataKey(code) {
+  return `promo_${String(code).toUpperCase().replace(/[^A-Z0-9_-]/g, '_')}`;
+}
+async function countStackedUses(stripe, code) {
+  const { data } = await stripe.paymentIntents.search({
+    query: `status:'succeeded' AND metadata['${stackedMetadataKey(code)}']:'1'`,
+    limit: 100
+  });
+  return data.length;
+}
+
+// Réduction totale (centimes) : les pourcentages s'additionnent sur le montant des maillots,
+// puis les montants fixes s'ajoutent ; jamais plus que le montant des maillots.
+function combinedDiscount(promos, baseAmount) {
+  const percent = promos.reduce((sum, p) => sum + (p.percentOff || 0), 0);
+  const fixed = promos.reduce((sum, p) => sum + (p.amountOff || 0), 0);
+  return Math.min(baseAmount, Math.round(baseAmount * percent / 100) + fixed);
+}
+
 // Les acheteurs du site n'ont pas de compte client Stripe : Stripe ne peut donc pas savoir seul
 // si c'est leur première commande. On cherche les paiements déjà faits avec cet email.
 async function hasPaidOrderBefore(stripe, email) {
@@ -31,8 +55,13 @@ async function findPromotionCode(stripe, rawCode, baseAmount, rawEmail) {
   if (promo.expires_at && promo.expires_at * 1000 < Date.now()) {
     throw new PromoError('Ce code promo a expiré.');
   }
-  if (promo.max_redemptions && promo.times_redeemed >= promo.max_redemptions) {
-    throw new PromoError('Ce code promo a déjà été utilisé le nombre maximum de fois.');
+  const maxUses = promo.max_redemptions || coupon.max_redemptions;
+  if (maxUses) {
+    const used = Math.max(promo.times_redeemed || 0, coupon.times_redeemed || 0)
+      + await countStackedUses(stripe, promo.code);
+    if (used >= maxUses) {
+      throw new PromoError('Ce code promo a déjà été utilisé le nombre maximum de fois.');
+    }
   }
   if (coupon.amount_off && coupon.currency !== 'eur') {
     throw new PromoError('Ce code promo n\'est pas utilisable sur le site.');
@@ -71,4 +100,4 @@ async function findPromotionCode(stripe, rawCode, baseAmount, rawEmail) {
   };
 }
 
-module.exports = { findPromotionCode, PromoError };
+module.exports = { findPromotionCode, combinedDiscount, stackedMetadataKey, PromoError, MAX_CODES_PER_ORDER };
